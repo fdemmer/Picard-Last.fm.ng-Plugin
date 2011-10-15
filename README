@@ -1,0 +1,32 @@
+Picard Last.fm.ng Plugin
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+About
+=====
+
+The original and the plus last.fm plugins are great. I used them a lot.
+However I always felt the configuration was overly complicated and the code
+a bit of a mess and how the end result came to be sometimes a mystery.
+
+Also I wanted a rocksolid way to only get exactly one genre tag at all times 
+for a complete album. Plus sometimes delviered two, when just one was 
+configured and there was no way to determine a single "albumgenre".
+
+Some of the code and especially the name lists are reused from plus. Thanks
+again for your work on this... RifRaf, Lukáš Lalinský, voiceinsideyou!
+
+Install
+=======
+
+
+Usage
+=====
+
+
+Configuration
+-------------
+
+
+Scripting
+---------
+
