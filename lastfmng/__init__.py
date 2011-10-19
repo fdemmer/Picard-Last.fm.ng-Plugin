@@ -250,10 +250,12 @@ class LastFM(QtCore.QObject):
     def __init__(self, album, metadata):
         # finalizing is done on album level
         self.album = album
+        # the tracks in this album. shoudl be used read only!
         self.tracks = album._new_tracks
-        # album_meta is always the album metadata, ...
-        self.album_metadata = album._new_metadata
+        # album_metadata is always the album metadata, ...
+        #self.album_metadata = album._new_metadata
         # while metadata can be album or track meta
+        # use this to write metatags
         self.metadata = metadata
         # list of functions, that are called before finalizing the album data
         self.before_finalize = []
@@ -291,7 +293,7 @@ class LastFM(QtCore.QObject):
         # instead of wrapping the handler and calling the request, 
         # get the data from cache and call finish manually
 
-        # wrap the handler in the finalized decorator
+        # wrap the handler in the finished decorator
         handler = self.finished(handler)
         # dispatch http get request
         self.tagger.xmlws.get(LASTFM_HOST, LASTFM_PORT, 
@@ -309,7 +311,7 @@ class LastFM(QtCore.QObject):
             )
 
     def request_album_toptags(self, handler=None):
-        """request toptags of an album (via album, artist)"""
+        """request toptags of an album (via album, albumartist)"""
         handler = handler or self.handle_toptags
         if handler is not None:
             self.request(partial(handler, "album"), 
@@ -356,8 +358,8 @@ class LastFM(QtCore.QObject):
     def finish_request(self):
         """
         has to be called after/at the end of a request handler. reduces the
-        pending requests coutner and calls the finalize function if there is 
-        no open request.
+        pending requests counter and calls the finalize function if there is 
+        no open request left.
         """
         self.album._requests -= 1
         self.requests -= 1
@@ -388,8 +390,8 @@ class LastFM(QtCore.QObject):
 
         read toptags from xml response.
         tag names are in lower case.
-        tags with score below threshold are ignored
-        returns a list of tuples (name, score) sorted by score.
+        tags with score below score_threshold are ignored.
+        returns an unsorted list of tuples (name, score).
         """
         score_threshold = 1
 
@@ -407,8 +409,13 @@ class LastFM(QtCore.QObject):
             #artist = toptags.attribs.get('artist')
             for tag in toptags.tag:
                 name = tag.name[0].text.strip().lower()
+                # replace toptag name with a translation
                 name = TRANSLATIONS.get(name, name)
+                # scores are integers from 0 to 100, 
+                # but it is not a percentage per tagtype 
+                # (so the sum of all scores is > 100)
                 score = int(tag.count[0].text.strip())
+                # only store above score_threshold
                 if score >= score_threshold:
                     self.toptags[tagtype].append((name, score))
 
@@ -429,7 +436,7 @@ class LastFM(QtCore.QObject):
         self.log.debug("got {} all_track tags".format(len(self.toptags['all_track'])))
         self.log.debug("got {} all_artist tags".format(len(self.toptags['all_artist'])))
 
-        # get complete, balanced, sorted list (hight first) of tags
+        # get complete, balanced, sorted list (high first) of tags
         all_tags = merge_tags(
             # album tag score gets multiplied by the total number of tracks 
             # in the release to even out weight of all_* tags before merger
@@ -438,6 +445,7 @@ class LastFM(QtCore.QObject):
             (self.toptags['all_artist'], CONFIG['album']['weight']['all_artist'])
         )
 
+        #TODO refactor this whole block
         # find valid tags, split into categories and limit results
         result = {}
         for category, opt in CATEGORIES.items():
@@ -456,7 +464,7 @@ class LastFM(QtCore.QObject):
                     continue
                 result[category].append((tag, score))
 
-            # category is done
+            # category is done, assign toptags to metadata
             metatag = CONFIG['album']['tags'].get(category, None)
             if metatag is not None:
                 self.metadata[metatag] = tag_string(result[category],
@@ -474,7 +482,7 @@ class LastFM(QtCore.QObject):
         self.log.debug("got {} track tags".format(len(self.toptags['track'])))
         self.log.debug("got {} artist tags".format(len(self.toptags['artist'])))
 
-        # get complete, balanced, sorted list (hight first) of tags
+        # get complete, balanced, sorted list (high first) of tags
         all_tags = merge_tags(
             (self.toptags['artist'], CONFIG['track']['weight']['artist']), 
             (self.toptags['track'], CONFIG['track']['weight']['track'])
@@ -498,7 +506,7 @@ class LastFM(QtCore.QObject):
                     continue
                 result[category].append((tag, score))
 
-            # category is done
+            # category is done, assign toptags to metadata
             metatag = CONFIG['track']['tags'].get(category, None)
             if metatag is not None:
                 self.metadata[metatag] = tag_string(result[category],
@@ -521,7 +529,7 @@ def merge_tags(*args):
     accepts a list of tuples.
     each tuple contains as first element a list of tag-tuples 
     and as second a weight factor.
-    returns a list of tag-tuples, sorted by score.
+    returns a list of tag-tuples, sorted by score (high first).
     """
     rv = {}
     for tags, weight in args:
@@ -544,8 +552,7 @@ def tag_string(tuples, separator=", ", titlecase=True, sort=True):
         return separator.join([tag.title() for (tag, score) in tuples])
     return separator.join([tag for (tag, score) in tuples])
 
-def top(d):
-    return sorted(d.items(), key=operator.itemgetter(1), reverse=True)
+
 
 @register_track_metadata_processor
 def track_metadata_processor(album, metadata, track_node, release_node):
