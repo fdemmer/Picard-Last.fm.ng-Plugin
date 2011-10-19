@@ -12,7 +12,7 @@ However I always felt the configuration was overly complicated and the code
 a bit of a mess and how the end result came to be sometimes a mystery.
 
 Also I wanted a rocksolid way to only get exactly one genre tag at all times 
-for a complete album. Plus sometimes delviered two, when just one was 
+for a complete album. Plus sometimes delivered two, when just one was 
 configured and there was no way to determine a single "albumgenre".
 
 Some of the code and especially the name lists are reused from plus. Thanks
@@ -25,7 +25,7 @@ When using translations, the score of both toptags are summarized, rather
 "the greater wins, the lesser is dropped".
 
 Years and decades use a regular expression to find valid values. With decades,
-both "00s" and "2000s" are valid. This can be easily customized usign the
+both "00s" and "2000s" are valid. This can be easily customized using the
 LFM_DECADE and LFM_YEAR variables.
 
 There is no "inter tag drop". The "minimum weight" is hardcoded to 1. So toptags
@@ -40,8 +40,8 @@ thing for you.
 Install
 =======
 
-Copy "lastfmng" directory to ~/.config/musicbrainz/picard/plugins and activate
-the plugin in the GUI configuration.
+Copy the "lastfmng" directory to ~/.config/MusicBrainz/Picard/plugins and activate
+the plugin in the GUI.
 
 
 Configuration
@@ -76,18 +76,18 @@ In the "album" run the plugin collects the toptags for
 
 The toptags are collected in lists and when all tags are received, they are
 sorted into "categories" using the search lists. The "weight" parameters in the 
-CONFIG dictionary are the factors, that are applied to the "score" or each tag.
+CONFIG dictionary are the factors, that are applied to the "score" of each tag.
 
-So use the "weight" parameters to influence, wether to rank the toptags from 
-eg. the album higher, than those of each track.
+So use the "weight" parameters to influence, whether to rank the toptags from 
+eg. the album higher, than those of all tracks combined.
 
 The "tag" parameters define in what metatag (id3, ...) the toptags of which 
 category are written. The first (the key) is the name of the category. 
 Previously there were minor and major toptags. I decided to directly use 
 "genre" and "grouping". The second (the value) is the name of the metatag.
 
-So to assign the toptags of category genre to the grouping simply change the 
-second value.
+So to assign the toptags of category "genre" to the "grouping" metatag simply
+change the second value.
 
 As you can see the metatags in the "album" are actually not valid for most media
 formats. They are meant to be used in naming scripts (for example a "genre"
@@ -106,16 +106,15 @@ toptags for
 for each track of the album separately one by one.
 
 Again the weight parameters are the multiplicators applied to the toptag lists.
-to disable tagging using the track information and only use the artist, simply 
-set the weigth to 0.
+To disable tagging using the track information and only use the artist, simply 
+set the weight of "track" to 0.
 
-If you used the Last.fm.Plus plugni before the metatag names in the "tags" 
-section will be familiar. Each metatag is set one by one per track. Similar to
-before, the first column aer the "categories" in which toptags are grouped using
-the search lists and the second column are the names of the metatags in your
-files.
+If you used the Last.fm.Plus plugin the metatag names in the "tags" section will
+be familiar. Each metatag is set per track. Similar to before, the first column
+are the "categories" in which toptags are grouped using the search lists and the
+second column are the names of the metatags in your files.
 
-Metatag formatting
+Metatag formatting 
 ------------------
 
 What is left, is the CATEGORIES dictionary. Here you can set a hard "limit" how
@@ -126,7 +125,7 @@ If you set the limit to 1 and two toptags have exactly the same score the result
 will be exactly one toptag, which one however is not clearly defined! There is
 room for improvement here.
 
-To disable writing a specific category/metatag set "enabled" to False. Settign
+To disable writing a specific category/metatag set "enabled" to False. Setting
 "sort" to True will sort the toptags alphabetically after the ones with the
 highest score have been determined. Set this to False to keep the one with the
 highest score in front!
