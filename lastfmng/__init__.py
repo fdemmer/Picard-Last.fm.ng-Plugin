@@ -239,9 +239,9 @@ CATEGORIES = {
     'city': dict(searchlist=LFM_CITY, enabled=True, 
         limit=1, sort=True,  titlecase=True, separator=", ", unknown="Unknown"),
     'decade': dict(searchlist=LFM_DECADE, enabled=True, 
-        limit=1, sort=True,  titlecase=True, separator=", ", unknown="Unknown"),
+        limit=1, sort=True,  titlecase=False, separator=", ", unknown="Unknown"),
     'year': dict(searchlist=LFM_YEAR, enabled=False, 
-        limit=1, sort=True,  titlecase=True, separator=", ", unknown="Unknown"),
+        limit=1, sort=True,  titlecase=False, separator=", ", unknown="Unknown"),
 }
 
 
