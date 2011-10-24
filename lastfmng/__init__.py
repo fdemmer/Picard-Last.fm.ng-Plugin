@@ -23,7 +23,7 @@ from picard.util import partial
 import traceback
 import operator
 import sys
-import urllib
+#import urllib
 import time
 
 from helper import *
@@ -518,11 +518,11 @@ class LastFM(QtCore.QObject):
 def encode_str(s):
     # Yes, that's right, Last.fm prefers double URL-encoding
     s = s.encode('utf-8')
-    return urllib.quote(s).lower()
+    #s = urllib.quote(s).lower()
     #return urllib.quote(urllib.quote(s)).lower()
-    #s = QtCore.QUrl.toPercentEncoding(s)
+    s = QtCore.QUrl.toPercentEncoding(s)
     #s = QtCore.QUrl.toPercentEncoding(unicode(s))
-    #return s
+    return s
 
 def merge_tags(*args):
     """
