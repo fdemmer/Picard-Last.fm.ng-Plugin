@@ -8,7 +8,7 @@ Last.fm.ng plugin
 PLUGIN_NAME = "Last.fm.ng"
 PLUGIN_AUTHOR = "Florian Demmer"
 PLUGIN_DESCRIPTION = "reimagination of the popular last.fm plus plugin"
-PLUGIN_VERSION = "0.2"
+PLUGIN_VERSION = "0.3"
 PLUGIN_API_VERSIONS = ["0.15"]
 
 from PyQt4 import QtGui, QtCore
@@ -26,6 +26,8 @@ import sys
 #import urllib
 import urlparse
 import time
+
+from collections import OrderedDict
 
 from helper import *
 
@@ -188,8 +190,8 @@ CONFIG = {
         'weight': dict(album=2, all_artist=4, all_track=4),
         'tags': {
             # category  metatag
-            'genre':    'albumgenre',
             'grouping': 'albumgrouping',
+            'genre':    'albumgenre',
             'mood':     'albummood',
         }
     },
@@ -198,8 +200,8 @@ CONFIG = {
         'weight': dict(artist=2, track=8),
         'tags': {
             # category  metatag
-            'genre':    'genre',
             'grouping': 'grouping',
+            'genre':    'genre',
             'mood':     'mood',
             'year':     'year',
             'occasion': 'comment:Songs-DB_Occasion',
@@ -212,9 +214,32 @@ CONFIG = {
 }
 
 # the official id3 genre tags
-LFM_GENRE = ListChecker(DEFAULT_FILTER_MAJOR)
-# a more specific genre grouping
-LFM_GROUPING = StringChecker(DEFAULT_FILTER_MINOR, ",")
+LFM_GROUPING = ListChecker(DEFAULT_FILTER_MAJOR)
+# a more specific genre tags
+LFM_GENRE = StringChecker(DEFAULT_FILTER_MINOR, ",")
+# a searchtree allows setting tags depending on a reference category's toptag
+# the other category must have been already processed! (it must come before 
+# the category using the searchtree in the CATEGORIES configuration)
+# set the reference category's name as the "trunk" value
+# the "branches" are the tags allowed (the searchlist) for a specific toptag
+# eg. a "genre" tree:
+# trunk=grouping, and a track's most popular "grouping" toptag is "folk", 
+# then the value of the "folk" branch is used as searchlist for the "genre" 
+# category
+# in case no suitable branch is available, the normal searchlist is used!
+LFM_GENRE_TREE = SearchTree(
+    # set the tree trunk to the reference category's name
+    trunk='grouping', 
+    # configure searchlists per toptag in the reference category
+    # only the most popular toptag in a category is used
+    # everything must be lower case!
+    branches={
+        # only use tags from the list in case the 
+        "folk": ["finnish folk", "traditional folk"],
+        "rock": RegexChecker("^.*rock.*$"),
+        "electronic": ["jazz"],
+        "pop": RegexChecker("^.*pop.*$"),
+    })
 # eg. angry, cheerful, clam, ...
 LFM_MOOD = StringChecker(DEFAULT_FILTER_MOOD, ",")
 # country names
@@ -230,26 +255,38 @@ LFM_OCCASION = StringChecker(DEFAULT_FILTER_OCCASION, ",")
 # i don't really know
 LFM_CATEGORY = StringChecker(DEFAULT_FILTER_CATEGORY, ",")
 
-CATEGORIES = {
-    'genre': dict(searchlist=LFM_GENRE, enabled=True, 
-        limit=1, sort=True,  titlecase=True, separator=", ", unknown="Unknown"),
-    'grouping': dict(searchlist=LFM_GROUPING, enabled=True, 
-        limit=3, sort=False, titlecase=True, separator=", ", unknown="Unknown"),
-    'mood': dict(searchlist=LFM_MOOD, enabled=True, 
-        limit=4, sort=False, titlecase=True, separator=", ", unknown="Unknown"),
-    'occasion': dict(searchlist=LFM_OCCASION, enabled=True, 
-        limit=4, sort=False, titlecase=True, separator=", ", unknown="Unknown"),
-    'category': dict(searchlist=LFM_CATEGORY, enabled=True, 
-        limit=4, sort=False, titlecase=True, separator=", ", unknown="Unknown"),
-    'country': dict(searchlist=LFM_COUNTRY, enabled=True, 
-        limit=1, sort=True,  titlecase=True, separator=", ", unknown="Unknown"),
-    'city': dict(searchlist=LFM_CITY, enabled=True, 
-        limit=1, sort=True,  titlecase=True, separator=", ", unknown="Unknown"),
-    'decade': dict(searchlist=LFM_DECADE, enabled=True, 
-        limit=1, sort=True,  titlecase=False, separator=", ", unknown="Unknown"),
-    'year': dict(searchlist=LFM_YEAR, enabled=False, 
-        limit=1, sort=True,  titlecase=False, separator=", ", unknown="Unknown"),
-}
+CATEGORIES = OrderedDict([
+    # grouping is used as major/high level category
+    ('grouping', 
+        dict(searchlist=LFM_GROUPING, 
+        limit=1,enabled=True, sort=False, titlecase=True, 
+        separator=", ", unknown="Unknown")),
+    # allow genre toptags from a searchtree and use the searchlsit as fallback
+    ('genre', dict(searchlist=LFM_GENRE, searchtree=LFM_GENRE_TREE, 
+        limit=3, enabled=True, sort=True,  titlecase=True, 
+        separator=", ", unknown="Unknown")),
+    ('mood', dict(searchlist=LFM_MOOD, 
+        limit=4, enabled=True, sort=False, titlecase=True, 
+        separator=", ", unknown="Unknown")),
+    ('occasion', dict(searchlist=LFM_OCCASION, 
+        limit=4, enabled=True, sort=False, titlecase=True, 
+        separator=", ", unknown="Unknown")),
+    ('category', dict(searchlist=LFM_CATEGORY, 
+        limit=4, enabled=True, sort=False, titlecase=True, 
+        separator=", ", unknown="Unknown")),
+    ('country', dict(searchlist=LFM_COUNTRY, 
+        limit=1, enabled=True, sort=True, titlecase=True, 
+        separator=", ", unknown="Unknown")),
+    ('city', dict(searchlist=LFM_CITY, 
+        limit=1, enabled=True, sort=True, titlecase=True, 
+        separator=", ", unknown="Unknown")),
+    ('decade', dict(searchlist=LFM_DECADE, 
+        limit=1, enabled=True, sort=True, titlecase=False, 
+        separator=", ", unknown="Unknown")),
+    ('year', dict(searchlist=LFM_YEAR, 
+        limit=1, enabled=False, sort=True, titlecase=False, 
+        separator=", ", unknown="Unknown")),
+])
 
 
 # inherit from QObject to gain access to tagger, logger and config
@@ -499,15 +536,25 @@ class LastFM(QtCore.QObject):
         # find valid tags, split into categories and limit results
         result = {}
         for category, opt in CATEGORIES.items():
+            #print "category: {}".format(category)
             result[category] = []
 
             # this category is disabled
             if not opt['enabled']:
                 continue
 
+            # use the plan searchlist for the category
+            searchlist = opt['searchlist']
+            # if a searchtree is configured for this category...
+            searchtree = opt.get('searchtree', None)
+            if searchtree is not None:
+                # get the searchlist from the tree-branch using the result
+                searchlist = searchtree.get_searchlist(result) or searchlist
+                #print searchlist
+
             for tag, score in all_tags:
                 # ignore tags not in this category
-                if tag not in opt['searchlist']:
+                if tag not in searchlist:
                     continue
                 # limit the number of tags in this category
                 if len(result[category]) >= opt['limit']:
@@ -547,9 +594,18 @@ class LastFM(QtCore.QObject):
             if not opt['enabled']:
                 continue
 
+            # use the plan searchlist for the category
+            searchlist = opt['searchlist']
+            # if a searchtree is configured for this category...
+            searchtree = opt.get('searchtree', None)
+            if searchtree is not None:
+                # get the searchlist from the tree-branch using the result
+                searchlist = searchtree.get_searchlist(result) or searchlist
+                #print searchlist
+
             for tag, score in all_tags:
                 # ignore tags not in this category
-                if tag not in opt['searchlist']:
+                if tag not in searchlist:
                     continue
                 # limit the number of tags in this category
                 if len(result[category]) >= opt['limit']:

@@ -134,4 +134,13 @@ Using "titlecase" you can switch fixing the case of toptags off and on. The
 "separator" is used to combine more than one toptag into a metatag string and in
 case not a single toptag was found for a category the value of "unknown" is set.
 
+Searchlists and searchtrees
+---------------------------
+
+The CATEGORIES dictionary is an ordered dictionary. The sequence of categories
+is important when using searchtrees. Searchtrees are an attempt to implement
+Slukd's feature request for grouping-dependent genre tags
+(http://forums.musicbrainz.org/viewtopic.php?pid=15871#p15871). Please see the
+source comments on how to use this.
+
 
