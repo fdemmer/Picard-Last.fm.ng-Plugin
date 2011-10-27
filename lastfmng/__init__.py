@@ -8,7 +8,7 @@ Last.fm.ng plugin
 PLUGIN_NAME = "Last.fm.ng"
 PLUGIN_AUTHOR = "Florian Demmer"
 PLUGIN_DESCRIPTION = "reimagination of the popular last.fm plus plugin"
-PLUGIN_VERSION = "0.1"
+PLUGIN_VERSION = "0.2"
 PLUGIN_API_VERSIONS = ["0.15"]
 
 from PyQt4 import QtGui, QtCore
@@ -24,6 +24,7 @@ import traceback
 import operator
 import sys
 #import urllib
+import urlparse
 import time
 
 from helper import *
@@ -38,6 +39,12 @@ API_KEY = "b25b959554ed76058ac220b7b2e0a026"
 from picard.webservice import REQUEST_DELAY
 REQUEST_DELAY[(LASTFM_HOST, LASTFM_PORT)] = 200
 
+CACHE = {}
+PENDING = []
+
+#FAKE_HOST = "localhost"
+#FAKE_PORT = "0"
+#REQUEST_DELAY[(FAKE_HOST, FAKE_PORT)] = 1
 
 # the genres defined in id3v1 incl. the winamp extensions
 GENRE_ID3V1 = ["Blues", "Classic Rock", "Country", "Dance", "Disco", "Funk", 
@@ -268,7 +275,7 @@ class LastFM(QtCore.QObject):
         self.toptags = dict(artist=[], album=[], track=[], 
             all_track=[], all_artist=[])
 
-    def request(self, handler, **kw):
+    def add_request(self, handler, query):
         """
         queue a data fetch request. this increases the requests counter.
         this method returns after queueing. the requests are then processed 
@@ -279,81 +286,103 @@ class LastFM(QtCore.QObject):
         handlers are wrapped with the finished function to reduce the requests
         counter and finalize the album data.
         """
-        # build path arguments from kwargs
-        p = ["{}={}".format(k, encode_str(v)) for (k, v) in kw.items()]
+        # add query to list of pending requests, no request should be sent twice
+        PENDING.append(query)
         # build scrobbler api 2.0 url
-        path = "/2.0/?{}".format('&'.join(p))
+        path = "/2.0/?" + query
         # count requests, so that the album is not finalized until 
         # the handler has been executed
         self.album._requests += 1
         self.requests += 1
-
-        #TODO put in caching here...
-        # check if url was called is key in cache
-        # instead of wrapping the handler and calling the request, 
-        # get the data from cache and call finish manually
-
+        
         # wrap the handler in the finished decorator
         handler = self.finished(handler)
-        # dispatch http get request
+        # queue http get request
         self.tagger.xmlws.get(LASTFM_HOST, LASTFM_PORT, 
-            path, handler, priority=False, important=False)
+            path, handler, priority=True, important=False)
 
-    def request_artist_toptags(self, handler=None):
+    def add_task(self, handler):
+        """
+        use the webservice queue to add a task, a simple function
+        """
+        # count requests
+        self.album._requests += 1
+        self.requests += 1
+        
+        # wrap the handler in the finished decorator
+        handler = self.finished(handler)
+        # queue function call
+        self.tagger.xmlws.add_task(handler, 
+            LASTFM_HOST, LASTFM_PORT, priority=False, important=False)
+
+
+    def cached_or_request(self, tagtype, query):
+        if query in CACHE:
+            #print "cached {}".format(query)
+            self.add_task(partial(self.handle_cached_toptags, tagtype, query))
+        elif query in PENDING:
+            #print "pending {}".format(query)
+            self.add_task(partial(self.handle_cached_toptags, tagtype, query))
+        else:
+            #print "request {}".format(query)
+            self.add_request(partial(self.handle_toptags, tagtype), query)
+
+
+    def _get_query(self, params):
+        """build query from kwargs"""
+        p = ["{}={}".format(k, encode_str(v)) for (k, v) in params.items()]
+        return '&'.join(p)
+
+    def request_artist_toptags(self):
         """request toptags of an artist (via artist or albumartist)"""
-        handler = handler or self.handle_toptags
-        if handler is not None:
-            self.request(partial(handler, "artist"), 
-                method="artist.gettoptags", 
-                artist=self.metadata["artist"] or \
-                    self.metadata["albumartist"], 
-                api_key=API_KEY
-            )
+        params = dict(
+            method="artist.gettoptags", 
+            artist=self.metadata["artist"] or self.metadata["albumartist"], 
+            api_key=API_KEY)
+        query = self._get_query(params)
+        self.cached_or_request("artist", query)
 
-    def request_album_toptags(self, handler=None):
+    def request_album_toptags(self):
         """request toptags of an album (via album, albumartist)"""
-        handler = handler or self.handle_toptags
-        if handler is not None:
-            self.request(partial(handler, "album"), 
-                method="album.gettoptags", 
-                album=self.metadata["album"], 
-                artist=self.metadata["albumartist"], 
-                api_key=API_KEY
-            )
+        params = dict(
+            method="album.gettoptags", 
+            album=self.metadata["album"], 
+            artist=self.metadata["albumartist"], 
+            api_key=API_KEY)
+        query = self._get_query(params)
+        self.cached_or_request("album", query)
 
-    def request_track_toptags(self, handler=None):
+    def request_track_toptags(self):
         """request toptags of a track (via title, artist)"""
-        handler = handler or self.handle_toptags
-        if handler is not None:
-            self.request(partial(handler, "track"), 
-                method="track.gettoptags", 
-                track=self.metadata["title"],
-                artist=self.metadata["artist"], 
-                api_key=API_KEY
-            )
+        params = dict(
+            method="track.gettoptags", 
+            track=self.metadata["title"],
+            artist=self.metadata["artist"], 
+            api_key=API_KEY)
+        query = self._get_query(params)
+        self.cached_or_request("track", query)
 
-    def request_all_track_toptags(self, handler=None):
+    def request_all_track_toptags(self):
         """request toptags of all tracks in the album (via title, artist)"""
-        handler = handler or self.handle_toptags
-        if handler is not None:
-            for track in self.tracks:
-                self.request(partial(handler, "all_track"), 
-                    method="track.gettoptags", 
-                    track=track.metadata["title"],
-                    artist=track.metadata["artist"], 
-                    api_key=API_KEY
-                )
+        for track in self.tracks:
+            params = dict(
+                method="track.gettoptags", 
+                track=track.metadata["title"],
+                artist=track.metadata["artist"], 
+                api_key=API_KEY)
+            query = self._get_query(params)
+            self.cached_or_request("all_track", query)
 
-    def request_all_artist_toptags(self, handler=None):
+    def request_all_artist_toptags(self):
         """request toptags of all artists in the album (via artist)"""
-        handler = handler or self.handle_toptags
-        if handler is not None:
-            for track in self.tracks:
-                self.request(partial(handler, "all_artist"), 
-                    method="artist.gettoptags", 
-                    artist=track.metadata["artist"], 
-                    api_key=API_KEY
-                )
+        for track in self.tracks:
+            params = dict(
+                method="artist.gettoptags", 
+                artist=track.metadata["artist"], 
+                api_key=API_KEY)
+            query = self._get_query(params)
+            self.cached_or_request("all_artist", query)
+
 
     def finish_request(self):
         """
@@ -361,6 +390,7 @@ class LastFM(QtCore.QObject):
         pending requests counter and calls the finalize function if there is 
         no open request left.
         """
+        #print "finish request: {}".format(self.requests)
         self.album._requests -= 1
         self.requests -= 1
         if self.requests == 0:
@@ -384,6 +414,7 @@ class LastFM(QtCore.QObject):
                 self.finish_request()
         return decorate
 
+
     def handle_toptags(self, tagtype, data, http, error):
         """
         request handler for the last.fm webservice
@@ -394,6 +425,10 @@ class LastFM(QtCore.QObject):
         returns an unsorted list of tuples (name, score).
         """
         score_threshold = 1
+        # cache key
+        query = str(http.url().encodedQuery())
+        # temp storage for toptags
+        tmp = []
 
         try:
             lfm = data.lfm.pop()
@@ -406,7 +441,6 @@ class LastFM(QtCore.QObject):
                 return
 
             toptags = lfm.toptags.pop()
-            #artist = toptags.attribs.get('artist')
             for tag in toptags.tag:
                 name = tag.name[0].text.strip().lower()
                 # replace toptag name with a translation
@@ -417,14 +451,30 @@ class LastFM(QtCore.QObject):
                 score = int(tag.count[0].text.strip())
                 # only store above score_threshold
                 if score >= score_threshold:
-                    self.toptags[tagtype].append((name, score))
+                    tmp.append((name, score))
+
+            # add the result of this run to the cache
+            CACHE[query] = tmp
+
+            # extend "global" toptags list with the ones from this run
+            self.toptags[tagtype].extend(tmp)
 
         except AttributeError:
             #sys.exc_info()
             #print http.url()
             #print data
-            self.log.warning("no tags: {}, {}".format(tagtype, str(http.url().path())))
+            self.log.warning("no tags: {}, {}".format(tagtype, query))
             pass
+
+    def handle_cached_toptags(self, tagtype, query):
+        """copies toptags from cache to apropritate local storage"""
+        #print "cached"
+        toptags = CACHE.get(query, None)
+        if toptags is not None:
+            self.toptags[tagtype].extend(toptags)
+        else:
+            self.log.warning("cache error: {}, {}".format(tagtype, query))
+
 
     def process_album_tags(self):
         """
