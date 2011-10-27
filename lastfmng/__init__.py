@@ -8,7 +8,7 @@ Last.fm.ng plugin
 PLUGIN_NAME = "Last.fm.ng"
 PLUGIN_AUTHOR = "Florian Demmer"
 PLUGIN_DESCRIPTION = "reimagination of the popular last.fm plus plugin"
-PLUGIN_VERSION = "0.3"
+PLUGIN_VERSION = "0.3.1"
 PLUGIN_API_VERSIONS = ["0.15"]
 
 from PyQt4 import QtGui, QtCore
@@ -184,6 +184,7 @@ TRANSLATIONS = {
     "melancholic": u"melancholy",
 }
 
+# toptag to metatag configuration
 CONFIG = {
     # on album level set the following metadata
     'album': {
@@ -213,10 +214,13 @@ CONFIG = {
     }
 }
 
+# other configuration
+OPT_SOUNDTRACK_IS_NO_GENRE = True
+
 # the official id3 genre tags
-LFM_GROUPING = ListChecker(DEFAULT_FILTER_MAJOR)
+LFM_GROUPING = ListSearchlist(DEFAULT_FILTER_MAJOR)
 # a more specific genre tags
-LFM_GENRE = StringChecker(DEFAULT_FILTER_MINOR, ",")
+LFM_GENRE = StringSearchlist(DEFAULT_FILTER_MINOR, ",")
 # a searchtree allows setting tags depending on a reference category's toptag
 # the other category must have been already processed! (it must come before 
 # the category using the searchtree in the CATEGORIES configuration)
@@ -236,24 +240,28 @@ LFM_GENRE_TREE = SearchTree(
     branches={
         # only use tags from the list in case the 
         "folk": ["finnish folk", "traditional folk"],
-        "rock": RegexChecker("^.*rock.*$"),
+        "rock": RegexpSearchlist("^.*rock.*$"),
         "electronic": ["jazz"],
-        "pop": RegexChecker("^.*pop.*$"),
+        "pop": RegexpSearchlist("^.*pop.*$"),
     })
 # eg. angry, cheerful, clam, ...
-LFM_MOOD = StringChecker(DEFAULT_FILTER_MOOD, ",")
+LFM_MOOD = StringSearchlist(DEFAULT_FILTER_MOOD, ",")
 # country names
-LFM_COUNTRY = StringChecker(DEFAULT_FILTER_COUNTRY, ",")
+LFM_COUNTRY = StringSearchlist(DEFAULT_FILTER_COUNTRY, ",")
 # city names
-LFM_CITY = StringChecker(DEFAULT_FILTER_CITY, ",")
+LFM_CITY = StringSearchlist(DEFAULT_FILTER_CITY, ",")
 # musical era, eg. 80s, 90s, ...
-LFM_DECADE = RegexChecker("^([1-9][0-9])*[0-9]0s$")
+LFM_DECADE = RegexpSearchlist("^([1-9][0-9])*[0-9]0s$")
 # the full year, eg. 1995, 2000, ...
-LFM_YEAR = RegexChecker("^[1-9][0-9]{3}$")
+LFM_YEAR = RegexpSearchlist("^[1-9][0-9]{3}$")
 # eg. background, late night, party
-LFM_OCCASION = StringChecker(DEFAULT_FILTER_OCCASION, ",")
+LFM_OCCASION = StringSearchlist(DEFAULT_FILTER_OCCASION, ",")
 # i don't really know
-LFM_CATEGORY = StringChecker(DEFAULT_FILTER_CATEGORY, ",")
+LFM_CATEGORY = StringSearchlist(DEFAULT_FILTER_CATEGORY, ",")
+
+if OPT_SOUNDTRACK_IS_NO_GENRE:
+    LFM_GROUPING.remove('soundtrack')
+    LFM_GENRE.remove('soundtrack')
 
 CATEGORIES = OrderedDict([
     # grouping is used as major/high level category
@@ -551,7 +559,7 @@ class LastFM(QtCore.QObject):
                 # get the searchlist from the tree-branch using the result
                 # or fall back to the configured searchlist
                 searchlist = searchtree.get_searchlist(result) or searchlist
-                #print searchlist
+            #print searchlist
 
             for tag, score in all_tags:
                 # ignore tags not in this category

@@ -1,35 +1,55 @@
 
 import re
 
-class ListChecker:
+class ListSearchlist:
     """
     create a list-like tag checker from a list of strings.
     strings can be in any case and whitespace is stripped.
     """
-    def __init__(self, values):
-        self.values = [value.lower().strip() for value in values]
+    def __init__(self, include=None, exclude=None):
+        self.include = [value.lower().strip() for value in include or []]
+        self.exclude = exclude or []
     
+    def match(self, value):
+        """
+        return True if the value is found in the include list of tag names,
+        override to change the matching
+        """
+        return value.lower().strip() in self.include
+
     def __contains__(self, value):
-        return value.lower().strip() in self.values
+        """
+        return True if the value is found in the include list of tag names,
+        return False if the value is in the exclude list or not in include
+        this is the interface used in toptag categorizing
+        """
+        if value.lower() in self.exclude:
+            return None
+        return self.match(value)
 
     def __repr__(self):
         return "<{}([{}, ...])>".format(self.__class__.__name__, 
-            ", ".join(self.values[:3]))
+            ", ".join(self.include[:3]))
 
-class StringChecker(ListChecker):
+    def remove(self, name):
+        """add a single tag name to the exclude list"""
+        self.exclude.append(name.lower().strip())
+
+class StringSearchlist(ListSearchlist):
     """create a list-like tag checker from a string with a certain separator"""
     def __init__(self, string, separator=","):
-        ListChecker.__init__(self, string.split(separator))
+        ListSearchlist.__init__(self, string.split(separator))
 
-class RegexChecker:
+class RegexpSearchlist(ListSearchlist):
     """
     use a regular expression to check tags for validity instead of a list
     with the same "interface": the in comparator
     """
     def __init__(self, regexp):
+        ListSearchlist.__init__(self, None)
         self.regexp = re.compile(regexp)
-    
-    def __contains__(self, value):
+
+    def match(self, value):
         return self.regexp.match(value)
 
     def __repr__(self):
@@ -39,11 +59,9 @@ class RegexChecker:
 class SearchTree(dict):
 
     def __init__(self, trunk, branches):
+        #TODO add lowercase-ing to all tags
         self.trunk = trunk
         dict.__init__(self, branches)
-
-    def __setitem__(self, key, value):
-        self[key.lower()] = value
 
     def get_searchlist(self, result):
         try:
