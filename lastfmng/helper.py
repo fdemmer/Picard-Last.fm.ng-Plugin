@@ -12,6 +12,10 @@ class ListChecker:
     def __contains__(self, value):
         return value.lower().strip() in self.values
 
+    def __repr__(self):
+        return "<{}([{}, ...])>".format(self.__class__.__name__, 
+            ", ".join(self.values[:3]))
+
 class StringChecker(ListChecker):
     """create a list-like tag checker from a string with a certain separator"""
     def __init__(self, string, separator=","):
@@ -27,3 +31,8 @@ class RegexChecker:
     
     def __contains__(self, value):
         return self.regexp.match(value)
+
+    def __repr__(self):
+        return "<{}('{}')>".format(self.__class__.__name__, 
+            self.regexp.pattern)
+
