@@ -81,8 +81,8 @@ DEFAULT_FILTER_MAJOR = GENRE_ID3V1
 
 DEFAULT_FILTER_MINOR = ("2 tone, a cappella, abstract hip-hop, acid, acid jazz,"
     "acid rock, acoustic, acoustic guitar, acoustic rock, adult alternative,"
-    "adult contemporary, alternative, alternative country, alternative folk,"
-    "alternative metal, alternative pop, alternative rock, ambient, anti-folk,"
+    "adult contemporary, alternative country, alternative folk,"
+    "alternative metal, alternative pop, ambient, anti-folk,"
     "art rock, atmospheric, aussie hip-hop, avant-garde, ballads, baroque, beach,"
     "beats, bebop, big band, blaxploitation, blue-eyed soul, bluegrass, blues"
     "rock, boogie rock, boogie woogie, bossa nova, breakbeat, breaks, brit pop,"
@@ -181,13 +181,13 @@ TRANSLATIONS = {
     "drum 'n' bass": u"drum and bass",
     "drum n bass": u"drum and bass",
     "trip hop": u"trip-hop",
-    "Melancholic": u"Melancholy",
+    "melancholic": u"melancholy",
 }
 
 CONFIG = {
     # on album level set the following metadata
     'album': {
-        'weight': dict(album=2, all_artist=4, all_track=4),
+        'weight': dict(album=2, all_artist=2, all_track=6),
         'tags': {
             # category  metatag
             'grouping': 'albumgrouping',
@@ -263,7 +263,7 @@ CATEGORIES = OrderedDict([
         separator=", ", unknown="Unknown")),
     # allow genre toptags from a searchtree and use the searchlsit as fallback
     ('genre', dict(searchlist=LFM_GENRE, searchtree=LFM_GENRE_TREE, 
-        limit=3, enabled=True, sort=True,  titlecase=True, 
+        limit=3, enabled=True, sort=False,  titlecase=True, 
         separator=", ", unknown="Unknown")),
     ('mood', dict(searchlist=LFM_MOOD, 
         limit=4, enabled=True, sort=False, titlecase=True, 
@@ -272,7 +272,7 @@ CATEGORIES = OrderedDict([
         limit=4, enabled=True, sort=False, titlecase=True, 
         separator=", ", unknown="Unknown")),
     ('category', dict(searchlist=LFM_CATEGORY, 
-        limit=4, enabled=True, sort=False, titlecase=True, 
+        limit=3, enabled=True, sort=False, titlecase=True, 
         separator=", ", unknown="Unknown")),
     ('country', dict(searchlist=LFM_COUNTRY, 
         limit=1, enabled=True, sort=True, titlecase=True, 
@@ -481,7 +481,7 @@ class LastFM(QtCore.QObject):
             for tag in toptags.tag:
                 name = tag.name[0].text.strip().lower()
                 # replace toptag name with a translation
-                name = TRANSLATIONS.get(name, name)
+                name = translate_tag(name)
                 # scores are integers from 0 to 100, 
                 # but it is not a percentage per tagtype 
                 # (so the sum of all scores is > 100)
@@ -549,6 +549,7 @@ class LastFM(QtCore.QObject):
             searchtree = opt.get('searchtree', None)
             if searchtree is not None:
                 # get the searchlist from the tree-branch using the result
+                # or fall back to the configured searchlist
                 searchlist = searchtree.get_searchlist(result) or searchlist
                 #print searchlist
 
@@ -558,7 +559,7 @@ class LastFM(QtCore.QObject):
                     continue
                 # limit the number of tags in this category
                 if len(result[category]) >= opt['limit']:
-                    continue
+                    continue #TODO shouldn't this be a break?
                 result[category].append((tag, score))
 
             # category is done, assign toptags to metadata
@@ -622,13 +623,10 @@ class LastFM(QtCore.QObject):
         #print self.metadata
 
 def encode_str(s):
-    # Yes, that's right, Last.fm prefers double URL-encoding
-    s = s.encode('utf-8')
-    #s = urllib.quote(s).lower()
-    #return urllib.quote(urllib.quote(s)).lower()
-    s = QtCore.QUrl.toPercentEncoding(s)
-    #s = QtCore.QUrl.toPercentEncoding(unicode(s))
-    return s
+    return QtCore.QUrl.toPercentEncoding(s.encode('utf-8'))
+
+def translate_tag(name):
+    return TRANSLATIONS.get(name.lower(), name)
 
 def merge_tags(*args):
     """
