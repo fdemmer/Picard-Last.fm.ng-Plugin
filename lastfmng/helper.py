@@ -36,3 +36,19 @@ class RegexChecker:
         return "<{}('{}')>".format(self.__class__.__name__, 
             self.regexp.pattern)
 
+class SearchTree(dict):
+
+    def __init__(self, trunk, branches):
+        self.trunk = trunk
+        dict.__init__(self, branches)
+
+    def __setitem__(self, key, value):
+        self[key.lower()] = value
+
+    def get_searchlist(self, result):
+        try:
+            toptags = result.get(self.trunk, None)
+            toptag_name = toptags[0][0].lower()
+            return self.get(toptag_name, None)
+        except:
+            return None
