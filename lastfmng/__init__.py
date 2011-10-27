@@ -23,8 +23,6 @@ from picard.util import partial
 import traceback
 import operator
 import sys
-#import urllib
-import urlparse
 import time
 
 from collections import OrderedDict
