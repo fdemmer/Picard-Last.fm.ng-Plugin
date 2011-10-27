@@ -8,7 +8,7 @@ Last.fm.ng plugin
 PLUGIN_NAME = "Last.fm.ng"
 PLUGIN_AUTHOR = "Florian Demmer"
 PLUGIN_DESCRIPTION = "reimagination of the popular last.fm plus plugin"
-PLUGIN_VERSION = "0.3.1"
+PLUGIN_VERSION = "0.4"
 PLUGIN_API_VERSIONS = ["0.15"]
 
 from PyQt4 import QtGui, QtCore
@@ -20,14 +20,20 @@ from picard.metadata import register_album_metadata_processor
 #from picard.plugins.lastfmplus.ui_options_lastfm import Ui_LastfmOptionsPage
 from picard.util import partial
 
-import traceback
-import operator
+import os
 import sys
 import time
+import traceback
+import operator
 
 from collections import OrderedDict
+from ConfigParser import ConfigParser
 
 from helper import *
+
+config_file = os.path.join(os.path.dirname(__file__), "config.ini")
+config = ConfigParser()
+config.readfp(open(config_file))
 
 LASTFM_HOST = "ws.audioscrobbler.com"
 LASTFM_PORT = 80
@@ -42,151 +48,12 @@ REQUEST_DELAY[(LASTFM_HOST, LASTFM_PORT)] = 200
 CACHE = {}
 PENDING = []
 
-#FAKE_HOST = "localhost"
-#FAKE_PORT = "0"
-#REQUEST_DELAY[(FAKE_HOST, FAKE_PORT)] = 1
-
-# the genres defined in id3v1 incl. the winamp extensions
-GENRE_ID3V1 = ["Blues", "Classic Rock", "Country", "Dance", "Disco", "Funk", 
-    "Grunge", "Hip-Hop", "Jazz", "Metal", "New Age", "Oldies", "Other", "Pop",
-    "R&B", "Rap", "Reggae", "Rock", "Techno", "Industrial", "Alternative",
-    "Ska", "Death Metal", "Pranks", "Soundtrack", "Euro-Techno", "Ambient",
-    "Trip-Hop", "Vocal", "Jazz+Funk", "Fusion", "Trance", "Classical",
-    "Instrumental", "Acid", "House", "Game", "Sound Clip", "Gospel", "Noise",
-    "Alternative Rock", "Bass", "Soul", "Punk", "Space", "Meditative",
-    "Instrumental Pop", "Instrumental Rock", "Ethnic", "Gothic", "Darkwave",
-    "Techno-Industrial", "Electronic", "Pop-Folk", "Eurodance", "Dream",
-    "Southern Rock", "Comedy", "Cult", "Gangsta", "Top 40", "Christian Rap",
-    "Pop/Funk", "Jungle", "Native US", "Cabaret", "New Wave", "Psychadelic",
-    "Rave", "Showtunes", "Trailer", "Lo-Fi", "Tribal", "Acid Punk", "Acid Jazz",
-    "Polka", "Retro", "Musical", "Rock & Roll", "Hard Rock", "Folk",
-    "Folk-Rock", "National Folk", "Swing", "Fast Fusion", "Bebob", "Latin",
-    "Revival", "Celtic", "Bluegrass", "Avantgarde", "Gothic Rock", 
-    "Progressive Rock", "Psychedelic Rock", "Symphonic Rock", "Slow Rock", 
-    "Big Band", "Chorus", "Easy Listening", "Acoustic", "Humour", "Speech",
-    "Chanson", "Opera", "Chamber Music", "Sonata", "Symphony", "Booty Bass",
-    "Primus", "Porn Groove", "Satire", "Slow Jam", "Club", "Tango", "Samba",
-    "Folklore", "Ballad", "Power Ballad", "Rhytmic Soul", "Freestyle", "Duet",
-    "Punk Rock", "Drum Solo", "Acapella", "Euro-House", "Dance Hall", "Goa",
-    "Drum & Bass", "Club-House", "Hardcore", "Terror", "Indie", "BritPop",
-    "Negerpunk", "Polsk Punk", "Beat", "Christian Gangsta Rap", "Heavy Metal",
-    "Black Metal", "Crossover", "Contemporary Christian", "Christian Rock",
-    "Merengue", "Salsa", "Trash Metal", "Anime", "Jpop", "Synthpop"]
-DEFAULT_FILTER_MAJOR = GENRE_ID3V1
-#DEFAULT_FILTER_MAJOR = ("audiobooks, blues, classic rock, classical, country, "
-#    "dance, electronica, folk, hip-hop, indie, jazz, kids, metal, pop, punk, "
-#    "reggae, rock, soul, trance")
-
-DEFAULT_FILTER_MINOR = ("2 tone, a cappella, abstract hip-hop, acid, acid jazz,"
-    "acid rock, acoustic, acoustic guitar, acoustic rock, adult alternative,"
-    "adult contemporary, alternative country, alternative folk,"
-    "alternative metal, alternative pop, ambient, anti-folk,"
-    "art rock, atmospheric, aussie hip-hop, avant-garde, ballads, baroque, beach,"
-    "beats, bebop, big band, blaxploitation, blue-eyed soul, bluegrass, blues"
-    "rock, boogie rock, boogie woogie, bossa nova, breakbeat, breaks, brit pop,"
-    "brit rock, british invasion, broadway, bubblegum pop, cabaret, calypso, cha"
-    "cha, choral, christian rock, classic country, classical guitar, club,"
-    "college rock, composers, contemporary country, contemporary folk, country"
-    "folk, country pop, country rock, crossover, dance pop, dancehall, dark"
-    "ambient, darkwave, delta blues, dirty south, disco, doo wop, doom metal,"
-    "downtempo, dream pop, drum and bass, dub, dub reggae, dubstep, east coast"
-    "rap, easy listening, electric blues, electro, electro pop, elevator music,"
-    "emo, emocore, ethnic, eurodance, europop, experimental, fingerstyle, folk"
-    "jazz, folk pop, folk punk, folk rock, folksongs, free jazz, french rap,"
-    "funk, funk metal, funk rock, fusion, g-funk, gaelic, gangsta rap, garage,"
-    "garage rock, glam rock, goa trance, gospel, gothic, gothic metal, gothic"
-    "rock, gregorian, groove, grunge, guitar, happy hardcore, hard rock,"
-    "hardcore, hardcore punk, hardcore rap, hardstyle, heavy metal, honky tonk,"
-    "horror punk, house, humour, hymn, idm, indie folk, indie pop, indie rock,"
-    "industrial, industrial metal, industrial rock, instrumental, instrumental"
-    "hip-hop, instrumental rock, j-pop, j-rock, jangle pop, jazz fusion, jazz"
-    "vocal, jungle, latin, latin jazz, latin pop, lounge, lovers rock, lullaby,"
-    "madchester, mambo, medieval, melodic rock, minimal, modern country, modern"
-    "rock, mood music, motown, neo-soul, new age, new romantic, new wave, noise,"
-    "northern soul, nu metal, old school rap, opera, orchestral, philly soul,"
-    "piano, political reggae, polka, pop life, pop punk, pop rock, pop soul, post"
-    "punk, post rock, power pop, progressive, progressive rock, psychedelic,"
-    "psychedelic folk, psychedelic punk, psychedelic rock, psychobilly,"
-    "psytrance, punk rock, quiet storm, r&b, ragga, rap, rap metal, reggae pop,"
-    "reggae rock, rock and roll, rock opera, rockabilly, rocksteady, roots, roots"
-    "reggae, rumba, salsa, samba, screamo, shock rock, shoegaze, ska, ska punk,"
-    "smooth jazz, soft rock, southern rock, space rock, spoken word, standards,"
-    "stoner rock, surf rock, swamp rock, swing, symphonic metal, symphonic rock,"
-    "synth pop, tango, techno, teen pop, thrash metal, traditional country,"
-    "traditional folk, tribal, trip-hop, turntablism, underground, underground"
-    "hip-hop, underground rap, urban, vocal trance, waltz, west coast rap,"
-    "western swing, world, world fusion, power metal")
-DEFAULT_FILTER_COUNTRY = ("african, american, arabic, australian, austrian, "
-    "belgian, brazilian, british, canadian, caribbean, celtic, chinese, cuban,"
-    "danish, dutch, eastern europe, egyptian, estonian, european, finnish,"
-    "french, german, greek, hawaiian, ibiza, icelandic, indian, iranian, irish,"
-    "island, israeli, italian, jamaican, japanese, korean, mexican, middle"
-    "eastern, new zealand, norwegian, oriental, polish, portuguese, russian,"
-    "scandinavian, scottish, southern, spanish, swedish, swiss, thai, third"
-    "world, turkish, welsh, western")
-DEFAULT_FILTER_CITY = ("acapulco, adelaide, amsterdam, athens, atlanta, "
-    "atlantic city, auckland, austin, bakersfield, bali, baltimore, bangalore,"
-    "bangkok, barcelona, barrie, beijing, belfast, berlin, birmingham, bogota,"
-    "bombay, boston, brasilia, brisbane, bristol, brooklyn, brussels, bucharest,"
-    "budapest, buenos aires, buffalo, calcutta, calgary, california, cancun,"
-    "caracas, charlotte, chicago, cincinnati, cleveland, copenhagen, dallas,"
-    "delhi, denver, detroit, dublin, east coast, edmonton, frankfurt, geneva,"
-    "glasgow, grand rapids, guadalajara, halifax, hamburg, hamilton, helsinki,"
-    "hong kong, houston, illinois, indianapolis, istanbul, jacksonville, kansas"
-    "city, kiev, las vegas, leeds, lisbon, liverpool, london, los angeles,"
-    "louisville, madrid, manchester, manila, marseille, mazatlan, melbourne,"
-    "memphis, mexico city, miami, michigan, milan, minneapolis, minnesota,"
-    "mississippi, monterrey, montreal, munich, myrtle beach, nashville, new"
-    "jersey, new orleans, new york, new york city, niagara falls, omaha, orlando,"
-    "oslo, ottawa, palm springs, paris, pennsylvania, perth, philadelphia,"
-    "phoenix, phuket, pittsburgh, portland, puebla, raleigh, reno, richmond, rio"
-    "de janeiro, rome, sacramento, salt lake city, san antonio, san diego, san"
-    "francisco, san jose, santiago, sao paulo, seattle, seoul, shanghai,"
-    "sheffield, spokane, stockholm, sydney, taipei, tampa, texas, tijuana, tokyo,"
-    "toledo, toronto, tucson, tulsa, vancouver, victoria, vienna, warsaw,"
-    "wellington, westcoast, windsor, winnipeg, zurich")
-DEFAULT_FILTER_MOOD = ("angry, bewildered, bouncy, calm, cheerful, chill, cold,"
-    "complacent, crazy, crushed, cynical, depressed, dramatic, dreamy, drunk,"
-    "eclectic, emotional, energetic, envious, feel good, flirty, funky, groovy,"
-    "happy, haunting, healing, high, hopeful, hot, humorous, inspiring, intense,"
-    "irritated, laidback, lonely, lovesongs, meditation, melancholic, melancholy,"
-    "mellow, moody, morose, passionate, peace, peaceful, playful, pleased,"
-    "positive, quirky, reflective, rejected, relaxed, retro, sad, sentimental,"
-    "sexy, silly, smooth, soulful, spiritual, suicidal, surprised, sympathetic,"
-    "trippy, upbeat, uplifting, weird, wild, yearning")
-DEFAULT_FILTER_OCCASION = ("background, birthday, breakup, carnival, chillout, "
-    "christmas, death, dinner, drinking, driving, graduation, halloween, hanging"
-    "out, heartache, holiday, late night, love, new year, party, protest, rain,"
-    "rave, romantic, sleep, spring, summer, sunny, twilight, valentine, wake up,"
-    "wedding, winter, work")
-DEFAULT_FILTER_CATEGORY = ("animal songs, attitude, autumn, b-side, ballad, "
-    "banjo, bass, beautiful, body parts, bootlegs, brass, cafe del mar, chamber"
-    "music, clarinet, classic, classic tunes, compilations, covers, cowbell,"
-    "deceased, demos, divas, dj, drugs, drums, duets, field recordings, female,"
-    "female vocalists, film score, flute, food, genius, girl group, great lyrics,"
-    "guitar solo, guitarist, handclaps, harmonica, historical, horns, hypnotic,"
-    "influential, insane, jam, keyboard, legends, life, linedance, live, loved,"
-    "lyricism, male, male vocalists, masterpiece, melodic, memories, musicals,"
-    "nostalgia, novelty, number songs, old school, oldie, oldies, one hit"
-    "wonders, orchestra, organ, parody, poetry, political, promos, radio"
-    "programs, rastafarian, remix, samples, satire, saxophone, showtunes,"
-    "sing-alongs, singer-songwriter, slide guitar, solo instrumentals, songs with"
-    "names, soundtracks, speeches, stories, strings, stylish, synth, title is a"
-    "full sentence, top 40, traditional, trumpet, unique, unplugged, violin,"
-    "virtuoso, vocalization, vocals")
-
-TRANSLATIONS = {
-    "drum 'n' bass": u"drum and bass",
-    "drum n bass": u"drum and bass",
-    "trip hop": u"trip-hop",
-    "melancholic": u"melancholy",
-}
 
 # toptag to metatag configuration
 CONFIG = {
     # on album level set the following metadata
     'album': {
-        'weight': dict(album=2, all_artist=2, all_track=6),
+        'weight': dict(album=2, all_artist=5, all_track=3),
         'tags': {
             # category  metatag
             'grouping': 'albumgrouping',
@@ -212,13 +79,10 @@ CONFIG = {
     }
 }
 
-# other configuration
-OPT_SOUNDTRACK_IS_NO_GENRE = True
-
 # the official id3 genre tags
-LFM_GROUPING = ListSearchlist(DEFAULT_FILTER_MAJOR)
+LFM_GROUPING = StringSearchlist(config.get('searchlist', 'major_genre'))
 # a more specific genre tags
-LFM_GENRE = StringSearchlist(DEFAULT_FILTER_MINOR, ",")
+LFM_GENRE = StringSearchlist(config.get('searchlist', 'minor_genre'))
 # a searchtree allows setting tags depending on a reference category's toptag
 # the other category must have been already processed! (it must come before 
 # the category using the searchtree in the CATEGORIES configuration)
@@ -243,23 +107,26 @@ LFM_GENRE_TREE = SearchTree(
         "pop": RegexpSearchlist("^.*pop.*$"),
     })
 # eg. angry, cheerful, clam, ...
-LFM_MOOD = StringSearchlist(DEFAULT_FILTER_MOOD, ",")
+LFM_MOOD = StringSearchlist(config.get('searchlist', 'mood'))
 # country names
-LFM_COUNTRY = StringSearchlist(DEFAULT_FILTER_COUNTRY, ",")
+LFM_COUNTRY = StringSearchlist(config.get('searchlist', 'country'))
 # city names
-LFM_CITY = StringSearchlist(DEFAULT_FILTER_CITY, ",")
+LFM_CITY = StringSearchlist(config.get('searchlist', 'city'))
 # musical era, eg. 80s, 90s, ...
 LFM_DECADE = RegexpSearchlist("^([1-9][0-9])*[0-9]0s$")
 # the full year, eg. 1995, 2000, ...
 LFM_YEAR = RegexpSearchlist("^[1-9][0-9]{3}$")
 # eg. background, late night, party
-LFM_OCCASION = StringSearchlist(DEFAULT_FILTER_OCCASION, ",")
+LFM_OCCASION = StringSearchlist(config.get('searchlist', 'occasion'))
 # i don't really know
-LFM_CATEGORY = StringSearchlist(DEFAULT_FILTER_CATEGORY, ",")
+LFM_CATEGORY = StringSearchlist(config.get('searchlist', 'category'))
 
-if OPT_SOUNDTRACK_IS_NO_GENRE:
+if config.getboolean('global', 'soundtrack_is_no_genre'):
     LFM_GROUPING.remove('soundtrack')
     LFM_GENRE.remove('soundtrack')
+
+#if config.getboolean('global', 'remove_grouping_from_genre'):
+#    LFM_GENRE.remove(LFM_GROUPING)
 
 CATEGORIES = OrderedDict([
     # grouping is used as major/high level category
@@ -267,8 +134,9 @@ CATEGORIES = OrderedDict([
         dict(searchlist=LFM_GROUPING, 
         limit=1,enabled=True, sort=False, titlecase=True, 
         separator=", ", unknown="Unknown")),
+    #TODO there needs to be a way to get very popular major tags, that are cut off into the minor listing...
     # allow genre toptags from a searchtree and use the searchlsit as fallback
-    ('genre', dict(searchlist=LFM_GENRE, searchtree=LFM_GENRE_TREE, 
+    ('genre', dict(searchlist=LFM_GENRE, #searchtree=LFM_GENRE_TREE, 
         limit=3, enabled=True, sort=False,  titlecase=True, 
         separator=", ", unknown="Unknown")),
     ('mood', dict(searchlist=LFM_MOOD, 
@@ -301,6 +169,7 @@ class LastFM(QtCore.QObject):
         # finalizing is done on album level
         self.album = album
         # the tracks in this album. shoudl be used read only!
+        #TODO check if this still works with 0.16
         self.tracks = album._new_tracks
         # album_metadata is always the album metadata, ...
         #self.album_metadata = album._new_metadata
@@ -324,6 +193,9 @@ class LastFM(QtCore.QObject):
         this method returns after queueing. the requests are then processed 
         sequencially. queueing can be influenced using the priority and 
         important switches.
+        by using priority here and not in add_task, all requests will be 
+        executed before the tasks, if they use the same HOST,PORT tuple for 
+        queueing.
         the handlers are called with the responses. the next request is only 
         started after the previous' request handler has returned.
         handlers are wrapped with the finished function to reduce the requests
@@ -361,13 +233,13 @@ class LastFM(QtCore.QObject):
 
     def cached_or_request(self, tagtype, query):
         if query in CACHE:
-            #print "cached {}".format(query)
+            self.log.debug("cached {}".format(query))
             self.add_task(partial(self.handle_cached_toptags, tagtype, query))
         elif query in PENDING:
-            #print "pending {}".format(query)
+            self.log.debug("pending {}".format(query))
             self.add_task(partial(self.handle_cached_toptags, tagtype, query))
         else:
-            #print "request {}".format(query)
+            self.log.debug("request {}".format(query))
             self.add_request(partial(self.handle_toptags, tagtype), query)
 
 
@@ -524,10 +396,13 @@ class LastFM(QtCore.QObject):
         this is called after all last.fm data is received to process the 
         collected data for album tags.
         """
-        self.log.debug("process album tags")
-        self.log.debug("got {} album tags".format(len(self.toptags['album'])))
-        self.log.debug("got {} all_track tags".format(len(self.toptags['all_track'])))
-        self.log.debug("got {} all_artist tags".format(len(self.toptags['all_artist'])))
+        self.log.info("process album tags")
+        self.log.info("got {} album tags (x{}):".format(len(self.toptags['album']), CONFIG['album']['weight']['album']))
+        self.log.info("{}".format(", ".join([str(item) for item in merge_tags((self.toptags['album'], len(self.tracks)))[:6]])))
+        self.log.info("got {} all_artist tags (x{}):".format(len(self.toptags['all_artist']), CONFIG['album']['weight']['all_artist']))
+        self.log.info("{}".format(", ".join([str(item) for item in merge_tags((self.toptags['all_artist'], 1))[:6]])))
+        self.log.info("got {} all_track tags (x{}):".format(len(self.toptags['all_track']), CONFIG['album']['weight']['all_track']))
+        self.log.info("{}".format(", ".join([str(item) for item in merge_tags((self.toptags['all_track'], 1))[:6]])))
 
         # get complete, balanced, sorted list (high first) of tags
         all_tags = merge_tags(
@@ -537,6 +412,9 @@ class LastFM(QtCore.QObject):
             (self.toptags['all_track'], CONFIG['album']['weight']['all_track']), 
             (self.toptags['all_artist'], CONFIG['album']['weight']['all_artist'])
         )
+        self.log.info("all_tags tags:")
+        self.log.info("{}".format(", ".join([str(item) for item in all_tags[:6]])))
+
 
         #TODO refactor this whole block
         # find valid tags, split into categories and limit results
@@ -583,14 +461,18 @@ class LastFM(QtCore.QObject):
         collected data for track tags.
         """
         self.log.debug("process track tags")
-        self.log.debug("got {} track tags".format(len(self.toptags['track'])))
-        self.log.debug("got {} artist tags".format(len(self.toptags['artist'])))
+        self.log.info("got {} track tags (x{}):".format(len(self.toptags['track']), CONFIG['track']['weight']['track']))
+        self.log.info("{}".format(", ".join([str(item) for item in merge_tags((self.toptags['track'], 1))[:6]])))
+        self.log.info("got {} artist tags (x{}):".format(len(self.toptags['artist']), CONFIG['track']['weight']['artist']))
+        self.log.info("{}".format(", ".join([str(item) for item in merge_tags((self.toptags['artist'], 1))[:6]])))
 
         # get complete, balanced, sorted list (high first) of tags
         all_tags = merge_tags(
             (self.toptags['artist'], CONFIG['track']['weight']['artist']), 
             (self.toptags['track'], CONFIG['track']['weight']['track'])
         )
+        self.log.info("all_tags tags:")
+        self.log.info("{}".format(", ".join([str(item) for item in all_tags[:6]])))
 
         # find valid tags, split into categories and limit results
         result = {}
@@ -629,10 +511,14 @@ class LastFM(QtCore.QObject):
         #print self.metadata
 
 def encode_str(s):
-    return QtCore.QUrl.toPercentEncoding(s.encode('utf-8'))
+    return QtCore.QUrl.toPercentEncoding(s)
 
 def translate_tag(name):
-    return TRANSLATIONS.get(name.lower(), name)
+    try:
+        name = config.get('translations', name.lower())
+    except:
+        pass
+    return name
 
 def merge_tags(*args):
     """
