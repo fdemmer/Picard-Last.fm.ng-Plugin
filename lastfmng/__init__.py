@@ -8,7 +8,7 @@ Last.fm.ng plugin
 PLUGIN_NAME = "Last.fm.ng"
 PLUGIN_AUTHOR = "Florian Demmer"
 PLUGIN_DESCRIPTION = "reimagination of the popular last.fm plus plugin"
-PLUGIN_VERSION = "0.4"
+PLUGIN_VERSION = "0.5"
 PLUGIN_API_VERSIONS = ["0.15"]
 
 from PyQt4 import QtGui, QtCore
@@ -163,6 +163,9 @@ CATEGORIES = OrderedDict([
 ])
 
 
+xmlws = PluginXmlWebService()
+
+
 # inherit from QObject to gain access to tagger, logger and config
 class LastFM(QtCore.QObject):
     def __init__(self, album, metadata):
@@ -213,7 +216,7 @@ class LastFM(QtCore.QObject):
         # wrap the handler in the finished decorator
         handler = self.finished(handler)
         # queue http get request
-        self.tagger.xmlws.get(LASTFM_HOST, LASTFM_PORT, 
+        xmlws.get(LASTFM_HOST, LASTFM_PORT, 
             path, handler, priority=True, important=False)
 
     def add_task(self, handler):
@@ -227,7 +230,7 @@ class LastFM(QtCore.QObject):
         # wrap the handler in the finished decorator
         handler = self.finished(handler)
         # queue function call
-        self.tagger.xmlws.add_task(handler, 
+        xmlws.add_task(handler, 
             LASTFM_HOST, LASTFM_PORT, priority=False, important=False)
 
 
@@ -339,6 +342,7 @@ class LastFM(QtCore.QObject):
         tags with score below score_threshold are ignored.
         returns an unsorted list of tuples (name, score).
         """
+        #print "new reply"
         score_threshold = 1
         # cache key
         query = str(http.url().encodedQuery())
