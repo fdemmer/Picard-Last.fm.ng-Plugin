@@ -45,7 +45,9 @@ API_KEY = "b25b959554ed76058ac220b7b2e0a026"
 from picard.webservice import REQUEST_DELAY
 REQUEST_DELAY[(LASTFM_HOST, LASTFM_PORT)] = 200
 
+# dictionary for query: toptag lists
 CACHE = {}
+# list of pending queries
 PENDING = []
 
 
@@ -81,10 +83,7 @@ CONFIG = {
     }
 }
 
-# the official id3 genre tags
-LFM_GROUPING = StringSearchlist(config.get('searchlist', 'major_genre'))
-# a more specific genre tags
-LFM_GENRE = StringSearchlist(config.get('searchlist', 'minor_genre'))
+
 # a searchtree allows setting tags depending on a reference category's toptag
 # the other category must have been already processed! (it must come before 
 # the category using the searchtree in the CATEGORIES configuration)
@@ -95,7 +94,7 @@ LFM_GENRE = StringSearchlist(config.get('searchlist', 'minor_genre'))
 # then the value of the "folk" branch is used as searchlist for the "genre" 
 # category
 # in case no suitable branch is available, the normal searchlist is used!
-LFM_GENRE_TREE = SearchTree(
+EXAMPLE_GENRE_TREE = SearchTree(
     # set the tree trunk to the reference category's name
     trunk='grouping', 
     # configure searchlists per toptag in the reference category
@@ -108,32 +107,11 @@ LFM_GENRE_TREE = SearchTree(
         "electronic": ["jazz"],
         "pop": RegexpSearchlist("^.*pop.*$"),
     })
-# eg. angry, cheerful, clam, ...
-LFM_MOOD = StringSearchlist(config.get('searchlist', 'mood'))
-# country names
-LFM_COUNTRY = StringSearchlist(config.get('searchlist', 'country'))
-# city names
-LFM_CITY = StringSearchlist(config.get('searchlist', 'city'))
-# musical era, eg. 80s, 90s, ...
-LFM_DECADE = RegexpSearchlist("^([1-9][0-9])*[0-9]0s$")
-# the full year, eg. 1995, 2000, ...
-LFM_YEAR = RegexpSearchlist("^[1-9][0-9]{3}$")
-# eg. background, late night, party
-LFM_OCCASION = StringSearchlist(config.get('searchlist', 'occasion'))
-# i don't really know
-LFM_CATEGORY = StringSearchlist(config.get('searchlist', 'category'))
 
-if config.getboolean('global', 'soundtrack_is_no_genre'):
-    LFM_GROUPING.remove('soundtrack')
-    LFM_GENRE.remove('soundtrack')
-
-#if config.getboolean('global', 'remove_grouping_from_genre'):
-#    LFM_GENRE.remove(LFM_GROUPING)
 
 CATEGORIES = OrderedDict([
     # grouping is used as major/high level category
-    ('grouping', 
-        dict(searchlist=LFM_GROUPING, 
+    ('grouping', dict(
         # limit: a hard limit for how many toptags are assigned to the metatag
         # threshold: percentage; only the toptags with a score above are used
         # enabled: don't collect toptags for that category
@@ -141,35 +119,56 @@ CATEGORIES = OrderedDict([
         # titlecase: apply titlecase() function to each toptag
         # separator: used to join toptags if >1 are to be used
         # unknown: the string to use if no toptag was found for the category
+        searchlist=StringSearchlist(config.get('searchlist', 'major_genre')), 
         limit=2, threshold=0.8, enabled=True, sort=False, titlecase=True, 
         separator=", ", unknown="Unknown")),
     #TODO there needs to be a way to get very popular major tags, that are cut off into the minor listing...
     # allow genre toptags from a searchtree and use the searchlsit as fallback
-    ('genre', dict(searchlist=LFM_GENRE, #searchtree=LFM_GENRE_TREE, 
+    ('genre', dict(
+        searchlist=StringSearchlist(config.get('searchlist', 'minor_genre')), 
+        #searchtree=EXAMPLE_GENRE_TREE, 
         limit=3, threshold=0.5, enabled=True, sort=False, titlecase=True, 
         separator=", ", unknown="Unknown")),
-    ('mood', dict(searchlist=LFM_MOOD, 
+    # eg. angry, cheerful, clam, ...
+    ('mood', dict(
+        searchlist=StringSearchlist(config.get('searchlist', 'mood')), 
         limit=4, threshold=0.5, enabled=True, sort=False, titlecase=True, 
         separator=", ", unknown="Unknown")),
-    ('occasion', dict(searchlist=LFM_OCCASION, 
+    # eg. background, late night, party
+    ('occasion', dict(
+        searchlist=StringSearchlist(config.get('searchlist', 'occasion')), 
         limit=4, threshold=0.5, enabled=True, sort=False, titlecase=True, 
         separator=", ", unknown="Unknown")),
-    ('category', dict(searchlist=LFM_CATEGORY, 
+    # i don't really know
+    ('category', dict(
+        searchlist=StringSearchlist(config.get('searchlist', 'category')), 
         limit=4, threshold=0.5, enabled=True, sort=False, titlecase=True, 
         separator=", ", unknown="Unknown")),
-    ('country', dict(searchlist=LFM_COUNTRY, 
+    # country names
+    ('country', dict(
+        searchlist=StringSearchlist(config.get('searchlist', 'country')), 
         limit=1, threshold=0.7, enabled=True, sort=True, titlecase=True, 
         separator=", ", unknown="Unknown")),
-    ('city', dict(searchlist=LFM_CITY, 
+    # city names
+    ('city', dict(
+        searchlist=StringSearchlist(config.get('searchlist', 'city')), 
         limit=1, threshold=0.7, enabled=True, sort=True, titlecase=True, 
         separator=", ", unknown="Unknown")),
-    ('decade', dict(searchlist=LFM_DECADE, 
+    # musical era, eg. 80s, 90s, ...
+    ('decade', dict(
+        searchlist=RegexpSearchlist("^([1-9][0-9])*[0-9]0s$"), 
         limit=1, threshold=0.7, enabled=True, sort=True, titlecase=False, 
         separator=", ", unknown="Unknown")),
-    ('year', dict(searchlist=LFM_YEAR, 
+    # the full year, eg. 1995, 2000, ...
+    ('year', dict(
+        searchlist=RegexpSearchlist("^[1-9][0-9]{3}$"), 
         limit=1, threshold=0.7, enabled=False, sort=True, titlecase=False, 
         separator=", ", unknown="Unknown")),
 ])
+
+if config.getboolean('global', 'soundtrack_is_no_genre'):
+    CATEGORIES['grouping']['searchlist'].remove('soundtrack')
+    CATEGORIES['genre']['searchlist'].remove('soundtrack')
 
 
 xmlws = PluginXmlWebService()
@@ -427,6 +426,12 @@ class LastFM(QtCore.QObject):
         self.print_toplist(merged)
 
     def filter_and_set_metadata(self, scope, all_tags, stats=False):
+        """
+        processing of a merged toptag list:
+        handles disabled categories, sorting into categories, searchtree loading,
+        determines and enforces score threshold, assigns result to metatags
+        optionally logs toptag statistics
+        """
         # find valid tags, split into categories and limit results
         if stats:
             self.log.info(">>> name: {}".format(self.metadata.get('title') or \
