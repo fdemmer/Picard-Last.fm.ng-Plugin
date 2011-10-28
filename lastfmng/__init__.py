@@ -120,7 +120,7 @@ CATEGORIES = OrderedDict([
         # separator: used to join toptags if >1 are to be used
         # unknown: the string to use if no toptag was found for the category
         searchlist=StringSearchlist(config.get('searchlist', 'major_genre')), 
-        limit=2, threshold=0.8, enabled=True, sort=False, titlecase=True, 
+        limit=2, threshold=0.8, enabled=True, sort=True, titlecase=True, 
         separator=", ", unknown="Unknown")),
     #TODO there needs to be a way to get very popular major tags, that are cut off into the minor listing...
     # allow genre toptags from a searchtree and use the searchlsit as fallback
@@ -434,8 +434,9 @@ class LastFM(QtCore.QObject):
         """
         # find valid tags, split into categories and limit results
         if stats:
-            self.log.info(">>> name: {}".format(self.metadata.get('title') or \
-                self.metadata.get('album')))
+            self.log.info(">>> name: {}".format(
+                (self.metadata.get('title') or \
+                self.metadata.get('album')).encode('utf-8')))
 
         result = {}
         for category, opt in CATEGORIES.items():
@@ -554,18 +555,25 @@ def merge_tags(*args):
     tuples = sorted(rv.items(), key=operator.itemgetter(1), reverse=True)
     return tuples
 
-def tag_string(tuples, separator=", ", titlecase=True, sort=True, limit=sys.maxint):
+def tag_string(tuples, separator=", ", titlecase=True, sort=True, limit=None):
     """
     create a metatag string for a list of tag tuples
     tag names are title-cased (override using titlecase)
     tags are sorted alphabetically (override using sort)
     tags are joined together using ", " (override using separator)
     """
+    # first limit to only the top ones...
+    if limit:
+        tuples = tuples[:limit]
+    # then sort alphabetically
     if sort:
         tuples = sorted(tuples, key=operator.itemgetter(0), reverse=False)
+    # fix case or not.
     if titlecase:
-        return separator.join([tag.title() for (tag, score) in tuples])
-    return separator.join([tag for (tag, score) in tuples[:limit]])
+        rv = [tag.title() for (tag, score) in tuples]
+    else:
+        rv = [tag for (tag, score) in tuples]
+    return separator.join(rv)
 
 
 
