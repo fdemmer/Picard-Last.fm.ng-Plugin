@@ -8,7 +8,7 @@ Last.fm.ng plugin
 PLUGIN_NAME = "Last.fm.ng"
 PLUGIN_AUTHOR = "Florian Demmer"
 PLUGIN_DESCRIPTION = "reimagination of the popular last.fm plus plugin"
-PLUGIN_VERSION = "0.5"
+PLUGIN_VERSION = "0.6"
 PLUGIN_API_VERSIONS = ["0.15"]
 
 from PyQt4 import QtGui, QtCore
@@ -53,6 +53,7 @@ PENDING = []
 CONFIG = {
     # on album level set the following metadata
     'album': {
+        # multiplication factors for each type of toptag
         'weight': dict(album=2, all_artist=5, all_track=3),
         'tags': {
             # category  metatag
@@ -63,6 +64,7 @@ CONFIG = {
     },
     # for each track set the following metadata
     'track': {
+        #TODO *plus supports disabling toptag types per metatag... eg. country only via artist toptags.
         'weight': dict(artist=2, track=8),
         'tags': {
             # category  metatag
@@ -132,33 +134,40 @@ CATEGORIES = OrderedDict([
     # grouping is used as major/high level category
     ('grouping', 
         dict(searchlist=LFM_GROUPING, 
-        limit=1,enabled=True, sort=False, titlecase=True, 
+        # limit: a hard limit for how many toptags are assigned to the metatag
+        # threshold: percentage; only the toptags with a score above are used
+        # enabled: don't collect toptags for that category
+        # sort: alphabetically sort toptags before joining to string
+        # titlecase: apply titlecase() function to each toptag
+        # separator: used to join toptags if >1 are to be used
+        # unknown: the string to use if no toptag was found for the category
+        limit=2, threshold=0.8, enabled=True, sort=False, titlecase=True, 
         separator=", ", unknown="Unknown")),
     #TODO there needs to be a way to get very popular major tags, that are cut off into the minor listing...
     # allow genre toptags from a searchtree and use the searchlsit as fallback
     ('genre', dict(searchlist=LFM_GENRE, #searchtree=LFM_GENRE_TREE, 
-        limit=3, enabled=True, sort=False,  titlecase=True, 
+        limit=3, threshold=0.5, enabled=True, sort=False, titlecase=True, 
         separator=", ", unknown="Unknown")),
     ('mood', dict(searchlist=LFM_MOOD, 
-        limit=4, enabled=True, sort=False, titlecase=True, 
+        limit=4, threshold=0.5, enabled=True, sort=False, titlecase=True, 
         separator=", ", unknown="Unknown")),
     ('occasion', dict(searchlist=LFM_OCCASION, 
-        limit=4, enabled=True, sort=False, titlecase=True, 
+        limit=4, threshold=0.5, enabled=True, sort=False, titlecase=True, 
         separator=", ", unknown="Unknown")),
     ('category', dict(searchlist=LFM_CATEGORY, 
-        limit=3, enabled=True, sort=False, titlecase=True, 
+        limit=4, threshold=0.5, enabled=True, sort=False, titlecase=True, 
         separator=", ", unknown="Unknown")),
     ('country', dict(searchlist=LFM_COUNTRY, 
-        limit=1, enabled=True, sort=True, titlecase=True, 
+        limit=1, threshold=0.7, enabled=True, sort=True, titlecase=True, 
         separator=", ", unknown="Unknown")),
     ('city', dict(searchlist=LFM_CITY, 
-        limit=1, enabled=True, sort=True, titlecase=True, 
+        limit=1, threshold=0.7, enabled=True, sort=True, titlecase=True, 
         separator=", ", unknown="Unknown")),
     ('decade', dict(searchlist=LFM_DECADE, 
-        limit=1, enabled=True, sort=True, titlecase=False, 
+        limit=1, threshold=0.7, enabled=True, sort=True, titlecase=False, 
         separator=", ", unknown="Unknown")),
     ('year', dict(searchlist=LFM_YEAR, 
-        limit=1, enabled=False, sort=True, titlecase=False, 
+        limit=1, threshold=0.7, enabled=False, sort=True, titlecase=False, 
         separator=", ", unknown="Unknown")),
 ])
 
@@ -172,11 +181,10 @@ class LastFM(QtCore.QObject):
         # finalizing is done on album level
         self.album = album
         # the tracks in this album. shoudl be used read only!
-        #TODO check if this still works with 0.16
+        #TODO does not work with 0.16: read track list from release_node instead!
         self.tracks = album._new_tracks
-        # album_metadata is always the album metadata, ...
-        #self.album_metadata = album._new_metadata
-        # while metadata can be album or track meta
+        #print album
+        #print album.tracks
         # use this to write metatags
         self.metadata = metadata
         # list of functions, that are called before finalizing the album data
@@ -235,12 +243,17 @@ class LastFM(QtCore.QObject):
 
 
     def cached_or_request(self, tagtype, query):
+        # if the query is already cached only queue task
         if query in CACHE:
             self.log.debug("cached {}".format(query))
             self.add_task(partial(self.handle_cached_toptags, tagtype, query))
+        # queries in the PENDING list are already queued, queue them like
+        # cache tasks. by the time they will be processed, the actual query 
+        # will have stored data in the cache
         elif query in PENDING:
             self.log.debug("pending {}".format(query))
             self.add_task(partial(self.handle_cached_toptags, tagtype, query))
+        # new queries are queued as http-requests
         else:
             self.log.debug("request {}".format(query))
             self.add_request(partial(self.handle_toptags, tagtype), query)
@@ -393,45 +406,42 @@ class LastFM(QtCore.QObject):
             self.toptags[tagtype].extend(toptags)
         else:
             self.log.warning("cache error: {}, {}".format(tagtype, query))
+            #TODO refresh solves that, why does it happen?
+            # sometimes results *are* empty.. then that happens, and refresh does not fix it
 
+    def print_toplist(self, merged):
+        def p(s):
+            return int(float(s)/float(topscore)*100.0)
+        try:
+            topscore = merged[0][1]
+            toplist = ["{}: {} ({}%)".format(n, s, p(s)) for n, s in merged[:10]]
+            self.log.info("{}".format(", ".join(toplist)))
+        except:
+            self.log.info("None")
 
-    def process_album_tags(self):
-        """
-        this is called after all last.fm data is received to process the 
-        collected data for album tags.
-        """
-        self.log.info("process album tags")
-        self.log.info("got {} album tags (x{}):".format(len(self.toptags['album']), CONFIG['album']['weight']['album']))
-        self.log.info("{}".format(", ".join([str(item) for item in merge_tags((self.toptags['album'], len(self.tracks)))[:6]])))
-        self.log.info("got {} all_artist tags (x{}):".format(len(self.toptags['all_artist']), CONFIG['album']['weight']['all_artist']))
-        self.log.info("{}".format(", ".join([str(item) for item in merge_tags((self.toptags['all_artist'], 1))[:6]])))
-        self.log.info("got {} all_track tags (x{}):".format(len(self.toptags['all_track']), CONFIG['album']['weight']['all_track']))
-        self.log.info("{}".format(", ".join([str(item) for item in merge_tags((self.toptags['all_track'], 1))[:6]])))
+    def print_toptag_stats(self, scope, name, correction=1):
+        toptags = self.toptags[name]
+        weight = CONFIG[scope]['weight'][name]
+        self.log.info("got {} {} tags (x{}):".format(len(toptags), name, weight))
+        merged = merge_tags((toptags, correction))[:10]
+        self.print_toplist(merged)
 
-        # get complete, balanced, sorted list (high first) of tags
-        all_tags = merge_tags(
-            # album tag score gets multiplied by the total number of tracks 
-            # in the release to even out weight of all_* tags before merger
-            (self.toptags['album'], CONFIG['album']['weight']['album']*len(self.tracks)), 
-            (self.toptags['all_track'], CONFIG['album']['weight']['all_track']), 
-            (self.toptags['all_artist'], CONFIG['album']['weight']['all_artist'])
-        )
-        self.log.info("all_tags tags:")
-        self.log.info("{}".format(", ".join([str(item) for item in all_tags[:6]])))
-
-
-        #TODO refactor this whole block
+    def filter_and_set_metadata(self, scope, all_tags, stats=False):
         # find valid tags, split into categories and limit results
+        if stats:
+            self.log.info(">>> name: {}".format(self.metadata.get('title') or \
+                self.metadata.get('album')))
+
         result = {}
         for category, opt in CATEGORIES.items():
-            #print "category: {}".format(category)
             result[category] = []
+            score_threshold = 0
 
             # this category is disabled
             if not opt['enabled']:
                 continue
 
-            # use the plan searchlist for the category
+            # use a simple searchlist for the category
             searchlist = opt['searchlist']
             # if a searchtree is configured for this category...
             searchtree = opt.get('searchtree', None)
@@ -442,77 +452,77 @@ class LastFM(QtCore.QObject):
             #print searchlist
 
             for tag, score in all_tags:
+
+                # ignore tags below threshold
+                if score < score_threshold:
+                    break
+
                 # ignore tags not in this category
                 if tag not in searchlist:
                     continue
-                # limit the number of tags in this category
-                if len(result[category]) >= opt['limit']:
-                    continue #TODO shouldn't this be a break?
+
+                # first toptag in this category, calculate threshold
+                if score_threshold == 0:
+                    score_threshold = int(float(score)*opt['threshold'])
+
+                # store the toptag
                 result[category].append((tag, score))
 
+            if stats:
+                self.log.info("> category {}:".format(category))
+                self.print_toplist(result[category])
+
             # category is done, assign toptags to metadata
-            metatag = CONFIG['album']['tags'].get(category, None)
+            metatag = CONFIG[scope]['tags'].get(category, None)
             if metatag is not None:
                 self.metadata[metatag] = tag_string(result[category],
                     sort=opt['sort'], titlecase=opt['titlecase'], 
-                    separator=opt['separator']) or opt['unknown']
+                    limit=opt['limit'], separator=opt['separator']) or \
+                    opt['unknown']
 
-        #print self.metadata
+    def process_album_tags(self):
+        """
+        this is called after all last.fm data is received to process the 
+        collected data for album tags.
+        """
+        self.log.info(">>> process album tags")
+        #self.print_toptag_stats('album', 'album', len(self.tracks))
+        #self.print_toptag_stats('album', 'all_artist')
+        #self.print_toptag_stats('album', 'all_track')
+
+        # get complete, balanced, sorted list (high first) of tags
+        all_tags = merge_tags(
+            # album tag score gets multiplied by the total number of tracks 
+            # in the release to even out weight of all_* tags before merger
+            (self.toptags['album'], CONFIG['album']['weight']['album']*len(self.tracks)), 
+            (self.toptags['all_track'], CONFIG['album']['weight']['all_track']), 
+            (self.toptags['all_artist'], CONFIG['album']['weight']['all_artist'])
+        )
+        #self.log.info("all_tags tags:")
+        #self.print_toplist(all_tags)
+
+        self.filter_and_set_metadata('album', all_tags, 
+            stats=config.getboolean('global', 'print_tag_stats'))
 
     def process_track_tags(self):
         """
         this is called after all last.fm data is received to process the 
         collected data for track tags.
         """
-        self.log.debug("process track tags")
-        self.log.info("got {} track tags (x{}):".format(len(self.toptags['track']), CONFIG['track']['weight']['track']))
-        self.log.info("{}".format(", ".join([str(item) for item in merge_tags((self.toptags['track'], 1))[:6]])))
-        self.log.info("got {} artist tags (x{}):".format(len(self.toptags['artist']), CONFIG['track']['weight']['artist']))
-        self.log.info("{}".format(", ".join([str(item) for item in merge_tags((self.toptags['artist'], 1))[:6]])))
+        self.log.info(">>> process track tags")
+        #self.print_toptag_stats('track', 'track')
+        #self.print_toptag_stats('track', 'artist')
 
         # get complete, balanced, sorted list (high first) of tags
         all_tags = merge_tags(
             (self.toptags['artist'], CONFIG['track']['weight']['artist']), 
             (self.toptags['track'], CONFIG['track']['weight']['track'])
         )
-        self.log.info("all_tags tags:")
-        self.log.info("{}".format(", ".join([str(item) for item in all_tags[:6]])))
+        #self.log.info("all_tags tags:")
+        #self.print_toplist(all_tags)
 
-        # find valid tags, split into categories and limit results
-        result = {}
-        for category, opt in CATEGORIES.items():
-            result[category] = []
-
-            # this category is disabled
-            if not opt['enabled']:
-                continue
-
-            # use the plan searchlist for the category
-            searchlist = opt['searchlist']
-            # if a searchtree is configured for this category...
-            searchtree = opt.get('searchtree', None)
-            if searchtree is not None:
-                # get the searchlist from the tree-branch using the result
-                searchlist = searchtree.get_searchlist(result) or searchlist
-                #print searchlist
-
-            for tag, score in all_tags:
-                # ignore tags not in this category
-                if tag not in searchlist:
-                    continue
-                # limit the number of tags in this category
-                if len(result[category]) >= opt['limit']:
-                    continue
-                result[category].append((tag, score))
-
-            # category is done, assign toptags to metadata
-            metatag = CONFIG['track']['tags'].get(category, None)
-            if metatag is not None:
-                self.metadata[metatag] = tag_string(result[category],
-                    sort=opt['sort'], titlecase=opt['titlecase'], 
-                    separator=opt['separator']) or opt['unknown']
-
-        #print self.metadata
+        self.filter_and_set_metadata('track', all_tags, 
+            stats=config.getboolean('global', 'print_tag_stats'))
 
 def encode_str(s):
     return QtCore.QUrl.toPercentEncoding(s)
@@ -539,7 +549,7 @@ def merge_tags(*args):
     tuples = sorted(rv.items(), key=operator.itemgetter(1), reverse=True)
     return tuples
 
-def tag_string(tuples, separator=", ", titlecase=True, sort=True):
+def tag_string(tuples, separator=", ", titlecase=True, sort=True, limit=sys.maxint):
     """
     create a metatag string for a list of tag tuples
     tag names are title-cased (override using titlecase)
@@ -550,7 +560,7 @@ def tag_string(tuples, separator=", ", titlecase=True, sort=True):
         tuples = sorted(tuples, key=operator.itemgetter(0), reverse=False)
     if titlecase:
         return separator.join([tag.title() for (tag, score) in tuples])
-    return separator.join([tag for (tag, score) in tuples])
+    return separator.join([tag for (tag, score) in tuples[:limit]])
 
 
 
