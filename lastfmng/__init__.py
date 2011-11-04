@@ -492,9 +492,11 @@ class LastFM(QtCore.QObject):
         collected data for album tags.
         """
         self.log.info(">>> process album tags")
-        #self.print_toptag_stats('album', 'album', len(self.tracks))
-        #self.print_toptag_stats('album', 'all_artist')
-        #self.print_toptag_stats('album', 'all_track')
+        if config.getboolean('global', 'print_tag_stats_album') and \
+            config.getboolean('global', 'print_tag_stats'):
+            self.print_toptag_stats('album', 'album', len(self.tracks))
+            self.print_toptag_stats('album', 'all_artist')
+            self.print_toptag_stats('album', 'all_track')
 
         # get complete, balanced, sorted list (high first) of tags
         all_tags = merge_tags(
@@ -508,7 +510,7 @@ class LastFM(QtCore.QObject):
         #self.print_toplist(all_tags)
 
         self.filter_and_set_metadata('album', all_tags, 
-            stats=config.getboolean('global', 'print_tag_stats'))
+            stats=config.getboolean('global', 'print_tag_stats_album'))
 
     def process_track_tags(self):
         """
@@ -516,8 +518,10 @@ class LastFM(QtCore.QObject):
         collected data for track tags.
         """
         self.log.info(">>> process track tags")
-        #self.print_toptag_stats('track', 'track')
-        #self.print_toptag_stats('track', 'artist')
+        if config.getboolean('global', 'print_tag_stats_track') and \
+            config.getboolean('global', 'print_tag_stats'):
+            self.print_toptag_stats('track', 'track')
+            self.print_toptag_stats('track', 'artist')
 
         # get complete, balanced, sorted list (high first) of tags
         all_tags = merge_tags(
@@ -528,7 +532,7 @@ class LastFM(QtCore.QObject):
         #self.print_toplist(all_tags)
 
         self.filter_and_set_metadata('track', all_tags, 
-            stats=config.getboolean('global', 'print_tag_stats'))
+            stats=config.getboolean('global', 'print_tag_stats_track'))
 
 def encode_str(s):
     return QtCore.QUrl.toPercentEncoding(s)
