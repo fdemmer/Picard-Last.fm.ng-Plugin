@@ -11,20 +11,17 @@ PLUGIN_DESCRIPTION = "reimagination of the popular last.fm plus plugin"
 PLUGIN_VERSION = "0.7"
 PLUGIN_API_VERSIONS = ["0.15"]
 
-from PyQt4 import QtGui, QtCore
-from picard.metadata import register_track_metadata_processor
-from picard.metadata import register_album_metadata_processor
-#from picard.script import register_script_function
-#from picard.ui.options import register_options_page, OptionsPage
-#from picard.config import BoolOption, IntOption, TextOption
-#from picard.plugins.lastfmplus.ui_options_lastfm import Ui_LastfmOptionsPage
-from picard.util import partial
-
 import os
 import sys
 import time
 import traceback
 import operator
+
+from PyQt4 import QtGui, QtCore
+
+from picard.metadata import register_track_metadata_processor
+from picard.metadata import register_album_metadata_processor
+from picard.util import partial
 
 from collections import OrderedDict
 from ConfigParser import ConfigParser
@@ -109,6 +106,7 @@ EXAMPLE_GENRE_TREE = SearchTree(
     })
 
 
+#TODO integrate CONFIG stuff into this dict
 CATEGORIES = OrderedDict([
     # grouping is used as major/high level category
     ('grouping', dict(
@@ -229,7 +227,7 @@ class LastFM(QtCore.QObject):
 
     def add_task(self, handler):
         """
-        use the webservice queue to add a task, a simple function
+        Use the webservice queue to add a task -- a simple function.
         """
         # count requests
         self.album._requests += 1
@@ -260,7 +258,7 @@ class LastFM(QtCore.QObject):
 
 
     def _get_query(self, params):
-        """build query from kwargs"""
+        """Build and return a query string from the given params dictionary."""
         p = ["{}={}".format(k, encode_str(v)) for (k, v) in params.items()]
         return '&'.join(p)
 
@@ -333,7 +331,7 @@ class LastFM(QtCore.QObject):
             self.album._finalize_loading(None)
 
     def finished(self, func):
-        """decorator for wrapping a request handler function"""
+        """Decorator for wrapping a request handler function."""
         def decorate(*args, **kwargs):
             try:
                 func(*args, **kwargs)
@@ -388,7 +386,7 @@ class LastFM(QtCore.QObject):
             # add the result of this run to the cache
             CACHE[query] = tmp
 
-            # extend "global" toptags list with the ones from this run
+            # extend local toptags list with the ones from this run
             self.toptags[tagtype].extend(tmp)
 
         except AttributeError:
@@ -399,15 +397,17 @@ class LastFM(QtCore.QObject):
             pass
 
     def handle_cached_toptags(self, tagtype, query):
-        """copies toptags from cache to apropritate local storage"""
+        """Copy toptags from module-global cache to local toptags list."""
         #print "cached"
         toptags = CACHE.get(query, None)
         if toptags is not None:
             self.toptags[tagtype].extend(toptags)
         else:
             self.log.warning("cache error: {}, {}".format(tagtype, query))
-            #TODO refresh solves that, why does it happen?
-            # sometimes results *are* empty.. then that happens, and refresh does not fix it
+            #TODO sometimes, the response from the http request is too slow, 
+            # so the queue is already processing "pending" cache requests, 
+            # while the response is not yet processed. the whole "pending" 
+            # design is flawed! workaround is refreshing :P
 
     def print_toplist(self, merged):
         def p(s):
