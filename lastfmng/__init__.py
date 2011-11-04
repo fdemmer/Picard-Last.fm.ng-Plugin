@@ -119,10 +119,11 @@ CATEGORIES = OrderedDict([
         # titlecase: apply titlecase() function to each toptag
         # separator: used to join toptags if >1 are to be used
         # unknown: the string to use if no toptag was found for the category
+        # overflow: name of another category, unused toptags in this category 
+        #     will be used in the given one.
         searchlist=StringSearchlist(config.get('searchlist', 'major_genre')), 
-        limit=2, threshold=0.8, enabled=True, sort=True, titlecase=True, 
-        separator=", ", unknown="Unknown")),
-    #TODO there needs to be a way to get very popular major tags, that are cut off into the minor listing...
+        limit=1, threshold=0.5, enabled=True, sort=False, titlecase=True, 
+        separator=", ", unknown="Unknown", overflow='genre')),
     # allow genre toptags from a searchtree and use the searchlsit as fallback
     ('genre', dict(
         searchlist=StringSearchlist(config.get('searchlist', 'minor_genre')), 
@@ -440,7 +441,8 @@ class LastFM(QtCore.QObject):
 
         result = {}
         for category, opt in CATEGORIES.items():
-            result[category] = []
+            # initialize empty list, unless exists because of an overflow
+            result[category] = result.get(category, [])
             score_threshold = 0
 
             # this category is disabled
@@ -459,7 +461,8 @@ class LastFM(QtCore.QObject):
 
             for tag, score in all_tags:
 
-                # ignore tags below threshold
+                # stop searching when tag score is below threshold
+                # (they are sorted!)
                 if score < score_threshold:
                     break
 
@@ -475,8 +478,20 @@ class LastFM(QtCore.QObject):
                 result[category].append((tag, score))
 
             if stats:
-                self.log.info("> category {}:".format(category))
+                self.log.info("> category {} ({}):".format(category, opt['limit']))
                 self.print_toplist(result[category])
+
+            # if an overflow is configured, put the toptags, that exceed the 
+            # limit in the category configured for overflow
+            overflow = opt.get('overflow', None)
+            if overflow is not None:
+                # the overflowed toptags are not considered in the threshold
+                # calculation of that category, they are put directly into
+                # the result list.
+                result[overflow] = result[category][opt['limit']:]
+                if stats:
+                    self.log.info("> overflow to {}:".format(overflow))
+                    self.print_toplist(result[overflow])
 
             # category is done, assign toptags to metadata
             metatag = CONFIG[scope]['tags'].get(category, None)
@@ -537,6 +552,11 @@ class LastFM(QtCore.QObject):
 def encode_str(s):
     return QtCore.QUrl.toPercentEncoding(s)
 
+def uniq(alist):
+    # http://code.activestate.com/recipes/52560/
+    set = {}
+    return [set.setdefault(e,e) for e in alist if e not in set]
+
 def translate_tag(name):
     try:
         name = config.get('translations', name.lower())
@@ -577,6 +597,9 @@ def tag_string(tuples, separator=", ", titlecase=True, sort=True, limit=None):
         rv = [tag.title() for (tag, score) in tuples]
     else:
         rv = [tag for (tag, score) in tuples]
+    # remove duplicates
+    #TODO this is only necessary because of the way overflow is implemented, not really clean :(
+    rv = uniq(rv)
     return separator.join(rv)
 
 
