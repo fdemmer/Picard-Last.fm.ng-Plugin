@@ -53,7 +53,7 @@ CONFIG = {
     # on album level set the following metadata
     'album': {
         # multiplication factors for each type of toptag
-        'weight': dict(album=25, all_artist=45, all_track=30),
+        'weight': dict(album=20, all_artist=55, all_track=25),
         'tags': {
             # category  metatag
             'grouping': 'albumgrouping',
@@ -115,7 +115,7 @@ CATEGORIES = OrderedDict([
         # enabled: don't collect toptags for that category
         # sort: alphabetically sort toptags before joining to string
         # titlecase: apply titlecase() function to each toptag
-        # separator: used to join toptags if >1 are to be used
+        # separator: used to join toptags if >1 are to be used (None to use multtag)
         # unknown: the string to use if no toptag was found for the category
         # overflow: name of another category, unused toptags in this category 
         #     will be used in the given one.
@@ -146,7 +146,7 @@ CATEGORIES = OrderedDict([
     # country names
     ('country', dict(
         searchlist=StringSearchlist(config.get('searchlist', 'country')), 
-        limit=1, threshold=0.7, enabled=True, sort=True, titlecase=True, 
+        limit=2, threshold=0.7, enabled=True, sort=True, titlecase=True, 
         separator=None, unknown="Unknown")),
     # city names
     ('city', dict(
@@ -426,6 +426,51 @@ class LastFM(QtCore.QObject):
         merged = merge_tags((toptags, correction))[:10]
         self.print_toplist(merged)
 
+    def collect_unused(self):
+        all_tags = merge_tags(
+            (self.toptags['album'], 1), 
+            (self.toptags['track'], 1), 
+            (self.toptags['artist'], 1), 
+            (self.toptags['all_track'], 1), 
+            (self.toptags['all_artist'], 1)
+        )
+
+        searchlists = [opt['searchlist'] for cat, opt in CATEGORIES.items()]
+        unknown_toptags = []
+
+        for toptag in all_tags:
+            tag, score = toptag
+            for searchlist in searchlists:
+                if tag in searchlist:
+                    toptag = None
+                    break
+            if toptag is not None:
+                unknown_toptags.append(toptag)
+
+        import sqlite3
+        conn = sqlite3.connect(os.path.expanduser('~/.config/MusicBrainz/toptags.db'))
+        c = conn.cursor()
+
+        try: 
+            c.execute("""
+                create table toptags (tag text primary key, score integer)
+                """)
+        except:
+            pass
+
+        #for t in unknown_toptags:
+        #    c.execute('insert into toptags values (?,?)', t)
+
+        for tag, score in unknown_toptags:
+            c.execute("""
+                replace into toptags (tag, score) 
+                values (?, 
+                coalesce((select score from toptags where tag = ?),0)+?)
+                """, (tag, tag, score))
+
+        conn.commit()
+        c.close()
+
     def filter_and_set_metadata(self, scope, all_tags, stats=False):
         """
         processing of a merged toptag list:
@@ -526,6 +571,8 @@ class LastFM(QtCore.QObject):
 
         self.filter_and_set_metadata('album', all_tags, 
             stats=config.getboolean('global', 'print_tag_stats_album'))
+        if config.getboolean('global', 'collect_unused'):
+            self.collect_unused()
 
     def process_track_tags(self):
         """
@@ -548,6 +595,8 @@ class LastFM(QtCore.QObject):
 
         self.filter_and_set_metadata('track', all_tags, 
             stats=config.getboolean('global', 'print_tag_stats_track'))
+        if config.getboolean('global', 'collect_unused'):
+            self.collect_unused()
 
 def encode_str(s):
     return QtCore.QUrl.toPercentEncoding(s)
