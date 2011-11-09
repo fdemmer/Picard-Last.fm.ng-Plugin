@@ -53,7 +53,7 @@ CONFIG = {
     # on album level set the following metadata
     'album': {
         # multiplication factors for each type of toptag
-        'weight': dict(album=2, all_artist=5, all_track=3),
+        'weight': dict(album=25, all_artist=45, all_track=30),
         'tags': {
             # category  metatag
             'grouping': 'albumgrouping',
@@ -126,33 +126,33 @@ CATEGORIES = OrderedDict([
     ('genre', dict(
         searchlist=StringSearchlist(config.get('searchlist', 'minor_genre')), 
         #searchtree=EXAMPLE_GENRE_TREE, 
-        limit=3, threshold=0.5, enabled=True, sort=False, titlecase=True, 
-        separator=", ", unknown="Unknown")),
+        limit=4, threshold=0.5, enabled=True, sort=False, titlecase=True, 
+        separator=None, unknown="Unknown")),
     # eg. angry, cheerful, clam, ...
     ('mood', dict(
         searchlist=StringSearchlist(config.get('searchlist', 'mood')), 
         limit=4, threshold=0.5, enabled=True, sort=False, titlecase=True, 
-        separator=", ", unknown="Unknown")),
+        separator=None, unknown="Unknown")),
     # eg. background, late night, party
     ('occasion', dict(
         searchlist=StringSearchlist(config.get('searchlist', 'occasion')), 
         limit=4, threshold=0.5, enabled=True, sort=False, titlecase=True, 
-        separator=", ", unknown="Unknown")),
+        separator=None, unknown="Unknown")),
     # i don't really know
     ('category', dict(
         searchlist=StringSearchlist(config.get('searchlist', 'category')), 
         limit=4, threshold=0.5, enabled=True, sort=False, titlecase=True, 
-        separator=", ", unknown="Unknown")),
+        separator=None, unknown="Unknown")),
     # country names
     ('country', dict(
         searchlist=StringSearchlist(config.get('searchlist', 'country')), 
         limit=1, threshold=0.7, enabled=True, sort=True, titlecase=True, 
-        separator=", ", unknown="Unknown")),
+        separator=None, unknown="Unknown")),
     # city names
     ('city', dict(
         searchlist=StringSearchlist(config.get('searchlist', 'city')), 
         limit=1, threshold=0.7, enabled=True, sort=True, titlecase=True, 
-        separator=", ", unknown="Unknown")),
+        separator=None, unknown="Unknown")),
     # musical era, eg. 80s, 90s, ...
     ('decade', dict(
         searchlist=RegexpSearchlist("^([1-9][0-9])*[0-9]0s$"), 
@@ -585,6 +585,7 @@ def tag_string(tuples, separator=", ", titlecase=True, sort=True, limit=None):
     tag names are title-cased (override using titlecase)
     tags are sorted alphabetically (override using sort)
     tags are joined together using ", " (override using separator)
+    if separator is None, tags are not joined, but a list is returned
     """
     # first limit to only the top ones...
     if limit:
@@ -600,6 +601,8 @@ def tag_string(tuples, separator=", ", titlecase=True, sort=True, limit=None):
     # remove duplicates
     #TODO this is only necessary because of the way overflow is implemented, not really clean :(
     rv = uniq(rv)
+    if separator is None:
+        return rv
     return separator.join(rv)
 
 
