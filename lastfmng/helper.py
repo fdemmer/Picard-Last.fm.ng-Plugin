@@ -15,6 +15,7 @@ class ListSearchlist:
         return True if the value is found in the include list of tag names,
         override to change the matching
         """
+        #TODO add wildcard matching
         return value.lower().strip() in self.include
 
     def __contains__(self, value):
@@ -91,7 +92,7 @@ class PluginXmlWebService(XmlWebService):
                 # no delay before next task. it will be caught anyway, if it 
                 # is too soon. that way non-http-request tasks can be executed 
                 # without any delay with the same queue-key.
-                d = 0
+                d = 10
                 queue.popleft()()
             else:
                 d = request_delay - last_ms
