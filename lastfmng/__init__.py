@@ -53,7 +53,7 @@ CONFIG = {
     # on album level set the following metadata
     'album': {
         # multiplication factors for each type of toptag
-        'weight': dict(album=20, all_artist=55, all_track=25),
+        'weight': dict(album=15, all_artist=55, all_track=30),
         'tags': {
             # category  metatag
             'grouping': 'albumgrouping',
@@ -448,18 +448,16 @@ class LastFM(QtCore.QObject):
                 unknown_toptags.append(toptag)
 
         import sqlite3
-        conn = sqlite3.connect(os.path.expanduser('~/.config/MusicBrainz/toptags.db'))
+        conn = sqlite3.connect(os.path.expanduser(
+            '~/.config/MusicBrainz/toptags.db'))
         c = conn.cursor()
 
-        try: 
+        try:
             c.execute("""
                 create table toptags (tag text primary key, score integer)
                 """)
         except:
             pass
-
-        #for t in unknown_toptags:
-        #    c.execute('insert into toptags values (?,?)', t)
 
         for tag, score in unknown_toptags:
             c.execute("""
