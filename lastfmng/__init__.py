@@ -22,9 +22,17 @@ from PyQt4 import QtGui, QtCore
 from picard.metadata import register_track_metadata_processor
 from picard.metadata import register_album_metadata_processor
 from picard.util import partial
+from picard.mbxml import release_to_metadata, medium_to_metadata, track_to_metadata
+from picard.metadata import Metadata
+from picard.track import Track
 
-from collections import OrderedDict
 from ConfigParser import ConfigParser
+
+# import our implementation with older pythons
+try:
+    from collections import OrderedDict
+except:
+    from odict import OrderedDict
 
 from helper import *
 
@@ -175,16 +183,13 @@ xmlws = PluginXmlWebService()
 
 # inherit from QObject to gain access to tagger, logger and config
 class LastFM(QtCore.QObject):
-    def __init__(self, album, metadata):
+    def __init__(self, album, metadata, release_node):
         # finalizing is done on album level
         self.album = album
-        # the tracks in this album. shoudl be used read only!
-        #TODO does not work with 0.16: read track list from release_node instead!
-        self.tracks = album._new_tracks
-        #print album
-        #print album.tracks
         # use this to write metatags
         self.metadata = metadata
+        # load the tracks in this album locally
+        self._load_tracks(release_node)
         # list of functions, that are called before finalizing the album data
         self.before_finalize = []
         # plugin internal requests counter, similar to the one in album
@@ -195,6 +200,22 @@ class LastFM(QtCore.QObject):
         # structure for storing raw toptag data
         self.toptags = dict(artist=[], album=[], track=[], 
             all_track=[], all_artist=[])
+
+    def _load_tracks(self, release_node):
+        # this happens after the album metadata processor in picard
+        self.tracks = []
+        for medium_node in release_node.medium_list[0].medium:
+            mm = Metadata()
+            mm.copy(self.album._new_metadata)
+            medium_to_metadata(medium_node, mm)
+            for track_node in medium_node.track_list[0].track:
+                track = Track(track_node.recording[0].id, self.album)
+                self.tracks.append(track)
+                # Get track metadata
+                tm = track.metadata
+                tm.copy(mm)
+                track_to_metadata(track_node, track, self.config)
+                track._customize_metadata()
 
     def add_request(self, handler, query):
         """
@@ -243,23 +264,23 @@ class LastFM(QtCore.QObject):
     def cached_or_request(self, tagtype, query):
         # if the query is already cached only queue task
         if query in CACHE:
-            self.log.debug("cached {}".format(query))
+            self.log.debug("cached {0}".format(query))
             self.add_task(partial(self.handle_cached_toptags, tagtype, query))
         # queries in the PENDING list are already queued, queue them like
         # cache tasks. by the time they will be processed, the actual query 
         # will have stored data in the cache
         elif query in PENDING:
-            self.log.debug("pending {}".format(query))
+            self.log.debug("pending {0}".format(query))
             self.add_task(partial(self.handle_cached_toptags, tagtype, query))
         # new queries are queued as http-requests
         else:
-            self.log.debug("request {}".format(query))
+            self.log.debug("request {0}".format(query))
             self.add_request(partial(self.handle_toptags, tagtype), query)
 
 
     def _get_query(self, params):
         """Build and return a query string from the given params dictionary."""
-        p = ["{}={}".format(k, encode_str(v)) for (k, v) in params.items()]
+        p = ["{0}={1}".format(k, encode_str(v)) for (k, v) in params.items()]
         return '&'.join(p)
 
     def request_artist_toptags(self):
@@ -319,7 +340,7 @@ class LastFM(QtCore.QObject):
         pending requests counter and calls the finalize function if there is 
         no open request left.
         """
-        #print "finish request: {}".format(self.requests)
+        #print "finish request: {0}".format(self.requests)
         self.album._requests -= 1
         self.requests -= 1
         if self.requests == 0:
@@ -328,6 +349,7 @@ class LastFM(QtCore.QObject):
                 func()
         if self.album._requests == 0:
             # this was the last request in general, finalize metadata
+            self.log.info("FIN")
             self.album._finalize_loading(None)
 
     def finished(self, func):
@@ -365,7 +387,7 @@ class LastFM(QtCore.QObject):
 
             if lfm.attribs['status'] == 'failed':
                 error = lfm.error.pop()
-                self.log.warning("lfm api error: {} - {}".format(
+                self.log.warning("lfm api error: {0} - {1}".format(
                     error.attribs['code'], error.text))
                 self.log.warning(str(http.url()))
                 return
@@ -393,7 +415,7 @@ class LastFM(QtCore.QObject):
             #sys.exc_info()
             #print http.url()
             #print data
-            self.log.warning("no tags: {}, {}".format(tagtype, query))
+            self.log.warning("no tags: {0}, {1}".format(tagtype, query))
             pass
 
     def handle_cached_toptags(self, tagtype, query):
@@ -403,7 +425,7 @@ class LastFM(QtCore.QObject):
         if toptags is not None:
             self.toptags[tagtype].extend(toptags)
         else:
-            self.log.warning("cache error: {}, {}".format(tagtype, query))
+            self.log.warning("cache error: {0}, {1}".format(tagtype, query))
             #TODO sometimes, the response from the http request is too slow, 
             # so the queue is already processing "pending" cache requests, 
             # while the response is not yet processed. the whole "pending" 
@@ -414,15 +436,15 @@ class LastFM(QtCore.QObject):
             return int(float(s)/float(topscore)*100.0)
         try:
             topscore = merged[0][1]
-            toplist = ["{}: {} ({}%)".format(n, s, p(s)) for n, s in merged[:10]]
-            self.log.info("{}".format(", ".join(toplist)))
+            toplist = ["{0}: {1} ({2}%)".format(n, s, p(s)) for n, s in merged[:10]]
+            self.log.info("{0}".format(", ".join(toplist)))
         except:
             self.log.info("None")
 
     def print_toptag_stats(self, scope, name, correction=1):
         toptags = self.toptags[name]
         weight = CONFIG[scope]['weight'][name]
-        self.log.info("got {} {} tags (x{}):".format(len(toptags), name, weight))
+        self.log.info("got {0} {1} tags (x{2}):".format(len(toptags), name, weight))
         merged = merge_tags((toptags, correction))[:10]
         self.print_toplist(merged)
 
@@ -478,7 +500,7 @@ class LastFM(QtCore.QObject):
         """
         # find valid tags, split into categories and limit results
         if stats:
-            self.log.info(">>> name: {}".format(
+            self.log.info(">>> name: {0}".format(
                 (self.metadata.get('title') or \
                 self.metadata.get('album')).encode('utf-8')))
 
@@ -521,7 +543,7 @@ class LastFM(QtCore.QObject):
                 result[category].append((tag, score))
 
             if stats:
-                self.log.info("> category {} ({}):".format(category, opt['limit']))
+                self.log.info("> category {0} ({1}):".format(category, opt['limit']))
                 self.print_toplist(result[category])
 
             # if an overflow is configured, put the toptags, that exceed the 
@@ -533,7 +555,7 @@ class LastFM(QtCore.QObject):
                 # the result list.
                 result[overflow] = result[category][opt['limit']:]
                 if stats:
-                    self.log.info("> overflow to {}:".format(overflow))
+                    self.log.info("...overflow to {0}:".format(overflow))
                     self.print_toplist(result[overflow])
 
             # category is done, assign toptags to metadata
@@ -543,6 +565,8 @@ class LastFM(QtCore.QObject):
                     sort=opt['sort'], titlecase=opt['titlecase'], 
                     limit=opt['limit'], separator=opt['separator']) or \
                     opt['unknown']
+                    
+                self.log.info("%s = %s" % (metatag, self.metadata[metatag])) 
 
     def process_album_tags(self):
         """
@@ -659,7 +683,7 @@ def track_metadata_processor(album, metadata, track_node, release_node):
     """
     determine track metadata using track and artist last.fm tags
     """
-    lfmws = LastFM(album, metadata)
+    lfmws = LastFM(album, metadata, release_node)
     lfmws.before_finalize.append(lfmws.process_track_tags)
 
     lfmws.request_track_toptags()
@@ -671,7 +695,7 @@ def album_metadata_processor(album, metadata, release_node):
     determine album metadata using album and all artist and all track last.fm 
     tags in the album.
     """
-    lfmws = LastFM(album, metadata)
+    lfmws = LastFM(album, metadata, release_node)
     lfmws.before_finalize.append(lfmws.process_album_tags)
 
     lfmws.request_album_toptags()
