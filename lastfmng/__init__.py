@@ -2,13 +2,58 @@
 
 """
 Last.fm.ng plugin
+-----------------
 
+This plugin is supposed to be used with the following naming rules::
+
+    $rreplace(%subdirectory%/%albumgrouping%/$if2(%albumartist%,%artist%) - $if($if2(%originalyear%,%date%),$left($if2(%originalyear%,%date%),4),0000) - $replace(%album%,...,…)/$replace(%album%,...,…) - $if($ne(1,%totaldiscs%),%discnumber%,)$num(%tracknumber%,2) - %artist% - %title%,[*|:"<>?],~)
+
+It builds a basic directory structure using the `%subdirectory%` and
+`%albumgrouping%` variables.
+
+Set this script, to get the proper `%subditrectory%`::
+
+    $set(subdirectory,
+        $if($and($eq(%releasetype%,compilation),
+            $eq(%albumartist%,Various Artists)),Archive Compilations,
+            $if($eq(%releasetype%,soundtrack),Archive Soundtracks,Archive Albums)
+        )
+    )
+
+It puts all albums, that look like soundtracks or compilations in a different
+top-level directory, than "normal" albums.
+
+The `%albumgrouping%` is determined per album by the plugin.
+
+Unfortunately the album-plugin processor is not called for non-album tracks, so
+you won't have an `%albumgrouping%` set. Use the following script to put those
+in a separate directory without grouping-subdirectories::
+
+    $if($eq(%album%,[non-album tracks]),$set(subdirectory,Archive Non-Album))
+
+In addition to creating the basic directory structure, the naming rules create
+the filename and album-directory with some character cleanup. The resulting
+album-directory will consist of::
+
+    %albumartist% or %artist%
+    %originalyear% or %date% or "0000"
+    %album% (with "..." replaced by "…")
+
+The filenames will be::
+
+    %album% (with "..." replaced by "…")
+    %tracknumber% (prepended with %discnumber% if there is more than one)
+    %artist%
+    %title%
+
+In addition the special characters `*|:"<>?` are replaced by `~` in the whole
+string.
 """
 
 PLUGIN_NAME = "Last.fm.ng"
 PLUGIN_AUTHOR = "Florian Demmer"
 PLUGIN_DESCRIPTION = "reimagination of the popular last.fm plus plugin"
-PLUGIN_VERSION = "0.7"
+PLUGIN_VERSION = "0.7.1"
 PLUGIN_API_VERSIONS = ["0.15"]
 
 import os
@@ -189,7 +234,8 @@ class LastFM(QtCore.QObject):
         # use this to write metatags
         self.metadata = metadata
         # load the tracks in this album locally
-        self._load_tracks(release_node)
+        if release_node is not None:
+            self._load_tracks(release_node)
         # list of functions, that are called before finalizing the album data
         self.before_finalize = []
         # plugin internal requests counter, similar to the one in album
@@ -681,7 +727,7 @@ def tag_string(tuples, separator=", ", titlecase=True, sort=True, limit=None):
 @register_track_metadata_processor
 def track_metadata_processor(album, metadata, track_node, release_node):
     """
-    determine track metadata using track and artist last.fm tags
+    Determine track metadata using track and artist last.fm tags
     """
     lfmws = LastFM(album, metadata, release_node)
     lfmws.before_finalize.append(lfmws.process_track_tags)
@@ -692,8 +738,8 @@ def track_metadata_processor(album, metadata, track_node, release_node):
 @register_album_metadata_processor
 def album_metadata_processor(album, metadata, release_node):
     """
-    determine album metadata using album and all artist and all track last.fm 
-    tags in the album.
+    Determine album metadata using album and all artist and all track last.fm 
+    tags in the album.    
     """
     lfmws = LastFM(album, metadata, release_node)
     lfmws.before_finalize.append(lfmws.process_album_tags)
