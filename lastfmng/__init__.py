@@ -13,15 +13,22 @@ It builds a basic directory structure using the `%subdirectory%` and
 
 Set this script, to get the proper `%subditrectory%`::
 
-    $set(subdirectory,
-        $if($and($eq(%releasetype%,compilation),
-            $eq(%albumartist%,Various Artists)),Archive Compilations,
-            $if($eq(%releasetype%,soundtrack),Archive Soundtracks,Archive Albums)
-        )
-    )
+$set(subdirectory,Archive Albums)
+$if($eq(%releasetype%,soundtrack),
+    $set(subdirectory,Archive Soundtracks)
+    $set2(genre,Soundtrack)
+)
+$if($eq(%releasetype%,compilation),
+    $if($eq(%albumartist%,Various Artists),
+        $set(subdirectory,Archive Compilations))
+)
 
 It puts all albums, that look like soundtracks or compilations in a different
-top-level directory, than "normal" albums.
+top-level directory, than "normal" albums. Also it adds a tag called 
+"Soundtrack" to all tracks that are soundtracks. Remove the `set2()` line
+if you do not want that.
+
+    The `set2()` script function is non-standard and included in the plugin!
 
 The `%albumgrouping%` is determined per album by the plugin.
 
@@ -53,7 +60,7 @@ string.
 PLUGIN_NAME = "Last.fm.ng"
 PLUGIN_AUTHOR = "Florian Demmer"
 PLUGIN_DESCRIPTION = "reimagination of the popular last.fm plus plugin"
-PLUGIN_VERSION = "0.7.1"
+PLUGIN_VERSION = "0.7.2"
 PLUGIN_API_VERSIONS = ["0.15"]
 
 import os
@@ -66,6 +73,8 @@ from PyQt4 import QtGui, QtCore
 
 from picard.metadata import register_track_metadata_processor
 from picard.metadata import register_album_metadata_processor
+from picard.script import register_script_function
+
 from picard.util import partial
 from picard.mbxml import release_to_metadata, medium_to_metadata, track_to_metadata
 from picard.metadata import Metadata
@@ -748,4 +757,14 @@ def album_metadata_processor(album, metadata, release_node):
     lfmws.request_all_track_toptags()
     lfmws.request_all_artist_toptags()
 
+def func_set2(parser, name, value):
+    """Adds ``value`` to the variable ``name``."""
+    if value:
+        if name.startswith("_"):
+            name = "~" + name[1:]
+        _ = parser.context[name].split(';')
+        _.append(value)
+        parser.context[name] = _
+    return ""
+register_script_function(func_set2, "set2")
 
