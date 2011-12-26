@@ -6,7 +6,7 @@ Last.fm.ng plugin
 
 This plugin is supposed to be used with the following naming rules::
 
-    $rreplace(%subdirectory%/%albumgrouping%/$if2(%albumartist%,%artist%) - $if($if2(%originalyear%,%date%),$left($if2(%originalyear%,%date%),4),0000) - $replace(%album%,...,…)/$replace(%album%,...,…) - $if($ne(1,%totaldiscs%),%discnumber%,)$num(%tracknumber%,2) - %artist% - %title%,[*|:"<>?],~)
+    $rreplace(%subdirectory%/%albumgrouping%/$if2(%albumartist%,%artist%) - $if($if2(%originalyear%,%originaldate%,%date%),$left($if2(%originalyear%,%originaldate%,%date%),4),0000) - $replace(%album%,...,…)/$replace(%album%,...,…) - $if($ne(1,%totaldiscs%),%discnumber%,)$num(%tracknumber%,2) - %artist% - %title%,[*|:"<>?],~)
 
 It builds a basic directory structure using the `%subdirectory%` and
 `%albumgrouping%` variables.
