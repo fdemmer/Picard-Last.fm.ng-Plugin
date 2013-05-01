@@ -29,6 +29,8 @@ top-level directory, than "normal" albums. Also it adds a tag called
 if you do not want that.
 
     The `set2()` script function is non-standard and included in the plugin!
+    You may need to restart Picard after activating the plugin, to have it
+    recognize the command.
 
 The `%albumgrouping%` is determined per album by the plugin.
 
@@ -96,7 +98,7 @@ config.readfp(open(config_file))
 
 LASTFM_HOST = "ws.audioscrobbler.com"
 LASTFM_PORT = 80
-API_KEY = "b25b959554ed76058ac220b7b2e0a026"
+API_KEY = "690de13d17f941df0dcb42c7659c0fea"
 
 # From http://www.last.fm/api/tos, 2011-07-30
 # 4.4 (...) You will not make more than 5 requests per originating IP address
