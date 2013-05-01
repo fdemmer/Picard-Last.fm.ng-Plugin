@@ -80,7 +80,7 @@ from picard.webservice import REQUEST_DELAY
 from picard import version_string
 
 class PluginXmlWebService(XmlWebService):
-    def _start_request(self, method, host, port, path, data, handler, xml, mblogin=False):
+    def _start_request(self, method, host, port, path, data, handler, xml, mblogin=False, *args, **kwargs):
         self.log.debug("%s http://%s:%d%s", method, host, port, path)
         url = QUrl.fromEncoded("http://%s:%d%s" % (host, port, path))
         if mblogin:
