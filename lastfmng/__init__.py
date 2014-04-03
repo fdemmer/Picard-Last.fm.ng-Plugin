@@ -98,7 +98,7 @@ config.readfp(open(config_file))
 
 LASTFM_HOST = "ws.audioscrobbler.com"
 LASTFM_PORT = 80
-API_KEY = "690de13d17f941df0dcb42c7659c0fea"
+API_KEY = "0a8b8f968b285654f9b4f16e8e33f2ee"
 
 # From http://www.last.fm/api/tos, 2011-07-30
 # 4.4 (...) You will not make more than 5 requests per originating IP address
