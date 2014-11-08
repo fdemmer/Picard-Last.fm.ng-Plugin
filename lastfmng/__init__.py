@@ -10,7 +10,7 @@ This plugin is supposed to be used with the following naming rules::
 It builds a basic directory structure using the `%subdirectory%` and
 `%albumgrouping%` variables.
 
-Set this script, to get the proper `%subditrectory%`::
+Set this script, to get the proper `%subdirectory%`::
 
 $set(subdirectory,Archive Albums)
 $if($eq(%releasetype%,soundtrack),
