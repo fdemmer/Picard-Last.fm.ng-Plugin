@@ -15,7 +15,7 @@ Set this script, to get the proper `%subditrectory%`::
 $set(subdirectory,Archive Albums)
 $if($eq(%releasetype%,soundtrack),
     $set(subdirectory,Archive Soundtracks)
-    $set2(genre,Soundtrack)
+    $set(genre,Soundtrack)
 )
 $if($eq(%releasetype%,compilation),
     $if($eq(%albumartist%,Various Artists),
