@@ -272,7 +272,12 @@ class LastFM(QtCore.QObject):
                 # Get track metadata
                 tm = track.metadata
                 tm.copy(mm)
-                track_to_metadata(track_node, track, self.config)
+                # thats pretty ugly, but v1.2 requires the config argument
+                # as it seems it was removed in v1.3
+                try:
+                    track_to_metadata(track_node, track)
+                except TypeError:
+                    track_to_metadata(track_node, track, self.config)
                 track._customize_metadata()
 
     def add_request(self, handler, query):
