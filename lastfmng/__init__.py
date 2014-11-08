@@ -61,7 +61,7 @@ string.
 PLUGIN_NAME = "Last.fm.ng"
 PLUGIN_AUTHOR = "Florian Demmer"
 PLUGIN_DESCRIPTION = "reimagination of the popular last.fm plus plugin"
-PLUGIN_VERSION = "0.7.2"
+PLUGIN_VERSION = "0.7.3"
 PLUGIN_API_VERSIONS = ["0.15"]
 
 import os
