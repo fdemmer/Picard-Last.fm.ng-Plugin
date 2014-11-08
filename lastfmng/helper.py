@@ -1,5 +1,14 @@
 
 import re
+import sys
+import time
+
+from PyQt4 import QtCore, QtNetwork, QtXml
+from PyQt4.QtCore import QUrl
+
+from picard.webservice import XmlWebService
+from picard.webservice import REQUEST_DELAY
+
 
 class ListSearchlist:
     """
@@ -73,35 +82,8 @@ class SearchTree(dict):
         except:
             return None
 
-import sys
-import time
-from PyQt4 import QtCore, QtNetwork, QtXml
-from PyQt4.QtCore import QUrl
-from picard.webservice import XmlWebService
-from picard.webservice import REQUEST_DELAY
-from picard import version_string
 
 class PluginXmlWebService(XmlWebService):
-    def _start_request(self, method, host, port, path, data, handler, xml, mblogin=False, *args, **kwargs):
-        self.log.debug("%s http://%s:%d%s", method, host, port, path)
-        url = QUrl.fromEncoded("http://%s:%d%s" % (host, port, path))
-        if mblogin:
-            url.setUserName(self.config.setting["username"])
-            url.setPassword(self.config.setting["password"])
-        request = QtNetwork.QNetworkRequest(url)
-        request.setRawHeader("User-Agent", "MusicBrainz-Picard/%s" % version_string)
-        if data is not None:
-            if method == "POST" and host == self.config.setting["server_host"]:
-                request.setHeader(QtNetwork.QNetworkRequest.ContentTypeHeader, "application/xml; charset=utf-8")
-            else:
-                request.setHeader(QtNetwork.QNetworkRequest.ContentTypeHeader, "application/x-www-form-urlencoded")
-        send = self._request_methods[method]
-        reply = send(request, data) if data is not None else send(request)
-        key = (host, port)
-        self._last_request_times[key] = time.time()
-        self._active_requests[reply] = (request, handler, xml)
-        return True
-
     def _run_next_task(self):
         delay = sys.maxint
         for key in self._hosts:
