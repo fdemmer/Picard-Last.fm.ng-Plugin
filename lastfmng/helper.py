@@ -41,6 +41,7 @@ class StringSearchlist(ListSearchlist):
     def __init__(self, string, separator=","):
         ListSearchlist.__init__(self, string.split(separator))
 
+
 class RegexpSearchlist(ListSearchlist):
     """
     use a regular expression to check tags for validity instead of a list
@@ -56,6 +57,7 @@ class RegexpSearchlist(ListSearchlist):
     def __repr__(self):
         return "<{}('{}')>".format(self.__class__.__name__, 
             self.regexp.pattern)
+
 
 class SearchTree(dict):
     def __init__(self, trunk, branches):

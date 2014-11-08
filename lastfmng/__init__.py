@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 """
 Last.fm.ng plugin
 -----------------
@@ -84,6 +83,7 @@ from picard.track import Track
 
 from ConfigParser import ConfigParser
 
+
 # import our implementation with older pythons
 try:
     from collections import OrderedDict
@@ -91,6 +91,7 @@ except:
     from odict import OrderedDict
 
 from helper import *
+
 
 config_file = os.path.join(os.path.dirname(__file__), "config.ini")
 config = ConfigParser()
@@ -677,6 +678,7 @@ class LastFM(QtCore.QObject):
         if config.getboolean('global', 'collect_unused'):
             self.collect_unused()
 
+
 def encode_str(s):
     return QtCore.QUrl.toPercentEncoding(s)
 
@@ -746,6 +748,7 @@ def track_metadata_processor(album, metadata, track_node, release_node):
     lfmws.request_track_toptags()
     lfmws.request_artist_toptags()
 
+
 @register_album_metadata_processor
 def album_metadata_processor(album, metadata, release_node):
     """
@@ -758,6 +761,7 @@ def album_metadata_processor(album, metadata, release_node):
     lfmws.request_album_toptags()
     lfmws.request_all_track_toptags()
     lfmws.request_all_artist_toptags()
+
 
 def func_set2(parser, name, value):
     """Adds ``value`` to the variable ``name``."""

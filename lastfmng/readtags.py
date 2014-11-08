@@ -1,13 +1,14 @@
 #!/usr/bin/python
-
 import os
 import sys
 import sqlite3
+
 
 try:
     count = sys.argv[1]
 except:
     count = 10
+
 
 try:
     conn = sqlite3.connect(os.path.expanduser('~/.config/MusicBrainz/toptags.db'))
