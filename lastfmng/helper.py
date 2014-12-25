@@ -3,7 +3,7 @@ import re
 import sys
 import time
 
-from PyQt4 import QtCore, QtNetwork, QtXml
+from PyQt4 import QtCore, QtNetwork
 from PyQt4.QtCore import QUrl
 
 from picard.webservice import XmlWebService
