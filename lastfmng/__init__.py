@@ -79,7 +79,6 @@ from picard.script import register_script_function
 from picard.track import Track
 from picard.util import partial
 
-
 # import our implementation with older pythons
 try:
     from collections import OrderedDict
@@ -155,7 +154,7 @@ CONFIG = {
 # in case no suitable branch is available, the normal searchlist is used!
 EXAMPLE_GENRE_TREE = SearchTree(
     # set the tree trunk to the reference category's name
-    trunk='grouping', 
+    trunk='grouping',
     # configure searchlists per toptag in the reference category
     # only the most popular toptag in a category is used
     # everything must be lower case!
@@ -181,49 +180,49 @@ CATEGORIES = OrderedDict([
         # unknown: the string to use if no toptag was found for the category
         # overflow: name of another category, unused toptags in this category 
         #     will be used in the given one.
-        searchlist=StringSearchlist(config.get('searchlist', 'major_genre')), 
-        limit=1, threshold=0.5, enabled=True, sort=False, titlecase=True, 
+        searchlist=StringSearchlist(config.get('searchlist', 'major_genre')),
+        limit=1, threshold=0.5, enabled=True, sort=False, titlecase=True,
         separator=", ", unknown="Unknown", overflow='genre')),
     # allow genre toptags from a searchtree and use the searchlsit as fallback
     ('genre', dict(
-        searchlist=StringSearchlist(config.get('searchlist', 'minor_genre')), 
+        searchlist=StringSearchlist(config.get('searchlist', 'minor_genre')),
         #searchtree=EXAMPLE_GENRE_TREE, 
-        limit=4, threshold=0.5, enabled=True, sort=False, titlecase=True, 
+        limit=4, threshold=0.5, enabled=True, sort=False, titlecase=True,
         separator=None, unknown="Unknown")),
     # eg. angry, cheerful, clam, ...
     ('mood', dict(
-        searchlist=StringSearchlist(config.get('searchlist', 'mood')), 
-        limit=4, threshold=0.5, enabled=True, sort=False, titlecase=True, 
+        searchlist=StringSearchlist(config.get('searchlist', 'mood')),
+        limit=4, threshold=0.5, enabled=True, sort=False, titlecase=True,
         separator=None, unknown="Unknown")),
     # eg. background, late night, party
     ('occasion', dict(
-        searchlist=StringSearchlist(config.get('searchlist', 'occasion')), 
-        limit=4, threshold=0.5, enabled=True, sort=False, titlecase=True, 
+        searchlist=StringSearchlist(config.get('searchlist', 'occasion')),
+        limit=4, threshold=0.5, enabled=True, sort=False, titlecase=True,
         separator=None, unknown="Unknown")),
     # i don't really know
     ('category', dict(
-        searchlist=StringSearchlist(config.get('searchlist', 'category')), 
-        limit=4, threshold=0.5, enabled=True, sort=False, titlecase=True, 
+        searchlist=StringSearchlist(config.get('searchlist', 'category')),
+        limit=4, threshold=0.5, enabled=True, sort=False, titlecase=True,
         separator=None, unknown="Unknown")),
     # country names
     ('country', dict(
-        searchlist=StringSearchlist(config.get('searchlist', 'country')), 
-        limit=2, threshold=0.7, enabled=True, sort=True, titlecase=True, 
+        searchlist=StringSearchlist(config.get('searchlist', 'country')),
+        limit=2, threshold=0.7, enabled=True, sort=True, titlecase=True,
         separator=None, unknown="Unknown")),
     # city names
     ('city', dict(
-        searchlist=StringSearchlist(config.get('searchlist', 'city')), 
-        limit=1, threshold=0.7, enabled=True, sort=True, titlecase=True, 
+        searchlist=StringSearchlist(config.get('searchlist', 'city')),
+        limit=1, threshold=0.7, enabled=True, sort=True, titlecase=True,
         separator=None, unknown="Unknown")),
     # musical era, eg. 80s, 90s, ...
     ('decade', dict(
-        searchlist=RegexpSearchlist("^([1-9][0-9])*[0-9]0s$"), 
-        limit=1, threshold=0.7, enabled=True, sort=True, titlecase=False, 
+        searchlist=RegexpSearchlist("^([1-9][0-9])*[0-9]0s$"),
+        limit=1, threshold=0.7, enabled=True, sort=True, titlecase=False,
         separator=", ", unknown="Unknown")),
     # the full year, eg. 1995, 2000, ...
     ('year', dict(
-        searchlist=RegexpSearchlist("^[1-9][0-9]{3}$"), 
-        limit=1, threshold=0.7, enabled=False, sort=True, titlecase=False, 
+        searchlist=RegexpSearchlist("^[1-9][0-9]{3}$"),
+        limit=1, threshold=0.7, enabled=False, sort=True, titlecase=False,
         separator=", ", unknown="Unknown")),
 ])
 
@@ -253,7 +252,7 @@ class LastFM(QtCore.QObject):
         # reaches zero in this plugin, but only later...
         self.requests = 0
         # structure for storing raw toptag data
-        self.toptags = dict(artist=[], album=[], track=[], 
+        self.toptags = dict(artist=[], album=[], track=[],
             all_track=[], all_artist=[])
 
     def _load_tracks(self, release_node):
@@ -299,11 +298,11 @@ class LastFM(QtCore.QObject):
         # the handler has been executed
         self.album._requests += 1
         self.requests += 1
-        
+
         # wrap the handler in the finished decorator
         handler = self.finished(handler)
         # queue http get request
-        xmlws.get(LASTFM_HOST, LASTFM_PORT, 
+        xmlws.get(LASTFM_HOST, LASTFM_PORT,
             path, handler, priority=True, important=False)
 
     def add_task(self, handler):
@@ -313,11 +312,11 @@ class LastFM(QtCore.QObject):
         # count requests
         self.album._requests += 1
         self.requests += 1
-        
+
         # wrap the handler in the finished decorator
         handler = self.finished(handler)
         # queue function call
-        xmlws.add_task(handler, 
+        xmlws.add_task(handler,
             LASTFM_HOST, LASTFM_PORT, priority=False, important=False)
 
 
@@ -346,8 +345,8 @@ class LastFM(QtCore.QObject):
     def request_artist_toptags(self):
         """request toptags of an artist (via artist or albumartist)"""
         params = dict(
-            method="artist.gettoptags", 
-            artist=self.metadata["artist"] or self.metadata["albumartist"], 
+            method="artist.gettoptags",
+            artist=self.metadata["artist"] or self.metadata["albumartist"],
             api_key=API_KEY)
         query = self._get_query(params)
         self.cached_or_request("artist", query)
@@ -355,9 +354,9 @@ class LastFM(QtCore.QObject):
     def request_album_toptags(self):
         """request toptags of an album (via album, albumartist)"""
         params = dict(
-            method="album.gettoptags", 
-            album=self.metadata["album"], 
-            artist=self.metadata["albumartist"], 
+            method="album.gettoptags",
+            album=self.metadata["album"],
+            artist=self.metadata["albumartist"],
             api_key=API_KEY)
         query = self._get_query(params)
         self.cached_or_request("album", query)
@@ -365,9 +364,9 @@ class LastFM(QtCore.QObject):
     def request_track_toptags(self):
         """request toptags of a track (via title, artist)"""
         params = dict(
-            method="track.gettoptags", 
+            method="track.gettoptags",
             track=self.metadata["title"],
-            artist=self.metadata["artist"], 
+            artist=self.metadata["artist"],
             api_key=API_KEY)
         query = self._get_query(params)
         self.cached_or_request("track", query)
@@ -376,9 +375,9 @@ class LastFM(QtCore.QObject):
         """request toptags of all tracks in the album (via title, artist)"""
         for track in self.tracks:
             params = dict(
-                method="track.gettoptags", 
+                method="track.gettoptags",
                 track=track.metadata["title"],
-                artist=track.metadata["artist"], 
+                artist=track.metadata["artist"],
                 api_key=API_KEY)
             query = self._get_query(params)
             self.cached_or_request("all_track", query)
@@ -387,8 +386,8 @@ class LastFM(QtCore.QObject):
         """request toptags of all artists in the album (via artist)"""
         for track in self.tracks:
             params = dict(
-                method="artist.gettoptags", 
-                artist=track.metadata["artist"], 
+                method="artist.gettoptags",
+                artist=track.metadata["artist"],
                 api_key=API_KEY)
             query = self._get_query(params)
             self.cached_or_request("all_artist", query)
@@ -418,7 +417,7 @@ class LastFM(QtCore.QObject):
             try:
                 func(*args, **kwargs)
             except:
-                self.album.tagger.log.error("Problem in handler: %s", 
+                self.album.tagger.log.error("Problem in handler: %s",
                     traceback.format_exc())
                 raise
             finally:
@@ -510,10 +509,10 @@ class LastFM(QtCore.QObject):
 
     def collect_unused(self):
         all_tags = merge_tags(
-            (self.toptags['album'], 1), 
-            (self.toptags['track'], 1), 
-            (self.toptags['artist'], 1), 
-            (self.toptags['all_track'], 1), 
+            (self.toptags['album'], 1),
+            (self.toptags['track'], 1),
+            (self.toptags['artist'], 1),
+            (self.toptags['all_track'], 1),
             (self.toptags['all_artist'], 1)
         )
 
@@ -543,8 +542,8 @@ class LastFM(QtCore.QObject):
 
         for tag, score in unknown_toptags:
             c.execute("""
-                replace into toptags (tag, score) 
-                values (?, 
+                replace into toptags (tag, score)
+                values (?,
                 coalesce((select score from toptags where tag = ?),0)+?)
                 """, (tag, tag, score))
 
@@ -622,11 +621,11 @@ class LastFM(QtCore.QObject):
             metatag = CONFIG[scope]['tags'].get(category, None)
             if metatag is not None:
                 self.metadata[metatag] = tag_string(result[category],
-                    sort=opt['sort'], titlecase=opt['titlecase'], 
+                    sort=opt['sort'], titlecase=opt['titlecase'],
                     limit=opt['limit'], separator=opt['separator']) or \
                     opt['unknown']
-                    
-                self.log.info("%s = %s" % (metatag, self.metadata[metatag])) 
+
+                self.log.info("%s = %s" % (metatag, self.metadata[metatag]))
 
     def process_album_tags(self):
         """
@@ -644,14 +643,14 @@ class LastFM(QtCore.QObject):
         all_tags = merge_tags(
             # album tag score gets multiplied by the total number of tracks 
             # in the release to even out weight of all_* tags before merger
-            (self.toptags['album'], CONFIG['album']['weight']['album']*len(self.tracks)), 
-            (self.toptags['all_track'], CONFIG['album']['weight']['all_track']), 
+            (self.toptags['album'], CONFIG['album']['weight']['album']*len(self.tracks)),
+            (self.toptags['all_track'], CONFIG['album']['weight']['all_track']),
             (self.toptags['all_artist'], CONFIG['album']['weight']['all_artist'])
         )
         #self.log.info("all_tags tags:")
         #self.print_toplist(all_tags)
 
-        self.filter_and_set_metadata('album', all_tags, 
+        self.filter_and_set_metadata('album', all_tags,
             stats=config.getboolean('global', 'print_tag_stats_album'))
         if config.getboolean('global', 'collect_unused'):
             self.collect_unused()
@@ -669,13 +668,13 @@ class LastFM(QtCore.QObject):
 
         # get complete, balanced, sorted list (high first) of tags
         all_tags = merge_tags(
-            (self.toptags['artist'], CONFIG['track']['weight']['artist']), 
+            (self.toptags['artist'], CONFIG['track']['weight']['artist']),
             (self.toptags['track'], CONFIG['track']['weight']['track'])
         )
         #self.log.info("all_tags tags:")
         #self.print_toplist(all_tags)
 
-        self.filter_and_set_metadata('track', all_tags, 
+        self.filter_and_set_metadata('track', all_tags,
             stats=config.getboolean('global', 'print_tag_stats_track'))
         if config.getboolean('global', 'collect_unused'):
             self.collect_unused()
