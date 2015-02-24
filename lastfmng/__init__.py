@@ -508,6 +508,11 @@ class LastFM(QtCore.QObject):
         self.print_toplist(merged)
 
     def collect_unused(self):
+        """
+        This collects toptags not used to tag files.
+        It is a way to find new genres/groupings in the tags used on last.fm.
+        """
+        self.log.debug(u"collecting unused toptags...")
         all_tags = merge_tags(
             (self.toptags['album'], 1),
             (self.toptags['track'], 1),
@@ -528,9 +533,11 @@ class LastFM(QtCore.QObject):
             if toptag is not None:
                 unknown_toptags.append(toptag)
 
+        dbfile = os.path.join(USER_DIR, 'lastfmng', 'toptags.db')
+        self.log.debug(u"opening database: %s", dbfile)
+
         import sqlite3
-        conn = sqlite3.connect(os.path.expanduser(
-            '~/.config/MusicBrainz/toptags.db'))
+        conn = sqlite3.connect(dbfile)
         c = conn.cursor()
 
         try:
@@ -539,6 +546,7 @@ class LastFM(QtCore.QObject):
                 """)
         except:
             pass
+
 
         for tag, score in unknown_toptags:
             c.execute("""
