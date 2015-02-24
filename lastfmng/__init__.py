@@ -83,7 +83,7 @@ from picard.util import partial
 # import our implementation with older pythons
 try:
     from collections import OrderedDict
-except:
+except ImportError:
     from .odict import OrderedDict
 
 from .ConfigParser import ConfigParser
@@ -178,7 +178,8 @@ CATEGORIES = OrderedDict([
         # enabled: don't collect toptags for that category
         # sort: alphabetically sort toptags before joining to string
         # titlecase: apply titlecase() function to each toptag
-        # separator: used to join toptags if >1 are to be used (None to use multtag)
+        # separator: used to join toptags if >1 are to be used
+        #   (None to use multtag)
         # unknown: the string to use if no toptag was found for the category
         # overflow: name of another category, unused toptags in this category 
         #     will be used in the given one.
@@ -303,8 +304,11 @@ class LastFM(QtCore.QObject):
         # wrap the handler in the finished decorator
         handler = self.finished(handler)
         # queue http get request
-        xmlws.get(LASTFM_HOST, LASTFM_PORT,
-            path, handler, priority=True, important=False)
+        xmlws.get(
+            LASTFM_HOST, LASTFM_PORT,
+            path, handler,
+            priority=True, important=False
+        )
 
     def add_task(self, handler):
         """
@@ -317,9 +321,11 @@ class LastFM(QtCore.QObject):
         # wrap the handler in the finished decorator
         handler = self.finished(handler)
         # queue function call
-        xmlws.add_task(handler,
-            LASTFM_HOST, LASTFM_PORT, priority=False, important=False)
-
+        xmlws.add_task(
+            handler,
+            LASTFM_HOST, LASTFM_PORT,
+            priority=False, important=False
+        )
 
     def cached_or_request(self, tagtype, query):
         # if the query is already cached only queue task
@@ -336,7 +342,6 @@ class LastFM(QtCore.QObject):
         else:
             self.log.debug("request {0}".format(query))
             self.add_request(partial(self.handle_toptags, tagtype), query)
-
 
     def _get_query(self, params):
         """Build and return a query string from the given params dictionary."""
@@ -384,7 +389,9 @@ class LastFM(QtCore.QObject):
             self.cached_or_request("all_track", query)
 
     def request_all_artist_toptags(self):
-        """request toptags of all artists in the album (via artist)"""
+        """
+        request toptags of all artists in the album (via artist)
+        """
         for track in self.tracks:
             params = dict(
                 method="artist.gettoptags",
@@ -393,14 +400,12 @@ class LastFM(QtCore.QObject):
             query = self._get_query(params)
             self.cached_or_request("all_artist", query)
 
-
     def finish_request(self):
         """
         has to be called after/at the end of a request handler. reduces the
         pending requests counter and calls the finalize function if there is 
         no open request left.
         """
-        #print "finish request: {0}".format(self.requests)
         self.album._requests -= 1
         self.requests -= 1
         if self.requests == 0:
@@ -413,14 +418,15 @@ class LastFM(QtCore.QObject):
             self.album._finalize_loading(None)
 
     def finished(self, func):
-        """Decorator for wrapping a request handler function."""
-
+        """
+        Decorator for wrapping a request handler function.
+        """
         def decorate(*args, **kwargs):
             try:
                 func(*args, **kwargs)
             except:
-                self.album.tagger.log.error("Problem in handler: %s",
-                    traceback.format_exc())
+                self.album.tagger.log.error(
+                    "Problem in handler:\n%s", traceback.format_exc())
                 raise
             finally:
                 self.finish_request()
@@ -437,7 +443,6 @@ class LastFM(QtCore.QObject):
         tags with score below score_threshold are ignored.
         returns an unsorted list of tuples (name, score).
         """
-        #print "new reply"
         score_threshold = 1
         # cache key
         query = str(http.url().encodedQuery())
@@ -474,15 +479,11 @@ class LastFM(QtCore.QObject):
             self.toptags[tagtype].extend(tmp)
 
         except AttributeError:
-            #sys.exc_info()
-            #print http.url()
-            #print data
             self.log.warning("no tags: {0}, {1}".format(tagtype, query))
             pass
 
     def handle_cached_toptags(self, tagtype, query):
         """Copy toptags from module-global cache to local toptags list."""
-        #print "cached"
         toptags = CACHE.get(query, None)
         if toptags is not None:
             self.toptags[tagtype].extend(toptags)
@@ -494,8 +495,8 @@ class LastFM(QtCore.QObject):
             # design is flawed! workaround is refreshing :P
 
     def print_toplist(self, merged):
-        def p(s):
-            return int(float(s) / float(topscore) * 100.0)
+        def p(score):
+            return int(float(score) / float(topscore) * 100.0)
 
         try:
             topscore = merged[0][1]
@@ -595,7 +596,6 @@ class LastFM(QtCore.QObject):
                 # get the searchlist from the tree-branch using the result
                 # or fall back to the configured searchlist
                 searchlist = searchtree.get_searchlist(result) or searchlist
-            #print searchlist
 
             for tag, score in all_tags:
 
@@ -660,12 +660,11 @@ class LastFM(QtCore.QObject):
             # in the release to even out weight of all_* tags before merger
             (self.toptags['album'],
              CONFIG['album']['weight']['album'] * len(self.tracks)),
-            (self.toptags['all_track'], CONFIG['album']['weight']['all_track']),
-            (
-            self.toptags['all_artist'], CONFIG['album']['weight']['all_artist'])
+            (self.toptags['all_track'],
+             CONFIG['album']['weight']['all_track']),
+            (self.toptags['all_artist'],
+             CONFIG['album']['weight']['all_artist'])
         )
-        #self.log.info("all_tags tags:")
-        #self.print_toplist(all_tags)
 
         self.filter_and_set_metadata('album', all_tags,
             stats=config.getboolean('global', 'print_tag_stats_album'))
@@ -688,8 +687,6 @@ class LastFM(QtCore.QObject):
             (self.toptags['artist'], CONFIG['track']['weight']['artist']),
             (self.toptags['track'], CONFIG['track']['weight']['track'])
         )
-        #self.log.info("all_tags tags:")
-        #self.print_toplist(all_tags)
 
         self.filter_and_set_metadata('track', all_tags,
             stats=config.getboolean('global', 'print_tag_stats_track'))
@@ -796,4 +793,3 @@ def func_set2(parser, name, value):
 
 
 register_script_function(func_set2, "set2")
-
