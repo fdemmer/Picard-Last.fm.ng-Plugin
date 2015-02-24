@@ -67,32 +67,27 @@ PLUGIN_VERSION = "0.7.3"
 PLUGIN_API_VERSIONS = ["0.15"]
 
 import os
-import sys
-import time
-import traceback
 import operator
+import traceback
 
-from PyQt4 import QtGui, QtCore
-
-from picard.metadata import register_track_metadata_processor
-from picard.metadata import register_album_metadata_processor
-from picard.script import register_script_function
-
-from picard.util import partial
-from picard.mbxml import release_to_metadata, medium_to_metadata, track_to_metadata
+from picard.const import USER_DIR
+from picard.mbxml import medium_to_metadata, track_to_metadata
 from picard.metadata import Metadata
+from picard.metadata import register_album_metadata_processor
+from picard.metadata import register_track_metadata_processor
+from picard.script import register_script_function
 from picard.track import Track
-
-from ConfigParser import ConfigParser
+from picard.util import partial
 
 
 # import our implementation with older pythons
 try:
     from collections import OrderedDict
 except:
-    from odict import OrderedDict
+    from .odict import OrderedDict
 
-from helper import *
+from .ConfigParser import ConfigParser
+from .helper import *
 
 
 config_file = os.path.join(os.path.dirname(__file__), "config.ini")
