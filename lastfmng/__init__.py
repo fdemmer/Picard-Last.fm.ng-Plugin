@@ -79,6 +79,7 @@ from picard.script import register_script_function
 from picard.track import Track
 from picard.util import partial
 
+
 # import our implementation with older pythons
 try:
     from collections import OrderedDict
@@ -101,6 +102,7 @@ API_KEY = "0a8b8f968b285654f9b4f16e8e33f2ee"
 # 4.4 (...) You will not make more than 5 requests per originating IP address
 # per second, averaged over a 5 minute period, without prior written consent.
 from picard.webservice import REQUEST_DELAY
+
 REQUEST_DELAY[(LASTFM_HOST, LASTFM_PORT)] = 200
 
 # dictionary for query: toptag lists
@@ -118,25 +120,25 @@ CONFIG = {
         'tags': {
             # category  metatag
             'grouping': 'albumgrouping',
-            'genre':    'albumgenre',
-            'mood':     'albummood',
+            'genre': 'albumgenre',
+            'mood': 'albummood',
         }
     },
     # for each track set the following metadata
     'track': {
-        #TODO *plus supports disabling toptag types per metatag... eg. country only via artist toptags.
+        # TODO *plus supports disabling toptag types per metatag... eg. country only via artist toptags.
         'weight': dict(artist=2, track=8),
         'tags': {
             # category  metatag
             'grouping': 'grouping',
-            'genre':    'genre',
-            'mood':     'mood',
-            'year':     'year',
+            'genre': 'genre',
+            'mood': 'mood',
+            'year': 'year',
             'occasion': 'comment:Songs-DB_Occasion',
-            'decade':   'comment:Songs-DB_Custom1',
+            'decade': 'comment:Songs-DB_Custom1',
             'category': 'comment:Songs-DB_Custom2',
-            'city':     'comment:Songs-DB_Custom3',
-            'country':  'comment:Songs-DB_Custom4',
+            'city': 'comment:Songs-DB_Custom3',
+            'country': 'comment:Songs-DB_Custom4',
         }
     }
 }
@@ -167,7 +169,7 @@ EXAMPLE_GENRE_TREE = SearchTree(
     })
 
 
-#TODO integrate CONFIG stuff into this dict
+# TODO integrate CONFIG stuff into this dict
 CATEGORIES = OrderedDict([
     # grouping is used as major/high level category
     ('grouping', dict(
@@ -229,7 +231,6 @@ CATEGORIES = OrderedDict([
 if config.getboolean('global', 'soundtrack_is_no_genre'):
     CATEGORIES['grouping']['searchlist'].remove('soundtrack')
     CATEGORIES['genre']['searchlist'].remove('soundtrack')
-
 
 xmlws = PluginXmlWebService()
 
@@ -413,6 +414,7 @@ class LastFM(QtCore.QObject):
 
     def finished(self, func):
         """Decorator for wrapping a request handler function."""
+
         def decorate(*args, **kwargs):
             try:
                 func(*args, **kwargs)
@@ -422,6 +424,7 @@ class LastFM(QtCore.QObject):
                 raise
             finally:
                 self.finish_request()
+
         return decorate
 
 
@@ -492,10 +495,12 @@ class LastFM(QtCore.QObject):
 
     def print_toplist(self, merged):
         def p(s):
-            return int(float(s)/float(topscore)*100.0)
+            return int(float(s) / float(topscore) * 100.0)
+
         try:
             topscore = merged[0][1]
-            toplist = ["{0}: {1} ({2}%)".format(n, s, p(s)) for n, s in merged[:10]]
+            toplist = ["{0}: {1} ({2}%)".format(n, s, p(s)) for n, s in
+                       merged[:10]]
             self.log.info("{0}".format(", ".join(toplist)))
         except:
             self.log.info("None")
@@ -503,7 +508,8 @@ class LastFM(QtCore.QObject):
     def print_toptag_stats(self, scope, name, correction=1):
         toptags = self.toptags[name]
         weight = CONFIG[scope]['weight'][name]
-        self.log.info("got {0} {1} tags (x{2}):".format(len(toptags), name, weight))
+        self.log.info(
+            "got {0} {1} tags (x{2}):".format(len(toptags), name, weight))
         merged = merge_tags((toptags, correction))[:10]
         self.print_toplist(merged)
 
@@ -537,22 +543,22 @@ class LastFM(QtCore.QObject):
         self.log.debug(u"opening database: %s", dbfile)
 
         import sqlite3
+
         conn = sqlite3.connect(dbfile)
         c = conn.cursor()
 
         try:
             c.execute("""
-                create table toptags (tag text primary key, score integer)
+                CREATE TABLE toptags (tag TEXT PRIMARY KEY, score INTEGER)
                 """)
         except:
             pass
 
-
         for tag, score in unknown_toptags:
             c.execute("""
-                replace into toptags (tag, score)
-                values (?,
-                coalesce((select score from toptags where tag = ?),0)+?)
+                REPLACE INTO toptags (tag, score)
+                VALUES (?,
+                coalesce((SELECT score FROM toptags WHERE tag = ?),0)+?)
                 """, (tag, tag, score))
 
         conn.commit()
@@ -569,7 +575,7 @@ class LastFM(QtCore.QObject):
         if stats:
             self.log.info(">>> name: {0}".format(
                 (self.metadata.get('title') or \
-                self.metadata.get('album')).encode('utf-8')))
+                 self.metadata.get('album')).encode('utf-8')))
 
         result = {}
         for category, opt in CATEGORIES.items():
@@ -604,13 +610,14 @@ class LastFM(QtCore.QObject):
 
                 # first toptag in this category, calculate threshold
                 if score_threshold == 0:
-                    score_threshold = int(float(score)*opt['threshold'])
+                    score_threshold = int(float(score) * opt['threshold'])
 
                 # store the toptag
                 result[category].append((tag, score))
 
             if stats:
-                self.log.info("> category {0} ({1}):".format(category, opt['limit']))
+                self.log.info(
+                    "> category {0} ({1}):".format(category, opt['limit']))
                 self.print_toplist(result[category])
 
             # if an overflow is configured, put the toptags, that exceed the 
@@ -631,7 +638,7 @@ class LastFM(QtCore.QObject):
                 self.metadata[metatag] = tag_string(result[category],
                     sort=opt['sort'], titlecase=opt['titlecase'],
                     limit=opt['limit'], separator=opt['separator']) or \
-                    opt['unknown']
+                                         opt['unknown']
 
                 self.log.info("%s = %s" % (metatag, self.metadata[metatag]))
 
@@ -642,7 +649,7 @@ class LastFM(QtCore.QObject):
         """
         self.log.info(">>> process album tags")
         if config.getboolean('global', 'print_tag_stats_album') and \
-            config.getboolean('global', 'print_tag_stats'):
+                config.getboolean('global', 'print_tag_stats'):
             self.print_toptag_stats('album', 'album', len(self.tracks))
             self.print_toptag_stats('album', 'all_artist')
             self.print_toptag_stats('album', 'all_track')
@@ -651,9 +658,11 @@ class LastFM(QtCore.QObject):
         all_tags = merge_tags(
             # album tag score gets multiplied by the total number of tracks 
             # in the release to even out weight of all_* tags before merger
-            (self.toptags['album'], CONFIG['album']['weight']['album']*len(self.tracks)),
+            (self.toptags['album'],
+             CONFIG['album']['weight']['album'] * len(self.tracks)),
             (self.toptags['all_track'], CONFIG['album']['weight']['all_track']),
-            (self.toptags['all_artist'], CONFIG['album']['weight']['all_artist'])
+            (
+            self.toptags['all_artist'], CONFIG['album']['weight']['all_artist'])
         )
         #self.log.info("all_tags tags:")
         #self.print_toplist(all_tags)
@@ -670,7 +679,7 @@ class LastFM(QtCore.QObject):
         """
         self.log.info(">>> process track tags")
         if config.getboolean('global', 'print_tag_stats_track') and \
-            config.getboolean('global', 'print_tag_stats'):
+                config.getboolean('global', 'print_tag_stats'):
             self.print_toptag_stats('track', 'track')
             self.print_toptag_stats('track', 'artist')
 
@@ -691,10 +700,12 @@ class LastFM(QtCore.QObject):
 def encode_str(s):
     return QtCore.QUrl.toPercentEncoding(s)
 
+
 def uniq(alist):
     # http://code.activestate.com/recipes/52560/
     set = {}
-    return [set.setdefault(e,e) for e in alist if e not in set]
+    return [set.setdefault(e, e) for e in alist if e not in set]
+
 
 def translate_tag(name):
     try:
@@ -702,6 +713,7 @@ def translate_tag(name):
     except:
         pass
     return name
+
 
 def merge_tags(*args):
     """
@@ -713,10 +725,11 @@ def merge_tags(*args):
     rv = {}
     for tags, weight in args:
         for name, score in tags:
-            score = score*weight
-            rv[name] = score+rv.get(name, 0)
+            score = score * weight
+            rv[name] = score + rv.get(name, 0)
     tuples = sorted(rv.items(), key=operator.itemgetter(1), reverse=True)
     return tuples
+
 
 def tag_string(tuples, separator=", ", titlecase=True, sort=True, limit=None):
     """
@@ -743,7 +756,6 @@ def tag_string(tuples, separator=", ", titlecase=True, sort=True, limit=None):
     if separator is None:
         return rv
     return separator.join(rv)
-
 
 
 @register_track_metadata_processor
@@ -781,5 +793,7 @@ def func_set2(parser, name, value):
         _.append(value)
         parser.context[name] = _
     return ""
+
+
 register_script_function(func_set2, "set2")
 
