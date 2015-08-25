@@ -84,13 +84,17 @@ class LastFM(DebugMixin, QtCore.QObject):
                 # Get track metadata
                 tm = track.metadata
                 tm.copy(mm)
-                # thats pretty ugly, but v1.2 requires the config argument
-                # as it seems it was removed in v1.3
-                try:
-                    track_to_metadata(track_node, track)
-                except TypeError:
-                    track_to_metadata(track_node, track, self.config)
+                self._track_to_metadata(track_node, track)
                 track._customize_metadata()
+
+    def _track_to_metadata(self, track_node, track):
+        # that's pretty ugly, but v1.2 requires the config argument
+        # as it seems it was removed in v1.3
+        try:
+            track_to_metadata(track_node, track)
+        except TypeError:
+            # noinspection PyArgumentList
+            track_to_metadata(track_node, track, self.config)
 
     def add_request(self, handler, query):
         """
