@@ -783,15 +783,4 @@ def album_metadata_processor(album, metadata, release_node):
     lfmws.request_all_artist_toptags()
 
 
-def func_set2(parser, name, value):
-    """Adds ``value`` to the variable ``name``."""
-    if value:
-        if name.startswith("_"):
-            name = "~" + name[1:]
-        _ = parser.context[name].split(';')
-        _.append(value)
-        parser.context[name] = _
-    return ""
-
-
 register_script_function(func_set2, "set2")
