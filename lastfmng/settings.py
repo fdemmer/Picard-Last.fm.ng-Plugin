@@ -13,12 +13,14 @@ config_file = os.path.join(os.path.dirname(__file__), "config.ini")
 config = ConfigParser()
 config.readfp(open(config_file))
 
-LASTFM_HOST = "ws.audioscrobbler.com"
-LASTFM_PORT = 80
-API_KEY = "0a8b8f968b285654f9b4f16e8e33f2ee"
+
+LASTFM_HOST = config.getboolean('global', 'lastfm_host')
+LASTFM_PORT = config.getboolean('global', 'lastfm_port')
+LASTFM_KEY = config.getboolean('global', 'lastfm_key')
 
 
 ENABLE_COLLECT_UNUSED = config.getboolean('global', 'collect_unused')
+
 
 DEBUG_STATS = config.getboolean('global', 'print_tag_stats')
 DEBUG_STATS_TRACK = config.getboolean('global', 'print_tag_stats_track') \

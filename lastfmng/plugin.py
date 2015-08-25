@@ -149,7 +149,7 @@ class LastFM(DebugMixin, QtCore.QObject):
         params = dict(
             method="artist.gettoptags",
             artist=self.metadata["artist"] or self.metadata["albumartist"],
-            api_key=settings.API_KEY)
+            api_key=settings.LASTFM_KEY)
         query = self._get_query(params)
         self.cached_or_request("artist", query)
 
@@ -159,7 +159,7 @@ class LastFM(DebugMixin, QtCore.QObject):
             method="album.gettoptags",
             album=self.metadata["album"],
             artist=self.metadata["albumartist"],
-            api_key=settings.API_KEY)
+            api_key=settings.LASTFM_KEY)
         query = self._get_query(params)
         self.cached_or_request("album", query)
 
@@ -169,7 +169,7 @@ class LastFM(DebugMixin, QtCore.QObject):
             method="track.gettoptags",
             track=self.metadata["title"],
             artist=self.metadata["artist"],
-            api_key=settings.API_KEY)
+            api_key=settings.LASTFM_KEY)
         query = self._get_query(params)
         self.cached_or_request("track", query)
 
@@ -180,7 +180,7 @@ class LastFM(DebugMixin, QtCore.QObject):
                 method="track.gettoptags",
                 track=track.metadata["title"],
                 artist=track.metadata["artist"],
-                api_key=settings.API_KEY)
+                api_key=settings.LASTFM_KEY)
             query = self._get_query(params)
             self.cached_or_request("all_track", query)
 
@@ -192,7 +192,7 @@ class LastFM(DebugMixin, QtCore.QObject):
             params = dict(
                 method="artist.gettoptags",
                 artist=track.metadata["artist"],
-                api_key=settings.API_KEY)
+                api_key=settings.LASTFM_KEY)
             query = self._get_query(params)
             self.cached_or_request("all_artist", query)
 
