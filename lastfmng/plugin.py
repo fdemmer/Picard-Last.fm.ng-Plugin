@@ -239,7 +239,6 @@ class LastFM(DebugMixin, QtCore.QObject):
         """
         Decorator for wrapping a request handler function.
         """
-
         def decorate(*args, **kwargs):
             try:
                 func(*args, **kwargs)
@@ -311,59 +310,6 @@ class LastFM(DebugMixin, QtCore.QObject):
             # so the queue is already processing "pending" cache requests,
             # while the response is not yet processed. the whole "pending"
             # design is flawed! workaround is refreshing :P
-
-
-    def collect_unused(self):
-        """
-        This collects toptags not used to tag files.
-        It is a way to find new genres/groupings in the tags used on last.fm.
-        """
-        self.log.debug(u"collecting unused toptags...")
-        all_tags = apply_tag_weight(
-            (self.toptags['album'], 1),
-            (self.toptags['track'], 1),
-            (self.toptags['artist'], 1),
-            (self.toptags['all_track'], 1),
-            (self.toptags['all_artist'], 1)
-        )
-
-        searchlists = [opt['searchlist'] for cat, opt in
-                       settings.CATEGORIES.items()]
-        unknown_toptags = []
-
-        for toptag in all_tags:
-            tag, score = toptag
-            for searchlist in searchlists:
-                if tag in searchlist:
-                    toptag = None
-                    break
-            if toptag is not None:
-                unknown_toptags.append(toptag)
-
-        dbfile = os.path.join(USER_DIR, 'lastfmng', 'toptags.db')
-        self.log.debug(u"opening database: %s", dbfile)
-
-        import sqlite3
-
-        conn = sqlite3.connect(dbfile)
-        c = conn.cursor()
-
-        try:
-            c.execute("""
-                CREATE TABLE toptags (tag TEXT PRIMARY KEY, score INTEGER)
-                """)
-        except:
-            pass
-
-        for tag, score in unknown_toptags:
-            c.execute("""
-                REPLACE INTO toptags (tag, score)
-                VALUES (?,
-                coalesce((SELECT score FROM toptags WHERE tag = ?),0)+?)
-                """, (tag, tag, score))
-
-        conn.commit()
-        c.close()
 
     def filter_and_set_metadata(self, scope, all_tags, stats=False):
         """
@@ -494,4 +440,68 @@ class LastFM(DebugMixin, QtCore.QObject):
             stats=settings.DEBUG_STATS_TRACK
         )
 
+
+class CollectUnusedMixin(object):
+    def collect_unused(self):
+        """
+        This collects toptags not used to tag files.
+        It is a way to find new genres/groupings in the tags used on last.fm.
+        """
+        self.log.debug(u"collecting unused toptags...")
+        all_tags = apply_tag_weight(
+            (self.toptags['album'], 1),
+            (self.toptags['track'], 1),
+            (self.toptags['artist'], 1),
+            (self.toptags['all_track'], 1),
+            (self.toptags['all_artist'], 1)
+        )
+
+        searchlists = [opt['searchlist'] for cat, opt in
+                       settings.CATEGORIES.items()]
+        unknown_toptags = []
+
+        for toptag in all_tags:
+            tag, score = toptag
+            for searchlist in searchlists:
+                if tag in searchlist:
+                    toptag = None
+                    break
+            if toptag is not None:
+                unknown_toptags.append(toptag)
+
+        dbfile = os.path.join(USER_DIR, 'lastfmng', 'toptags.db')
+        self.log.debug(u"opening database: %s", dbfile)
+
+        import sqlite3
+
+        conn = sqlite3.connect(dbfile)
+        c = conn.cursor()
+
+        try:
+            c.execute("""
+                CREATE TABLE toptags (tag TEXT PRIMARY KEY, score INTEGER)
+                """)
+        except:
+            pass
+
+        for tag, score in unknown_toptags:
+            c.execute("""
+                REPLACE INTO toptags (tag, score)
+                VALUES (?,
+                coalesce((SELECT score FROM toptags WHERE tag = ?),0)+?)
+                """, (tag, tag, score))
+
+        conn.commit()
+        c.close()
+
+
+class LastFMTagger(CollectUnusedMixin, LastFM):
+    def process_album_tags(self):
+        super(LastFMTagger, self).process_album_tags()
+        if settings.ENABLE_COLLECT_UNUSED:
+            self.collect_unused()
+
+    def process_track_tags(self):
+        super(LastFMTagger, self).process_track_tags()
+        if settings.ENABLE_COLLECT_UNUSED:
             self.collect_unused()

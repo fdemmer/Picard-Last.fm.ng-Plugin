@@ -59,7 +59,7 @@ In addition the special characters `*|:"<>?` are replaced by `~` in the whole
 string.
 """
 from .meta import *
-from .plugin import LastFM
+from .plugin import LastFMTagger
 from .script import func_set2
 
 from picard.metadata import register_album_metadata_processor
@@ -72,7 +72,7 @@ def track_metadata_processor(album, metadata, track_node, release_node):
     """
     Determine track metadata using track and artist last.fm tags
     """
-    lfmws = LastFM(album, metadata, release_node)
+    lfmws = LastFMTagger(album, metadata, release_node)
     lfmws.before_finalize.append(lfmws.process_track_tags)
 
     lfmws.request_track_toptags()
@@ -85,7 +85,7 @@ def album_metadata_processor(album, metadata, release_node):
     Determine album metadata using album and all artist and all track last.fm 
     tags in the album.    
     """
-    lfmws = LastFM(album, metadata, release_node)
+    lfmws = LastFMTagger(album, metadata, release_node)
     lfmws.before_finalize.append(lfmws.process_album_tags)
 
     lfmws.request_album_toptags()
