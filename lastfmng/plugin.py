@@ -27,8 +27,30 @@ PENDING = []
 xmlws = PluginXmlWebService()
 
 
+class DebugMixin(object):
+    def print_toplist(self, merged):
+        def p(score):
+            return int(float(score) / float(topscore) * 100.0)
+
+        try:
+            topscore = merged[0][1]
+            toplist = ["{0}: {1} ({2}%)".format(n, s, p(s)) for n, s in
+                       merged[:10]]
+            self.log.info("{0}".format(", ".join(toplist)))
+        except:
+            self.log.info("None")
+
+    def print_toptag_stats(self, scope, name, correction=1):
+        toptags = self.toptags[name]
+        weight = settings.CONFIG[scope]['weight'][name]
+        self.log.info(
+            "got {0} {1} tags (x{2}):".format(len(toptags), name, weight))
+        merged = apply_tag_weight((toptags, correction))[:10]
+        self.print_toplist(merged)
+
+
 # inherit from QObject to gain access to tagger, logger and config
-class LastFM(QtCore.QObject):
+class LastFM(DebugMixin, QtCore.QObject):
     def __init__(self, album, metadata, release_node):
         super(LastFM, self).__init__()
         # finalizing is done on album level
@@ -286,25 +308,6 @@ class LastFM(QtCore.QObject):
             # while the response is not yet processed. the whole "pending"
             # design is flawed! workaround is refreshing :P
 
-    def print_toplist(self, merged):
-        def p(score):
-            return int(float(score) / float(topscore) * 100.0)
-
-        try:
-            topscore = merged[0][1]
-            toplist = ["{0}: {1} ({2}%)".format(n, s, p(s)) for n, s in
-                       merged[:10]]
-            self.log.info("{0}".format(", ".join(toplist)))
-        except:
-            self.log.info("None")
-
-    def print_toptag_stats(self, scope, name, correction=1):
-        toptags = self.toptags[name]
-        weight = settings.CONFIG[scope]['weight'][name]
-        self.log.info(
-            "got {0} {1} tags (x{2}):".format(len(toptags), name, weight))
-        merged = apply_tag_weight((toptags, correction))[:10]
-        self.print_toplist(merged)
 
     def collect_unused(self):
         """
