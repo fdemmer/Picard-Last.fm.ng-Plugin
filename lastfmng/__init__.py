@@ -58,7 +58,6 @@ The filenames will be::
 In addition the special characters `*|:"<>?` are replaced by `~` in the whole
 string.
 """
-
 from .meta import *
 from .plugin import LastFM
 from .script import func_set2
