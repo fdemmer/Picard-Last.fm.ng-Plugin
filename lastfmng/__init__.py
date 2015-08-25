@@ -87,7 +87,7 @@ except ImportError:
     from .odict import OrderedDict
 
 from .ConfigParser import ConfigParser
-from .helper import *
+from .helpers import *
 
 
 config_file = os.path.join(os.path.dirname(__file__), "config.ini")
