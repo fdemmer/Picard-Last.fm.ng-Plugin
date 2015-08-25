@@ -98,6 +98,8 @@ LASTFM_HOST = "ws.audioscrobbler.com"
 LASTFM_PORT = 80
 API_KEY = "0a8b8f968b285654f9b4f16e8e33f2ee"
 
+DEFAULT_UNKNOWN = config.get('global', 'default_unknwon').strip()
+
 # From http://www.last.fm/api/tos, 2011-07-30
 # 4.4 (...) You will not make more than 5 requests per originating IP address
 # per second, averaged over a 5 minute period, without prior written consent.
@@ -185,48 +187,48 @@ CATEGORIES = OrderedDict([
         #     will be used in the given one.
         searchlist=StringSearchlist(config.get('searchlist', 'major_genre')),
         limit=1, threshold=0.5, enabled=True, sort=False, titlecase=True,
-        separator=", ", unknown="Unknown", overflow='genre')),
+        separator=", ", unknown=DEFAULT_UNKNOWN, overflow='genre')),
     # allow genre toptags from a searchtree and use the searchlsit as fallback
     ('genre', dict(
         searchlist=StringSearchlist(config.get('searchlist', 'minor_genre')),
         #searchtree=EXAMPLE_GENRE_TREE, 
         limit=4, threshold=0.5, enabled=True, sort=False, titlecase=True,
-        separator=None, unknown="Unknown")),
+        separator=None, unknown=DEFAULT_UNKNOWN)),
     # eg. angry, cheerful, clam, ...
     ('mood', dict(
         searchlist=StringSearchlist(config.get('searchlist', 'mood')),
         limit=4, threshold=0.5, enabled=True, sort=False, titlecase=True,
-        separator=None, unknown="Unknown")),
+        separator=None, unknown=DEFAULT_UNKNOWN)),
     # eg. background, late night, party
     ('occasion', dict(
         searchlist=StringSearchlist(config.get('searchlist', 'occasion')),
         limit=4, threshold=0.5, enabled=True, sort=False, titlecase=True,
-        separator=None, unknown="Unknown")),
+        separator=None, unknown=DEFAULT_UNKNOWN)),
     # i don't really know
     ('category', dict(
         searchlist=StringSearchlist(config.get('searchlist', 'category')),
         limit=4, threshold=0.5, enabled=True, sort=False, titlecase=True,
-        separator=None, unknown="Unknown")),
+        separator=None, unknown=DEFAULT_UNKNOWN)),
     # country names
     ('country', dict(
         searchlist=StringSearchlist(config.get('searchlist', 'country')),
         limit=2, threshold=0.7, enabled=True, sort=True, titlecase=True,
-        separator=None, unknown="Unknown")),
+        separator=None, unknown=DEFAULT_UNKNOWN)),
     # city names
     ('city', dict(
         searchlist=StringSearchlist(config.get('searchlist', 'city')),
         limit=1, threshold=0.7, enabled=True, sort=True, titlecase=True,
-        separator=None, unknown="Unknown")),
+        separator=None, unknown=DEFAULT_UNKNOWN)),
     # musical era, eg. 80s, 90s, ...
     ('decade', dict(
         searchlist=RegexpSearchlist("^([1-9][0-9])*[0-9]0s$"),
         limit=1, threshold=0.7, enabled=True, sort=True, titlecase=False,
-        separator=", ", unknown="Unknown")),
+        separator=", ", unknown=DEFAULT_UNKNOWN)),
     # the full year, eg. 1995, 2000, ...
     ('year', dict(
         searchlist=RegexpSearchlist("^[1-9][0-9]{3}$"),
         limit=1, threshold=0.7, enabled=False, sort=True, titlecase=False,
-        separator=", ", unknown="Unknown")),
+        separator=", ", unknown=DEFAULT_UNKNOWN)),
 ])
 
 if config.getboolean('global', 'soundtrack_is_no_genre'):
