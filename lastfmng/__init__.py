@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import, unicode_literals
 """
 Last.fm.ng plugin
 -----------------
@@ -59,31 +60,12 @@ string.
 """
 
 from .meta import *
+from .plugin import LastFM
+from .script import func_set2
 
-
-import os
-import operator
-import traceback
-
-from picard.const import USER_DIR
-from picard.mbxml import medium_to_metadata, track_to_metadata
-from picard.metadata import Metadata
 from picard.metadata import register_album_metadata_processor
 from picard.metadata import register_track_metadata_processor
 from picard.script import register_script_function
-from picard.track import Track
-from picard.util import partial
-
-
-# import our implementation with older pythons
-try:
-    from collections import OrderedDict
-except ImportError:
-    from .odict import OrderedDict
-
-from .ConfigParser import ConfigParser
-from .helpers import *
-
 
 
 @register_track_metadata_processor
