@@ -14,9 +14,9 @@ config = ConfigParser()
 config.readfp(open(config_file))
 
 
-LASTFM_HOST = config.getboolean('global', 'lastfm_host')
-LASTFM_PORT = config.getboolean('global', 'lastfm_port')
-LASTFM_KEY = config.getboolean('global', 'lastfm_key')
+LASTFM_HOST = config.get('global', 'lastfm_host')
+LASTFM_PORT = config.getint('global', 'lastfm_port')
+LASTFM_KEY = config.get('global', 'lastfm_key')
 
 
 ENABLE_COLLECT_UNUSED = config.getboolean('global', 'collect_unused')
@@ -29,14 +29,6 @@ DEBUG_STATS_ALBUM = config.getboolean('global', 'print_tag_stats_album') \
     if DEBUG_STATS else False
 
 DEFAULT_UNKNOWN = config.get('global', 'default_unknwon').strip()
-
-
-# From http://www.last.fm/api/tos, 2011-07-30
-# 4.4 (...) You will not make more than 5 requests per originating IP address
-# per second, averaged over a 5 minute period, without prior written consent.
-from picard.webservice import REQUEST_DELAY
-
-REQUEST_DELAY[(LASTFM_HOST, LASTFM_PORT)] = 200
 
 
 # toptag to metatag configuration
@@ -157,9 +149,18 @@ CATEGORIES = OrderedDict([
         separator=", ", unknown=DEFAULT_UNKNOWN)),
 ])
 
+
 if config.getboolean('global', 'soundtrack_is_no_genre'):
     CATEGORIES['grouping']['searchlist'].remove('soundtrack')
     CATEGORIES['genre']['searchlist'].remove('soundtrack')
+
+
+# From http://www.last.fm/api/tos, 2011-07-30
+# 4.4 (...) You will not make more than 5 requests per originating IP address
+# per second, averaged over a 5 minute period, without prior written consent.
+from picard.webservice import REQUEST_DELAY
+
+REQUEST_DELAY[(LASTFM_HOST, LASTFM_PORT)] = 200
 
 
 def translate_tag(name):
