@@ -448,8 +448,7 @@ class LastFM(DebugMixin, QtCore.QObject):
         collected data for album tags.
         """
         self.log.info(">>> process album tags")
-        if settings.config.getboolean('global', 'print_tag_stats_album') and \
-                settings.config.getboolean('global', 'print_tag_stats'):
+        if settings.DEBUG_STATS_ALBUM:
             self.print_toptag_stats('album', 'album', len(self.tracks))
             self.print_toptag_stats('album', 'all_artist')
             self.print_toptag_stats('album', 'all_track')
@@ -466,10 +465,11 @@ class LastFM(DebugMixin, QtCore.QObject):
              settings.CONFIG['album']['weight']['all_artist'])
         )
 
-        self.filter_and_set_metadata('album', all_tags,
-            stats=settings.config.getboolean('global', 'print_tag_stats_album'))
-        if settings.config.getboolean('global', 'collect_unused'):
-            self.collect_unused()
+        self.filter_and_set_metadata(
+            'album',
+            all_tags,
+            stats=settings.DEBUG_STATS_ALBUM
+        )
 
     def process_track_tags(self):
         """
@@ -477,8 +477,7 @@ class LastFM(DebugMixin, QtCore.QObject):
         collected data for track tags.
         """
         self.log.info(">>> process track tags")
-        if settings.config.getboolean('global', 'print_tag_stats_track') and \
-                settings.config.getboolean('global', 'print_tag_stats'):
+        if settings.DEBUG_STATS_TRACK:
             self.print_toptag_stats('track', 'track')
             self.print_toptag_stats('track', 'artist')
 
@@ -489,7 +488,10 @@ class LastFM(DebugMixin, QtCore.QObject):
             (self.toptags['track'], settings.CONFIG['track']['weight']['track'])
         )
 
-        self.filter_and_set_metadata('track', all_tags,
-            stats=settings.config.getboolean('global', 'print_tag_stats_track'))
-        if settings.config.getboolean('global', 'collect_unused'):
+        self.filter_and_set_metadata(
+            'track',
+            all_tags,
+            stats=settings.DEBUG_STATS_TRACK
+        )
+
             self.collect_unused()
