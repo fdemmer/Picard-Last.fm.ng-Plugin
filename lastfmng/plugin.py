@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 import os
 import traceback
 from functools import partial
@@ -21,7 +23,6 @@ from .settings import translate_tag
 CACHE = {}
 # list of pending queries
 PENDING = []
-
 
 xmlws = PluginXmlWebService()
 
@@ -73,7 +74,7 @@ class LastFM(QtCore.QObject):
         """
         queue a data fetch request. this increases the requests counter.
         this method returns after queueing. the requests are then processed
-        sequencially. queueing can be influenced using the priority and
+        sequentially. queueing can be influenced using the priority and
         important switches.
         by using priority here and not in add_task, all requests will be
         executed before the tasks, if they use the same HOST,PORT tuple for
@@ -212,6 +213,7 @@ class LastFM(QtCore.QObject):
         """
         Decorator for wrapping a request handler function.
         """
+
         def decorate(*args, **kwargs):
             try:
                 func(*args, **kwargs)
@@ -223,7 +225,6 @@ class LastFM(QtCore.QObject):
                 self.finish_request()
 
         return decorate
-
 
     def handle_toptags(self, tagtype, data, http, error):
         """
@@ -280,7 +281,7 @@ class LastFM(QtCore.QObject):
             self.toptags[tagtype].extend(toptags)
         else:
             self.log.warning("cache error: {0}, {1}".format(tagtype, query))
-            #TODO sometimes, the response from the http request is too slow,
+            # TODO sometimes, the response from the http request is too slow,
             # so the queue is already processing "pending" cache requests,
             # while the response is not yet processed. the whole "pending"
             # design is flawed! workaround is refreshing :P
@@ -319,7 +320,8 @@ class LastFM(QtCore.QObject):
             (self.toptags['all_artist'], 1)
         )
 
-        searchlists = [opt['searchlist'] for cat, opt in settings.CATEGORIES.items()]
+        searchlists = [opt['searchlist'] for cat, opt in
+                       settings.CATEGORIES.items()]
         unknown_toptags = []
 
         for toptag in all_tags:
@@ -475,7 +477,8 @@ class LastFM(QtCore.QObject):
 
         # get complete, balanced, sorted list (high first) of tags
         all_tags = apply_tag_weight(
-            (self.toptags['artist'], settings.CONFIG['track']['weight']['artist']),
+            (self.toptags['artist'],
+             settings.CONFIG['track']['weight']['artist']),
             (self.toptags['track'], settings.CONFIG['track']['weight']['track'])
         )
 
