@@ -17,8 +17,6 @@ from .mixins import DebugMixin, CollectUnusedMixin
 from .settings import translate_tag
 
 
-
-
 # dictionary for query: toptag lists
 CACHE = {}
 # list of pending queries
@@ -299,8 +297,9 @@ class LastFM(DebugMixin, QtCore.QObject):
         # find valid tags, split into categories and limit results
         if stats:
             self.log.info(">>> name: {0}".format(
-                (self.metadata.get('title') or \
-                 self.metadata.get('album')).encode('utf-8')))
+                (self.metadata.get('title') or self.metadata.get('album')) \
+                    .encode('utf8').decode('utf8')
+            ))
 
         result = {}
         for category, opt in settings.CATEGORIES.items():
