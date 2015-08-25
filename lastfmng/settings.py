@@ -18,7 +18,16 @@ LASTFM_PORT = 80
 API_KEY = "0a8b8f968b285654f9b4f16e8e33f2ee"
 
 
+ENABLE_COLLECT_UNUSED = config.getboolean('global', 'collect_unused')
+
+DEBUG_STATS = config.getboolean('global', 'print_tag_stats')
+DEBUG_STATS_TRACK = config.getboolean('global', 'print_tag_stats_track') \
+    if DEBUG_STATS else False
+DEBUG_STATS_ALBUM = config.getboolean('global', 'print_tag_stats_album') \
+    if DEBUG_STATS else False
+
 DEFAULT_UNKNOWN = config.get('global', 'default_unknwon').strip()
+
 
 # From http://www.last.fm/api/tos, 2011-07-30
 # 4.4 (...) You will not make more than 5 requests per originating IP address
