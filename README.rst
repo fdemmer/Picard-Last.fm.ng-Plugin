@@ -46,7 +46,7 @@ thing for you.
 Install
 =======
 
-Copy the "lastfmng" directory to `~/.config/MusicBrainz/Picard/plugins` and
+Copy the "lastfmng" directory to ``~/.config/MusicBrainz/Picard/plugins`` and
 activate the plugin in the GUI.
 
 
@@ -54,27 +54,27 @@ Configuration
 =============
 
 The plugin does not provide a configuration dialog, but is easy to configure
-by customizing the provided `config.ini` file.
+by customizing the provided ``config.ini`` file.
 
-Please use your own Last.fm API key and set it using `lastfm_key`.
-You don't need to change `lastfm_host` or `lastfm_port`, but by setting
-`lastfm_port` to `443` https will be used.
+Please use your own Last.fm API key and set it using ``lastfm_key``.
+You don't need to change ``lastfm_host`` or ``lastfm_port``, but by setting
+``lastfm_port`` to ``443`` https will be used.
 
 The plugin does not just use all the tags it finds on Last.fm.
 Only tags listed in the respective "search lists" will be used.
 
-Customize the lists in the `[searchlist]` section of the configu file.
+Customize the lists in the ``[searchlist]`` section of the configu file.
 
-Translations of common tag variations are set in the `[translations]` section.
+Translations of common tag variations are set in the ``[translations]`` section.
 The first value is replaced with the second one.
 
 
 Advanced configuration
 ======================
 
-More advanced configuration is possible in the `settings.py` file.
+More advanced configuration is possible in the ``settings.py`` file.
 
-The `CATEGORIES` and `CONFIG` dictionaries defines how the plugin finds and
+The ``CATEGORIES`` and ``CONFIG`` dictionaries defines how the plugin finds and
 selects tags for each metatag.
 
 Contrary to the Last.fm.Plus plugin this one works via two plugin API triggers:
