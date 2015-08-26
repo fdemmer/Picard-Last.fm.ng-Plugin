@@ -42,25 +42,42 @@ The "year" metatag is disabled for now.
 There may be others, so best try it out yourself and see if it does the right
 thing for you.
 
+
 Install
 =======
 
-Copy the "lastfmng" directory to ~/.config/MusicBrainz/Picard/plugins and activate
-the plugin in the GUI.
+Copy the "lastfmng" directory to `~/.config/MusicBrainz/Picard/plugins` and
+activate the plugin in the GUI.
 
 
 Configuration
 =============
 
-For now the configuration dialog is removed. You should get a valid Last.fm
-API key and set the API_KEY variable before using the plugin!
+The plugin does not provide a configuration dialog, but is easy to configure
+by customizing the provided `config.ini` file.
 
-You can change the search lists directly using the values of the
-DEFAULT_FILTER_* variables. Translations of common tag variations are set in
-TRANSLATIONS. The first value is replaced with the second one.
+Please use your own Last.fm API key and set it using `lastfm_key`.
+You don't need to change `lastfm_host` or `lastfm_port`, but by setting
+`lastfm_port` to `443` https will be used.
 
-The CATEGORIES and CONFIG dictionaries define how the plugin works. Contrary to 
-the Last.fm.Plus plugin this one works via two plugin API triggers:
+The plugin does not just use all the tags it finds on Last.fm.
+Only tags listed in the respective "search lists" will be used.
+
+Customize the lists in the `[searchlist]` section of the configu file.
+
+Translations of common tag variations are set in the `[translations]` section.
+The first value is replaced with the second one.
+
+
+Advanced configuration
+======================
+
+More advanced configuration is possible in the `settings.py` file.
+
+The `CATEGORIES` and `CONFIG` dictionaries defines how the plugin finds and
+selects tags for each metatag.
+
+Contrary to the Last.fm.Plus plugin this one works via two plugin API triggers:
 
 - register_track_metadata_processor
 - register_album_metadata_processor
