@@ -103,12 +103,12 @@ CATEGORIES = OrderedDict([
         # unknown: the string to use if no toptag was found for the category
         # overflow: name of another category, unused toptags in this category
         #     will be used in the given one.
-        searchlist=StringSearchlist(config.get('searchlist', 'major_genre')),
+        searchlist=StringSearchlist(config.get('searchlist', 'grouping')),
         limit=1, threshold=0.5, enabled=True, sort=False, titlecase=True,
         separator=", ", unknown=DEFAULT_UNKNOWN, overflow='genre')),
     # allow genre toptags from a searchtree and use the searchlsit as fallback
     ('genre', dict(
-        searchlist=StringSearchlist(config.get('searchlist', 'minor_genre')),
+        searchlist=StringSearchlist(config.get('searchlist', 'genre')),
         #searchtree=EXAMPLE_GENRE_TREE,
         limit=4, threshold=0.5, enabled=True, sort=False, titlecase=True,
         separator=None, unknown=DEFAULT_UNKNOWN)),
