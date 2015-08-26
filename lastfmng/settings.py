@@ -28,7 +28,7 @@ DEBUG_STATS_TRACK = config.getboolean('global', 'print_tag_stats_track') \
 DEBUG_STATS_ALBUM = config.getboolean('global', 'print_tag_stats_album') \
     if DEBUG_STATS else False
 
-DEFAULT_UNKNOWN = config.get('global', 'default_unknwon').strip()
+DEFAULT_UNKNOWN = config.get('global', 'default_unknown').strip()
 
 
 # toptag to metatag configuration
