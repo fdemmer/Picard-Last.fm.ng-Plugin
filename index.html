@@ -28,175 +28,174 @@
         </ul>
       </header>
       <section>
-        <p>Picard Last.fm.ng Plugin</p>
+        <h1>
+<a id="picard-lastfmng-plugin" class="anchor" href="#picard-lastfmng-plugin" aria-hidden="true"><span class="octicon octicon-link"></span></a>Picard Last.fm.ng Plugin</h1>
 
-<pre><code>
-This plugin has been on github for over three years. I use it all the time
+<p>This plugin has been on github for over three years. I use it all the time
 and a few people have contacted me, telling me about minor issues.
-Therefore I am assuming people use it and it works.
+Therefore I am assuming people use it and it works.</p>
 
-However, this is free software and if something goes wrong it is totally our
-own fault!
+<p>However, this is free software and if something goes wrong it is totally our
+own fault!</p>
 
+<h2>
+<a id="about" class="anchor" href="#about" aria-hidden="true"><span class="octicon octicon-link"></span></a>About</h2>
 
-About
-=====
-
-The original and the plus Last.fm plugins are great. I used them a lot.
+<p>The original and the plus Last.fm plugins are great. I used them a lot.
 However I always felt the configuration was overly complicated and the code
-a bit of a mess and how the end result came to be sometimes a mystery.
+a bit of a mess and how the end result came to be sometimes a mystery.</p>
 
-Also I wanted a rocksolid way to only get exactly one genre tag at all times 
+<p>Also I wanted a rocksolid way to only get exactly one genre tag at all times 
 for a complete album. Plus sometimes delivered two, when just one was 
-configured and there was no way to determine a single "albumgenre".
+configured and there was no way to determine a single "albumgenre".</p>
 
-Some of the code and especially the name lists are reused from plus. Thanks
-again for your work on this... RifRaf, Lukáš Lalinský, voiceinsideyou!
+<p>Some of the code and especially the name lists are reused from plus. Thanks
+again for your work on this... RifRaf, Lukáš Lalinský, voiceinsideyou!</p>
 
-Differences to Last.fm.Plus
----------------------------
+<h3>
+<a id="differences-to-lastfmplus" class="anchor" href="#differences-to-lastfmplus" aria-hidden="true"><span class="octicon octicon-link"></span></a>Differences to Last.fm.Plus</h3>
 
-When using translations, the score of both toptags are summarized, rather 
-"the greater wins, the lesser is dropped".
+<p>When using translations, the score of both toptags are summarized, rather 
+"the greater wins, the lesser is dropped".</p>
 
-Years and decades use a regular expression to find valid values. With decades,
+<p>Years and decades use a regular expression to find valid values. With decades,
 both "00s" and "2000s" are valid. This can be easily customized using the
-LFM_DECADE and LFM_YEAR variables.
+LFM_DECADE and LFM_YEAR variables.</p>
 
-There is no "inter tag drop". The "minimum weight" is hardcoded to 1. So toptags
+<p>There is no "inter tag drop". The "minimum weight" is hardcoded to 1. So toptags
 with score 0 are ignored. Usually they would not appear in any of the search
-lists anyway.
+lists anyway.</p>
 
-The "year" metatag is disabled for now.
+<p>The "year" metatag is disabled for now.</p>
 
-There may be others, so best try it out yourself and see if it does the right
-thing for you.
+<p>There may be others, so best try it out yourself and see if it does the right
+thing for you.</p>
 
+<h2>
+<a id="install" class="anchor" href="#install" aria-hidden="true"><span class="octicon octicon-link"></span></a>Install</h2>
 
-Install
-=======
+<p>Copy the "lastfmng" directory to <code>~/.config/MusicBrainz/Picard/plugins</code> and
+activate the plugin in the GUI.</p>
 
-Copy the "lastfmng" directory to ``~/.config/MusicBrainz/Picard/plugins`` and
-activate the plugin in the GUI.
+<h2>
+<a id="configuration" class="anchor" href="#configuration" aria-hidden="true"><span class="octicon octicon-link"></span></a>Configuration</h2>
 
+<p>The plugin does not provide a configuration dialog, but is easy to configure
+by customizing the provided <code>config.ini</code> file.</p>
 
-Configuration
-=============
+<p>Please use your own Last.fm API key and set it using <code>lastfm_key</code>.
+You don't need to change <code>lastfm_host</code> or <code>lastfm_port</code>, but by setting
+<code>lastfm_port</code> to <code>443</code> https will be used.</p>
 
-The plugin does not provide a configuration dialog, but is easy to configure
-by customizing the provided ``config.ini`` file.
+<p>The plugin does not just use all the tags it finds on Last.fm.
+Only tags listed in the respective "search lists" will be used.</p>
 
-Please use your own Last.fm API key and set it using ``lastfm_key``.
-You don't need to change ``lastfm_host`` or ``lastfm_port``, but by setting
-``lastfm_port`` to ``443`` https will be used.
+<p>Customize the lists in the <code>[searchlist]</code> section of the configu file.</p>
 
-The plugin does not just use all the tags it finds on Last.fm.
-Only tags listed in the respective "search lists" will be used.
+<p>Translations of common tag variations are set in the <code>[translations]</code> section.
+The first value is replaced with the second one.</p>
 
-Customize the lists in the ``[searchlist]`` section of the configu file.
+<h2>
+<a id="advanced-configuration" class="anchor" href="#advanced-configuration" aria-hidden="true"><span class="octicon octicon-link"></span></a>Advanced configuration</h2>
 
-Translations of common tag variations are set in the ``[translations]`` section.
-The first value is replaced with the second one.
+<p>More advanced configuration is possible in the <code>settings.py</code> file.</p>
 
+<p>The <code>CATEGORIES</code> and <code>CONFIG</code> dictionaries defines how the plugin finds and
+selects tags for each metatag.</p>
 
-Advanced configuration
-======================
+<p>Contrary to the Last.fm.Plus plugin this one works via two plugin API triggers:</p>
 
-More advanced configuration is possible in the ``settings.py`` file.
+<ul>
+<li>register_track_metadata_processor</li>
+<li>register_album_metadata_processor</li>
+</ul>
 
-The ``CATEGORIES`` and ``CONFIG`` dictionaries defines how the plugin finds and
-selects tags for each metatag.
-
-Contrary to the Last.fm.Plus plugin this one works via two plugin API triggers:
-
-- register_track_metadata_processor
-- register_album_metadata_processor
-
-The Last.fm.Plus plugin only used the track metadata processor. Therefore
+<p>The Last.fm.Plus plugin only used the track metadata processor. Therefore
 it could not set metatags that need to be the same for all tracks, the whole
 album. The CONFIG dictionary contains the configuration for both triggers: 
-"album" and "track".
+"album" and "track".</p>
 
-Album metadata processor
-------------------------
+<h3>
+<a id="album-metadata-processor" class="anchor" href="#album-metadata-processor" aria-hidden="true"><span class="octicon octicon-link"></span></a>Album metadata processor</h3>
 
-In the "album" run the plugin collects the toptags for 
+<p>In the "album" run the plugin collects the toptags for </p>
 
-- the album ("album" list), 
-- the artist of each track  ("all_artists" list) and 
-- each track ("all_tracks" list). 
+<ul>
+<li>the album ("album" list), </li>
+<li>the artist of each track  ("all_artists" list) and </li>
+<li>each track ("all_tracks" list). </li>
+</ul>
 
-The toptags are collected in lists and when all tags are received, they are
+<p>The toptags are collected in lists and when all tags are received, they are
 sorted into "categories" using the search lists. The "weight" parameters in the 
-CONFIG dictionary are the factors, that are applied to the "score" of each tag.
+CONFIG dictionary are the factors, that are applied to the "score" of each tag.</p>
 
-So use the "weight" parameters to influence, whether to rank the toptags from 
-eg. the album higher, than those of all tracks combined.
+<p>So use the "weight" parameters to influence, whether to rank the toptags from 
+eg. the album higher, than those of all tracks combined.</p>
 
-The "tag" parameters define in what metatag (id3, ...) the toptags of which 
+<p>The "tag" parameters define in what metatag (id3, ...) the toptags of which 
 category are written. The first (the key) is the name of the category. 
 Previously there were minor and major toptags. I decided to directly use 
-"genre" and "grouping". The second (the value) is the name of the metatag.
+"genre" and "grouping". The second (the value) is the name of the metatag.</p>
 
-So to assign the toptags of category "genre" to the "grouping" metatag simply
-change the second value.
+<p>So to assign the toptags of category "genre" to the "grouping" metatag simply
+change the second value.</p>
 
-As you can see the metatags in the "album" are actually not valid for most media
+<p>As you can see the metatags in the "album" are actually not valid for most media
 formats. They are meant to be used in naming scripts (for example a "genre"
 path), because they are guaranteed to be the same for all tracks of the entire
-album.
+album.</p>
 
-Track metadata processor
-------------------------
+<h3>
+<a id="track-metadata-processor" class="anchor" href="#track-metadata-processor" aria-hidden="true"><span class="octicon octicon-link"></span></a>Track metadata processor</h3>
 
-The "track" run works very similar to the Last.fm.Plus plugin. It collects 
-toptags for
+<p>The "track" run works very similar to the Last.fm.Plus plugin. It collects 
+toptags for</p>
 
-- the artist ("artist" list) and
-- the track ("track" list)
+<ul>
+<li>the artist ("artist" list) and</li>
+<li>the track ("track" list)</li>
+</ul>
 
-for each track of the album separately one by one.
+<p>for each track of the album separately one by one.</p>
 
-Again the weight parameters are the multiplicators applied to the toptag lists.
+<p>Again the weight parameters are the multiplicators applied to the toptag lists.
 To disable tagging using the track information and only use the artist, simply 
-set the weight of "track" to 0.
+set the weight of "track" to 0.</p>
 
-If you used the Last.fm.Plus plugin the metatag names in the "tags" section will
+<p>If you used the Last.fm.Plus plugin the metatag names in the "tags" section will
 be familiar. Each metatag is set per track. Similar to before, the first column
 are the "categories" in which toptags are grouped using the search lists and the
-second column are the names of the metatags in your files.
+second column are the names of the metatags in your files.</p>
 
-Metatag formatting 
-------------------
+<h3>
+<a id="metatag-formatting" class="anchor" href="#metatag-formatting" aria-hidden="true"><span class="octicon octicon-link"></span></a>Metatag formatting</h3>
 
-What is left, is the CATEGORIES dictionary. Here you can set a hard "limit" how
+<p>What is left, is the CATEGORIES dictionary. Here you can set a hard "limit" how
 many of the found toptags should be used per category (and assigned to a
-metatag).
+metatag).</p>
 
-If you set the limit to 1 and two toptags have exactly the same score the result
+<p>If you set the limit to 1 and two toptags have exactly the same score the result
 will be exactly one toptag, which one however is not clearly defined! There is
-room for improvement here.
+room for improvement here.</p>
 
-To disable writing a specific category/metatag set "enabled" to False. Setting
+<p>To disable writing a specific category/metatag set "enabled" to False. Setting
 "sort" to True will sort the toptags alphabetically after the ones with the
 highest score have been determined. Set this to False to keep the one with the
-highest score in front!
+highest score in front!</p>
 
-Using "titlecase" you can switch fixing the case of toptags off and on. The
+<p>Using "titlecase" you can switch fixing the case of toptags off and on. The
 "separator" is used to combine more than one toptag into a metatag string and in
-case not a single toptag was found for a category the value of "unknown" is set.
+case not a single toptag was found for a category the value of "unknown" is set.</p>
 
-Searchlists and searchtrees
----------------------------
+<h3>
+<a id="searchlists-and-searchtrees" class="anchor" href="#searchlists-and-searchtrees" aria-hidden="true"><span class="octicon octicon-link"></span></a>Searchlists and searchtrees</h3>
 
-The CATEGORIES dictionary is an ordered dictionary. The sequence of categories
+<p>The CATEGORIES dictionary is an ordered dictionary. The sequence of categories
 is important when using searchtrees. Searchtrees are an attempt to implement
 Slukd's feature request for grouping-dependent genre tags
-(http://forums.musicbrainz.org/viewtopic.php?pid=15871#p15871). Please see the
-source comments on how to use this.
-
-
-</code></pre>
+(<a href="http://forums.musicbrainz.org/viewtopic.php?pid=15871#p15871">http://forums.musicbrainz.org/viewtopic.php?pid=15871#p15871</a>). Please see the
+source comments on how to use this.</p>
       </section>
       <footer>
         <p>This project is maintained by <a href="https://github.com/fdemmer">fdemmer</a></p>
