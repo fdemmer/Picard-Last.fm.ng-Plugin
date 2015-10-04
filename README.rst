@@ -1,5 +1,4 @@
-Picard Last.fm.ng Plugin
-~~~~~~~~~~~~~~~~~~~~~~~~
+# Picard Last.fm.ng Plugin
 
 This plugin has been on github for over three years. I use it all the time
 and a few people have contacted me, telling me about minor issues.
@@ -9,8 +8,7 @@ However, this is free software and if something goes wrong it is totally our
 own fault!
 
 
-About
-=====
+## About
 
 The original and the plus Last.fm plugins are great. I used them a lot.
 However I always felt the configuration was overly complicated and the code
@@ -23,8 +21,7 @@ configured and there was no way to determine a single "albumgenre".
 Some of the code and especially the name lists are reused from plus. Thanks
 again for your work on this... RifRaf, Lukáš Lalinský, voiceinsideyou!
 
-Differences to Last.fm.Plus
----------------------------
+### Differences to Last.fm.Plus
 
 When using translations, the score of both toptags are summarized, rather 
 "the greater wins, the lesser is dropped".
@@ -43,15 +40,13 @@ There may be others, so best try it out yourself and see if it does the right
 thing for you.
 
 
-Install
-=======
+## Install
 
 Copy the "lastfmng" directory to ``~/.config/MusicBrainz/Picard/plugins`` and
 activate the plugin in the GUI.
 
 
-Configuration
-=============
+## Configuration
 
 The plugin does not provide a configuration dialog, but is easy to configure
 by customizing the provided ``config.ini`` file.
@@ -69,8 +64,7 @@ Translations of common tag variations are set in the ``[translations]`` section.
 The first value is replaced with the second one.
 
 
-Advanced configuration
-======================
+## Advanced configuration
 
 More advanced configuration is possible in the ``settings.py`` file.
 
@@ -87,8 +81,8 @@ it could not set metatags that need to be the same for all tracks, the whole
 album. The CONFIG dictionary contains the configuration for both triggers: 
 "album" and "track".
 
-Album metadata processor
-------------------------
+
+### Album metadata processor
 
 In the "album" run the plugin collects the toptags for 
 
@@ -116,8 +110,8 @@ formats. They are meant to be used in naming scripts (for example a "genre"
 path), because they are guaranteed to be the same for all tracks of the entire
 album.
 
-Track metadata processor
-------------------------
+
+### Track metadata processor
 
 The "track" run works very similar to the Last.fm.Plus plugin. It collects 
 toptags for
@@ -136,8 +130,8 @@ be familiar. Each metatag is set per track. Similar to before, the first column
 are the "categories" in which toptags are grouped using the search lists and the
 second column are the names of the metatags in your files.
 
-Metatag formatting 
-------------------
+
+### Metatag formatting 
 
 What is left, is the CATEGORIES dictionary. Here you can set a hard "limit" how
 many of the found toptags should be used per category (and assigned to a
@@ -156,13 +150,11 @@ Using "titlecase" you can switch fixing the case of toptags off and on. The
 "separator" is used to combine more than one toptag into a metatag string and in
 case not a single toptag was found for a category the value of "unknown" is set.
 
-Searchlists and searchtrees
----------------------------
+
+### Searchlists and searchtrees
 
 The CATEGORIES dictionary is an ordered dictionary. The sequence of categories
 is important when using searchtrees. Searchtrees are an attempt to implement
 Slukd's feature request for grouping-dependent genre tags
 (http://forums.musicbrainz.org/viewtopic.php?pid=15871#p15871). Please see the
 source comments on how to use this.
-
-
