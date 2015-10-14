@@ -13,7 +13,7 @@ def uniq(iterable):
     return [set.setdefault(e, e) for e in iterable if e not in set]
 
 
-def join_tags(tuples, separator=", ", titlecase=True, sort=True, limit=None):
+def join_tags(tuples, limit=None, separator=", ", sort=True, titlecase=True):
     """
     create a metatag string for a list of tag tuples
     tag names are title-cased (override using titlecase)
