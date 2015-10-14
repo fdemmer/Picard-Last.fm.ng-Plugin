@@ -12,6 +12,12 @@ config_file = os.path.join(os.path.dirname(__file__), "config.ini")
 config = ConfigParser()
 config.readfp(open(config_file))
 
+def get_config(section, name, type=''):
+    try:
+        return getattr(config, 'get{}'.format(type))(section, name)
+    except NoOptionError:
+        pass
+
 
 LASTFM_HOST = config.get('global', 'lastfm_host')
 LASTFM_PORT = config.getint('global', 'lastfm_port')
