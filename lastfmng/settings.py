@@ -102,7 +102,8 @@ class Category(object):
 
     @property
     def separator(self):
-        return self.tag_config('separator') or None
+        s = self.tag_config('separator')
+        return s.strip('"') if s else None
 
     def tag_config(self, key, type=''):
         return get_config('tag-{}'.format(self.name), key, type) or \
