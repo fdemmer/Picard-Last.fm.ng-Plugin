@@ -1,13 +1,5 @@
 # Picard Last.fm.ng Plugin
 
-This plugin has been on github for over three years. I use it all the time
-and a few people have contacted me, telling me about minor issues.
-Therefore I am assuming people use it and it works.
-
-However, this is free software and if something goes wrong it is totally our
-own fault!
-
-
 ## About
 
 The original and the plus Last.fm plugins are great. I used them a lot.
@@ -158,3 +150,14 @@ is important when using searchtrees. Searchtrees are an attempt to implement
 Slukd's feature request for grouping-dependent genre tags
 (http://forums.musicbrainz.org/viewtopic.php?pid=15871#p15871). Please see the
 source comments on how to use this.
+
+
+## Disclaimer
+
+Even though this piece of software has been in use by many people including
+myself for years, things could go wrong. I hope it does not cause you any 
+trouble. If it does, please open an issue and maybe we can fix it.
+
+However, since this is still a hobby/side project I cannot guarantee any 
+functionality or responsiveness on requests. Also since it is free software,
+maybe you can have a look at the code your self and send in improvements!
