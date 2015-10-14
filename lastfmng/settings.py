@@ -106,42 +106,49 @@ CATEGORIES = OrderedDict([
         searchlist=StringSearchlist(config.get('searchlist', 'grouping')),
         limit=1, threshold=0.5, enabled=True, sort=False, titlecase=True,
         separator=", ", unknown=DEFAULT_UNKNOWN, overflow='genre')),
-    # allow genre toptags from a searchtree and use the searchlsit as fallback
+
     ('genre', dict(
         searchlist=StringSearchlist(config.get('searchlist', 'genre')),
         #searchtree=EXAMPLE_GENRE_TREE,
         limit=4, threshold=0.5, enabled=True, sort=False, titlecase=True,
         separator=None, unknown=DEFAULT_UNKNOWN)),
+
     # eg. angry, cheerful, clam, ...
     ('mood', dict(
         searchlist=StringSearchlist(config.get('searchlist', 'mood')),
         limit=4, threshold=0.5, enabled=True, sort=False, titlecase=True,
         separator=None, unknown=DEFAULT_UNKNOWN)),
+
     # eg. background, late night, party
     ('occasion', dict(
         searchlist=StringSearchlist(config.get('searchlist', 'occasion')),
         limit=4, threshold=0.5, enabled=True, sort=False, titlecase=True,
         separator=None, unknown=DEFAULT_UNKNOWN)),
+
     # i don't really know
     ('category', dict(
         searchlist=StringSearchlist(config.get('searchlist', 'category')),
         limit=4, threshold=0.5, enabled=True, sort=False, titlecase=True,
         separator=None, unknown=DEFAULT_UNKNOWN)),
+
     # country names
     ('country', dict(
         searchlist=StringSearchlist(config.get('searchlist', 'country')),
         limit=2, threshold=0.7, enabled=True, sort=True, titlecase=True,
         separator=None, unknown=DEFAULT_UNKNOWN)),
+
     # city names
     ('city', dict(
         searchlist=StringSearchlist(config.get('searchlist', 'city')),
         limit=1, threshold=0.7, enabled=True, sort=True, titlecase=True,
         separator=None, unknown=DEFAULT_UNKNOWN)),
+
     # musical era, eg. 80s, 90s, ...
     ('decade', dict(
         searchlist=RegexpSearchlist("^([1-9][0-9])*[0-9]0s$"),
         limit=1, threshold=0.7, enabled=True, sort=True, titlecase=False,
         separator=", ", unknown=DEFAULT_UNKNOWN)),
+
     # the full year, eg. 1995, 2000, ...
     ('year', dict(
         searchlist=RegexpSearchlist("^[1-9][0-9]{3}$"),
