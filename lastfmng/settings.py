@@ -4,8 +4,7 @@ from __future__ import unicode_literals
 import os
 
 from .helpers.searchlists import RegexpSearchlist, StringSearchlist
-
-from .compat import ConfigParser, OrderedDict
+from .compat import ConfigParser, NoOptionError
 
 
 config_file = os.path.join(os.path.dirname(__file__), "config.ini")
@@ -69,78 +68,75 @@ CONFIG = {
 }
 
 
+class Category(object):
+    def __init__(self, name, searchlist=None):
+        self.name = name
+        self.searchlist = self.load_searchlist(searchlist)
+
+    def __unicode__(self):
+        return self.name
+
+    @property
+    def is_enabled(self):
+        return self.tag_config('enabled', 'boolean') or True
+
+    @property
+    def threshold(self):
+        return self.tag_config('threshold', 'float') or 0.5
+
+    @property
+    def limit(self):
+        return self.tag_config('limit', 'int') or 4
+
+    @property
+    def overflow(self):
+        return self.tag_config('overflow') or None
+
+    @property
+    def sort(self):
+        return self.tag_config('sort', 'boolean') or False
+
+    @property
+    def titlecase(self):
+        return self.tag_config('titlecase', 'boolean') or True
+
+    @property
+    def separator(self):
+        return self.tag_config('separator') or None
+
+    def tag_config(self, key, type=''):
+        return get_config('tag-{}'.format(self.name), key, type) or \
+               get_config('tag-{}'.format('defaults'), key, type)
+
+    def load_searchlist(self, searchlist=None):
+        # default to a string searchlist and load config by name
+        if not searchlist:
+            searchlist = StringSearchlist(config.get('searchlist', self.name))
+        # exclude 'soundtrack' as a tagname
+        if get_config('global', 'soundtrack_is_no_genre', 'boolean'):
+            searchlist.remove('soundtrack')
+        return searchlist
 
 
-# TODO integrate CONFIG stuff into this dict
-CATEGORIES = OrderedDict([
+CATEGORIES = [
     # grouping is used as major/high level category
-    ('grouping', dict(
-        # limit: a hard limit for how many toptags are assigned to the metatag
-        # threshold: percentage; only the toptags with a score above are used
-        # enabled: don't collect toptags for that category
-        # sort: alphabetically sort toptags before joining to string
-        # titlecase: apply titlecase() function to each toptag
-        # separator: used to join toptags if >1 are to be used
-        #   (None to use multtag)
-        # unknown: the string to use if no toptag was found for the category
-        # overflow: name of another category, unused toptags in this category
-        #     will be used in the given one.
-        searchlist=StringSearchlist(config.get('searchlist', 'grouping')),
-        limit=1, threshold=0.5, enabled=True, sort=False, titlecase=True,
-        separator=", ", unknown=DEFAULT_UNKNOWN, overflow='genre')),
-
-    ('genre', dict(
-        searchlist=StringSearchlist(config.get('searchlist', 'genre')),
-        limit=4, threshold=0.5, enabled=True, sort=False, titlecase=True,
-        separator=None, unknown=DEFAULT_UNKNOWN)),
-
+    Category('grouping'),
+    Category('genre'),
     # eg. angry, cheerful, clam, ...
-    ('mood', dict(
-        searchlist=StringSearchlist(config.get('searchlist', 'mood')),
-        limit=4, threshold=0.5, enabled=True, sort=False, titlecase=True,
-        separator=None, unknown=DEFAULT_UNKNOWN)),
-
+    Category('mood'),
     # eg. background, late night, party
-    ('occasion', dict(
-        searchlist=StringSearchlist(config.get('searchlist', 'occasion')),
-        limit=4, threshold=0.5, enabled=True, sort=False, titlecase=True,
-        separator=None, unknown=DEFAULT_UNKNOWN)),
-
+    Category('occasion'),
     # i don't really know
-    ('category', dict(
-        searchlist=StringSearchlist(config.get('searchlist', 'category')),
-        limit=4, threshold=0.5, enabled=True, sort=False, titlecase=True,
-        separator=None, unknown=DEFAULT_UNKNOWN)),
-
+    Category('category'),
     # country names
-    ('country', dict(
-        searchlist=StringSearchlist(config.get('searchlist', 'country')),
-        limit=2, threshold=0.7, enabled=True, sort=True, titlecase=True,
-        separator=None, unknown=DEFAULT_UNKNOWN)),
-
+    Category('country'),
     # city names
-    ('city', dict(
-        searchlist=StringSearchlist(config.get('searchlist', 'city')),
-        limit=1, threshold=0.7, enabled=True, sort=True, titlecase=True,
-        separator=None, unknown=DEFAULT_UNKNOWN)),
-
+    Category('city'),
     # musical era, eg. 80s, 90s, ...
-    ('decade', dict(
-        searchlist=RegexpSearchlist("^([1-9][0-9])*[0-9]0s$"),
-        limit=1, threshold=0.7, enabled=True, sort=True, titlecase=False,
-        separator=", ", unknown=DEFAULT_UNKNOWN)),
-
+    Category('decade', RegexpSearchlist("^([1-9][0-9])*[0-9]0s$")),
     # the full year, eg. 1995, 2000, ...
-    ('year', dict(
-        searchlist=RegexpSearchlist("^[1-9][0-9]{3}$"),
-        limit=1, threshold=0.7, enabled=False, sort=True, titlecase=False,
-        separator=", ", unknown=DEFAULT_UNKNOWN)),
-])
-
-
-if config.getboolean('global', 'soundtrack_is_no_genre'):
-    CATEGORIES['grouping']['searchlist'].remove('soundtrack')
-    CATEGORIES['genre']['searchlist'].remove('soundtrack')
+    Category('year', RegexpSearchlist("^[1-9][0-9]{3}$")),
+]
 
 
 # From http://www.last.fm/api/tos, 2011-07-30
