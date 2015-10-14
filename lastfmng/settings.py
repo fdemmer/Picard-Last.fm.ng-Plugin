@@ -3,7 +3,6 @@ from __future__ import unicode_literals
 
 import os
 
-from .helpers.experimental import SearchTree
 from .helpers.searchlists import RegexpSearchlist, StringSearchlist
 
 from .compat import ConfigParser, OrderedDict

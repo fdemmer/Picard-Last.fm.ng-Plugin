@@ -301,14 +301,6 @@ class LastFM(DebugMixin, QtCore.QObject):
             if not opt['enabled']:
                 continue
 
-            # use a simple searchlist for the category
-            searchlist = opt['searchlist']
-            # if a searchtree is configured for this category...
-            searchtree = opt.get('searchtree', None)
-            if searchtree is not None:
-                # or fall back to the configured searchlist
-                searchlist = searchtree.get_searchlist(result) or searchlist
-
             for tag, score in all_tags:
 
                 # stop searching when tag score is below threshold
