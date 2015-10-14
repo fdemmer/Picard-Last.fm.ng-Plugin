@@ -280,7 +280,7 @@ class LastFM(DebugMixin, QtCore.QObject):
     def filter_and_set_metadata(self, scope, all_tags, stats=False):
         """
         processing of a merged toptag list:
-        handles disabled categories, sorting into categories, searchtree loading,
+        handles disabled categories, sorting into categories,
         determines and enforces score threshold, assigns result to metatags
         optionally logs toptag statistics
         """
@@ -306,7 +306,6 @@ class LastFM(DebugMixin, QtCore.QObject):
             # if a searchtree is configured for this category...
             searchtree = opt.get('searchtree', None)
             if searchtree is not None:
-                # get the searchlist from the tree-branch using the result
                 # or fall back to the configured searchlist
                 searchlist = searchtree.get_searchlist(result) or searchlist
 
