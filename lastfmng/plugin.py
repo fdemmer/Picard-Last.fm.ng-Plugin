@@ -292,57 +292,59 @@ class LastFM(DebugMixin, QtCore.QObject):
             ))
 
         result = {}
-        for category, opt in settings.CATEGORIES.items():
+        for category in settings.CATEGORIES:
             # initialize empty list, unless exists because of an overflow
-            result[category] = result.get(category, [])
+            result[category.name] = result.get(category.name, [])
             score_threshold = 0
 
             # this category is disabled
-            if not opt['enabled']:
+            if not category.is_enabled:
+                self.log.warning('skipping category %s', category.name)
                 continue
 
             for tag, score in all_tags:
-
                 # stop searching when tag score is below threshold
                 # (they are sorted!)
                 if score < score_threshold:
                     break
 
                 # ignore tags not in this category
-                if tag not in searchlist:
+                if tag not in category.searchlist:
                     continue
 
                 # first toptag in this category, calculate threshold
                 if score_threshold == 0:
-                    score_threshold = int(float(score) * opt['threshold'])
+                    score_threshold = int(float(score) * category.threshold)
 
                 # store the toptag
-                result[category].append((tag, score))
+                result[category.name].append((tag, score))
 
             if stats:
                 self.log.info(
-                    "> category {0} ({1}):".format(category, opt['limit']))
-                self.print_toplist(result[category])
+                    "> category {0} ({1}):".format(category.name, category.limit))
+                self.print_toplist(result[category.name])
 
             # if an overflow is configured, put the toptags, that exceed the
             # limit in the category configured for overflow
-            overflow = opt.get('overflow', None)
-            if overflow is not None:
+            if category.overflow:
                 # the overflowed toptags are not considered in the threshold
                 # calculation of that category, they are put directly into
                 # the result list.
-                result[overflow] = result[category][opt['limit']:]
+                result[category.overflow] = result[category.name][category.limit:]
                 if stats:
-                    self.log.info("...overflow to {0}:".format(overflow))
-                    self.print_toplist(result[overflow])
+                    self.log.info("...overflow to {0}:".format(category.overflow))
+                    self.print_toplist(result[category.overflow])
 
             # category is done, assign toptags to metadata
-            metatag = settings.CONFIG[scope]['tags'].get(category, None)
+            metatag = settings.CONFIG[scope]['tags'].get(category.name, None)
             if metatag is not None:
-                self.metadata[metatag] = join_tags(result[category],
-                    sort=opt['sort'], titlecase=opt['titlecase'],
-                    limit=opt['limit'], separator=opt['separator']) or \
-                                         opt['unknown']
+                self.metadata[metatag] = join_tags(
+                    result[category.name],
+                    limit=category.limit,
+                    separator=category.separator,
+                    sort=category.sort,
+                    titlecase=category.titlecase
+                ) or settings.DEFAULT_UNKNOWN
 
                 self.log.info("%s = %s" % (metatag, self.metadata[metatag]))
 
