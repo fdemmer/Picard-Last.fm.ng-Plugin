@@ -64,29 +64,29 @@ CONFIG = {
 }
 
 
-# a searchtree allows setting tags depending on a reference category's toptag
-# the other category must have been already processed! (it must come before
-# the category using the searchtree in the CATEGORIES configuration)
-# set the reference category's name as the "trunk" value
-# the "branches" are the tags allowed (the searchlist) for a specific toptag
-# eg. a "genre" tree:
-# trunk=grouping, and a track's most popular "grouping" toptag is "folk",
-# then the value of the "folk" branch is used as searchlist for the "genre"
-# category
-# in case no suitable branch is available, the normal searchlist is used!
-EXAMPLE_GENRE_TREE = SearchTree(
-    # set the tree trunk to the reference category's name
-    trunk='grouping',
-    # configure searchlists per toptag in the reference category
-    # only the most popular toptag in a category is used
-    # everything must be lower case!
-    branches={
-        # only use tags from the list in case the
-        "folk": ["finnish folk", "traditional folk"],
-        "rock": RegexpSearchlist("^.*rock.*$"),
-        "electronic": ["jazz"],
-        "pop": RegexpSearchlist("^.*pop.*$"),
-    })
+# # a searchtree allows setting tags depending on a reference category's toptag
+# # the other category must have been already processed! (it must come before
+# # the category using the searchtree in the CATEGORIES configuration)
+# # set the reference category's name as the "trunk" value
+# # the "branches" are the tags allowed (the searchlist) for a specific toptag
+# # eg. a "genre" tree:
+# # trunk=grouping, and a track's most popular "grouping" toptag is "folk",
+# # then the value of the "folk" branch is used as searchlist for the "genre"
+# # category
+# # in case no suitable branch is available, the normal searchlist is used!
+# EXAMPLE_GENRE_TREE = SearchTree(
+#     # set the tree trunk to the reference category's name
+#     trunk='grouping',
+#     # configure searchlists per toptag in the reference category
+#     # only the most popular toptag in a category is used
+#     # everything must be lower case!
+#     branches={
+#         # only use tags from the list in case the
+#         "folk": ["finnish folk", "traditional folk"],
+#         "rock": RegexpSearchlist("^.*rock.*$"),
+#         "electronic": ["jazz"],
+#         "pop": RegexpSearchlist("^.*pop.*$"),
+#     })
 
 
 # TODO integrate CONFIG stuff into this dict
