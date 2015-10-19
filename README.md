@@ -34,8 +34,16 @@ thing for you.
 
 ## Install
 
-Copy the "lastfmng" directory to ``~/.config/MusicBrainz/Picard/plugins`` and
-activate the plugin in the GUI.
+Download the latest release from the github [releases] page.
+
+Extract the "lastfmng" directory in the archive to you local user's plugin 
+directory:
+
+ - Windows: ``%APPDATA%\MusicBrainz\Picard\plugins``.
+ - Linux/MAxOS: ``~/.config/MusicBrainz/Picard/plugins``.
+
+Start or restart Picard to load the plugin and enable it in the options 
+dialog for plugins.
 
 
 ## Configuration
@@ -161,3 +169,6 @@ trouble. If it does, please open an issue and maybe we can fix it.
 However, since this is still a hobby/side project I cannot guarantee any 
 functionality or responsiveness on requests. Also since it is free software,
 maybe you can have a look at the code your self and send in improvements!
+
+
+[releases][https://github.com/fdemmer/Picard-Last.fm.ng-Plugin/releases]
