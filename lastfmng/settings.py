@@ -7,9 +7,6 @@ from .helpers.searchlists import RegexpSearchlist, StringSearchlist
 from .compat import ConfigParser, NoOptionError
 
 
-config_file = os.path.join(os.path.dirname(__file__), "config.ini")
-config = ConfigParser()
-config.readfp(open(config_file))
 config_files = [
     'defaults.ini',
     'config.ini',
