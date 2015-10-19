@@ -1,10 +1,16 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+from __future__ import unicode_literals, absolute_import
 
+import logging
 import os
 
 from .helpers.searchlists import RegexpSearchlist, StringSearchlist
 from .compat import ConfigParser, NoOptionError
+from .logging import setup_logging
+
+
+setup_logging()
+log = logging.getLogger(__name__)
 
 
 config_files = [
@@ -45,6 +51,8 @@ config = load_config(config_files)
 LASTFM_HOST = config.get('global', 'lastfm_host')
 LASTFM_PORT = config.getint('global', 'lastfm_port')
 LASTFM_KEY = config.get('global', 'lastfm_key')
+
+log.warn('Last.fm.ng: %s:%s %s', LASTFM_HOST, LASTFM_PORT, LASTFM_KEY)
 
 
 ENABLE_COLLECT_UNUSED = config.getboolean('global', 'collect_unused')
