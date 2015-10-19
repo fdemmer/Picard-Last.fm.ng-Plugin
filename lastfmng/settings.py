@@ -110,27 +110,33 @@ class Category(object):
 
     @property
     def is_enabled(self):
-        return self.tag_config('enabled', 'boolean') or True
+        value = self.tag_config('enabled', 'boolean')
+        return value if value is not None else True
 
     @property
     def threshold(self):
-        return self.tag_config('threshold', 'float') or 0.5
+        value = self.tag_config('threshold', 'float') or 0.5
+        return value if value is not None else True
 
     @property
     def limit(self):
-        return self.tag_config('limit', 'int') or 4
+        value = self.tag_config('limit', 'int') or 4
+        return value if value is not None else True
 
     @property
     def overflow(self):
-        return self.tag_config('overflow') or None
+        value = self.tag_config('overflow') or None
+        return value if value is not None else True
 
     @property
     def sort(self):
-        return self.tag_config('sort', 'boolean') or False
+        value = self.tag_config('sort', 'boolean') or False
+        return value if value is not None else True
 
     @property
     def titlecase(self):
-        return self.tag_config('titlecase', 'boolean') or True
+        value = self.tag_config('titlecase', 'boolean') or True
+        return value if value is not None else True
 
     @property
     def separator(self):
@@ -138,8 +144,10 @@ class Category(object):
         return s.strip('"') if s else None
 
     def tag_config(self, key, type=''):
-        return get_config('category-{}'.format(self.name), key, type) or \
-               get_config('category-{}'.format('defaults'), key, type)
+        value = get_config('category-{}'.format(self.name), key, type)
+        if value is None:
+            value = get_config('category-{}'.format('defaults'), key, type)
+        return value
 
     def load_searchlist(self, searchlist=None):
         # default to a string searchlist and load config by name
@@ -170,6 +178,12 @@ CATEGORIES = [
     # the full year, eg. 1995, 2000, ...
     Category('year', RegexpSearchlist("^[1-9][0-9]{3}$")),
 ]
+log.info('categories: %s', ', '.join([
+        '{} ({})'.format(c.name, c.limit)
+        for c
+        in CATEGORIES
+        if c.is_enabled == True
+    ]))
 
 
 # From http://www.last.fm/api/tos, 2011-07-30
