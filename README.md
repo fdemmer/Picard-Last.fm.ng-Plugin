@@ -13,24 +13,6 @@ configured and there was no way to determine a single "albumgenre".
 Some of the code and especially the name lists are reused from plus. Thanks
 again for your work on this... RifRaf, Lukáš Lalinský, voiceinsideyou!
 
-### Differences to Last.fm.Plus
-
-When using translations, the score of both toptags are summarized, rather 
-"the greater wins, the lesser is dropped".
-
-Years and decades use a regular expression to find valid values. With decades,
-both "00s" and "2000s" are valid. This can be easily customized using the
-LFM_DECADE and LFM_YEAR variables.
-
-There is no "inter tag drop". The "minimum weight" is hardcoded to 1. So toptags
-with score 0 are ignored. Usually they would not appear in any of the search
-lists anyway.
-
-The "year" metatag is disabled for now.
-
-There may be others, so best try it out yourself and see if it does the right
-thing for you.
-
 
 ## Install
 
@@ -64,22 +46,12 @@ Translations of common tag variations are set in the ``[translations]`` section.
 The first value is replaced with the second one.
 
 
-## Advanced configuration
+## How it works
 
-More advanced configuration is possible in the ``settings.py`` file.
-
-The ``CATEGORIES`` and ``CONFIG`` dictionaries defines how the plugin finds and
-selects tags for each metatag.
-
-Contrary to the Last.fm.Plus plugin this one works via two plugin API triggers:
+This plugin works via two Picard plugin API triggers:
 
 - register_track_metadata_processor
 - register_album_metadata_processor
-
-The Last.fm.Plus plugin only used the track metadata processor. Therefore
-it could not set metatags that need to be the same for all tracks, the whole
-album. The CONFIG dictionary contains the configuration for both triggers: 
-"album" and "track".
 
 
 ### Album metadata processor
@@ -133,31 +105,38 @@ second column are the names of the metatags in your files.
 
 ### Metatag formatting 
 
-What is left, is the CATEGORIES dictionary. Here you can set a hard "limit" how
-many of the found toptags should be used per category (and assigned to a
-metatag).
-
-If you set the limit to 1 and two toptags have exactly the same score the result
+If you set the ``limit`` to 1 and two toptags have exactly the same score the result
 will be exactly one toptag, which one however is not clearly defined! There is
 room for improvement here.
 
-To disable writing a specific category/metatag set "enabled" to False. Setting
-"sort" to True will sort the toptags alphabetically after the ones with the
+To disable writing a specific category/metatag set ``enabled`` to False. Setting
+``sort`` to True will sort the toptags alphabetically after the ones with the
 highest score have been determined. Set this to False to keep the one with the
 highest score in front!
 
-Using "titlecase" you can switch fixing the case of toptags off and on. The
-"separator" is used to combine more than one toptag into a metatag string and in
-case not a single toptag was found for a category the value of "unknown" is set.
+Using ``titlecase`` you can switch fixing the case of toptags off and on. The
+``separator`` is used to combine more than one toptag into a metatag string and in
+case not a single toptag was found for a category the value of 
+``default_unknown`` is set.
 
 
-### Searchlists and searchtrees
+### Differences to Last.fm.Plus
 
-The CATEGORIES dictionary is an ordered dictionary. The sequence of categories
-is important when using searchtrees. Searchtrees are an attempt to implement
-Slukd's feature request for grouping-dependent genre tags
-(http://forums.musicbrainz.org/viewtopic.php?pid=15871#p15871). Please see the
-source comments on how to use this.
+When using translations, the score of both toptags are summarized, rather 
+"the greater wins, the lesser is dropped".
+
+Years and decades use a regular expression to find valid values. With decades,
+both "00s" and "2000s" are valid. This can be easily customized using the
+LFM_DECADE and LFM_YEAR variables.
+
+There is no "inter tag drop". The "minimum weight" is hardcoded to 1. So toptags
+with score 0 are ignored. Usually they would not appear in any of the search
+lists anyway.
+
+The "year" metatag is disabled for now.
+
+There may be others, so best try it out yourself and see if it does the right
+thing for you.
 
 
 ## Disclaimer
