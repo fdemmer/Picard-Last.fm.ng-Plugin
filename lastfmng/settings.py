@@ -158,6 +158,60 @@ class Category(object):
             searchlist.remove('soundtrack')
         return searchlist
 
+    def filter_tags(self, all_tags):
+        l = 5
+
+        # exclude tags not relevant for this category
+        tags = [
+            (tag, score) for tag, score in all_tags
+            if tag in self.searchlist
+        ]
+
+        # exclude tags below the threshold
+        #
+        # The threshold is meant to remove tags that are extremely rare
+        # compared to the most popular one. When there are only very few tags
+        # in a category even a very seldom used tag would be considered
+        # otherwise.
+        #
+        # For example:
+        #   assume we allow 2 tags in the 'decade' category
+        #   found tags are: '90s' with score 900 and '70s' with score 200
+        #   ... so somebody probably tagged this '70s' by mistake
+        #   ... with a configured threshold of 0.5 any tag with score less
+        #       than 450 would not be considered in this example.
+        #
+        if tags:
+            log.info('%s: %s tag(s) before threshold filter:',
+                self, len(tags))
+            log.info('%s: %s%s', self,
+                ', '.join(['{} ({})'.format(t, s) for t, s in tags][:l]),
+                ', ...' if len(tags) > l else '',
+            )
+
+            #TODO make sure they are sorted by score
+            threshold = self.get_threshold(tags[0])
+            tags = [
+                (tag, score) for tag, score in tags
+                if score >= threshold
+            ]
+
+            log.info('%s: %s tag(s) filtered:', self, len(tags))
+            log.info('%s: %s%s', self,
+                ', '.join(['{} ({})'.format(t, s) for t, s in tags][:l]),
+                ', ...' if len(tags) > l else '',
+            )
+        else:
+            log.info('%s: no tags', self)
+
+        return tags
+
+    def get_threshold(self, tag):
+        threshold = int(float(tag[1]) * self.threshold)
+        log.info('%s: score threshold = %s (%.0f%%)',
+            self, threshold, self.threshold * 100)
+        return threshold
+
 
 CATEGORIES = [
     # grouping is used as major/high level category
