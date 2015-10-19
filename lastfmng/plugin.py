@@ -126,17 +126,17 @@ class LastFM(DebugMixin, QtCore.QObject):
     def cached_or_request(self, tagtype, query):
         # if the query is already cached only queue task
         if query in CACHE:
-            log.debug("cached {0}".format(query))
+            log.debug("cached %s", query)
             self.add_task(partial(self.handle_cached_toptags, tagtype, query))
         # queries in the PENDING list are already queued, queue them like
         # cache tasks. by the time they will be processed, the actual query
         # will have stored data in the cache
         elif query in PENDING:
-            log.debug("pending {0}".format(query))
+            log.debug("pending %s", query)
             self.add_task(partial(self.handle_cached_toptags, tagtype, query))
         # new queries are queued as http-requests
         else:
-            log.debug("request {0}".format(query))
+            log.debug("request %s", query)
             self.add_request(partial(self.handle_toptags, tagtype), query)
 
     def request_artist_toptags(self):
