@@ -10,12 +10,39 @@ from .compat import ConfigParser, NoOptionError
 config_file = os.path.join(os.path.dirname(__file__), "config.ini")
 config = ConfigParser()
 config.readfp(open(config_file))
+config_files = [
+    'defaults.ini',
+    'config.ini',
+    'lastfm.ini',
+]
+
+
+def load_config(config_files):
+    config = None
+    for config_file in config_files:
+        config = load_config_file(config_file, config)
+    return  config
+
+
+def load_config_file(name, config=None):
+    if not config:
+        config = ConfigParser()
+    try:
+        with open(os.path.join(os.path.dirname(__file__), name)) as fp:
+            config.readfp(fp)
+    except IOError:
+        pass
+    return config
+
 
 def get_config(section, name, type=''):
     try:
         return getattr(config, 'get{}'.format(type))(section, name)
     except NoOptionError:
         pass
+
+
+config = load_config(config_files)
 
 
 LASTFM_HOST = config.get('global', 'lastfm_host')
@@ -106,8 +133,8 @@ class Category(object):
         return s.strip('"') if s else None
 
     def tag_config(self, key, type=''):
-        return get_config('tag-{}'.format(self.name), key, type) or \
-               get_config('tag-{}'.format('defaults'), key, type)
+        return get_config('category-{}'.format(self.name), key, type) or \
+               get_config('category-{}'.format('defaults'), key, type)
 
     def load_searchlist(self, searchlist=None):
         # default to a string searchlist and load config by name
