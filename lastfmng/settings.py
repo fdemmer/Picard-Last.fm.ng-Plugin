@@ -115,33 +115,33 @@ class Category(object):
 
     @property
     def threshold(self):
-        value = self.tag_config('threshold', 'float') or 0.5
-        return value if value is not None else True
+        value = self.tag_config('threshold', 'float')
+        return value if value is not None else 0.5
 
     @property
     def limit(self):
-        value = self.tag_config('limit', 'int') or 4
-        return value if value is not None else True
+        value = self.tag_config('limit', 'int')
+        return value if value is not None else 4
 
     @property
     def overflow(self):
-        value = self.tag_config('overflow') or None
-        return value if value is not None else True
+        value = self.tag_config('overflow')
+        return value if value is not None else None
 
     @property
     def sort(self):
-        value = self.tag_config('sort', 'boolean') or False
-        return value if value is not None else True
+        value = self.tag_config('sort', 'boolean')
+        return value if value is not None else False
 
     @property
     def titlecase(self):
-        value = self.tag_config('titlecase', 'boolean') or True
+        value = self.tag_config('titlecase', 'boolean')
         return value if value is not None else True
 
     @property
     def separator(self):
-        s = self.tag_config('separator')
-        return s.strip('"') if s else None
+        value = self.tag_config('separator')
+        return value.strip('"') if value else None
 
     def tag_config(self, key, type=''):
         value = get_config('category-{}'.format(self.name), key, type)
