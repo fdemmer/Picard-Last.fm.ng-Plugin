@@ -51,7 +51,8 @@ config = load_config(config_files)
 LASTFM_HOST = config.get('global', 'lastfm_host')
 LASTFM_PORT = config.getint('global', 'lastfm_port')
 LASTFM_KEY = config.get('global', 'lastfm_key')
-log.info('host: %s:%s, key: %s', LASTFM_HOST, LASTFM_PORT, LASTFM_KEY)
+log.info('host: %s:%s', LASTFM_HOST, LASTFM_PORT)
+log.info('key: %s', LASTFM_KEY)
 
 
 ENABLE_COLLECT_UNUSED = config.getboolean('global', 'collect_unused')
