@@ -185,14 +185,6 @@ log.info('categories: %s', ', '.join([
     ]))
 
 
-# From http://www.last.fm/api/tos, 2011-07-30
-# 4.4 (...) You will not make more than 5 requests per originating IP address
-# per second, averaged over a 5 minute period, without prior written consent.
-from picard.webservice import REQUEST_DELAY
-
-REQUEST_DELAY[(LASTFM_HOST, LASTFM_PORT)] = 200
-
-
 def translate_tag(name):
     try:
         name = config.get('translations', name.lower())
