@@ -6,8 +6,8 @@ import logging
 from picard import log as picard_log
 
 
-class PicardHandler(logging.NullHandler):
-    def handle(self, record):
+class PicardHandler(logging.Handler):
+    def emit(self, record):
         levels = {
             10: picard_log.LOG_DEBUG,
             20: picard_log.LOG_INFO,
@@ -16,12 +16,11 @@ class PicardHandler(logging.NullHandler):
             50: picard_log.LOG_ERROR,
         }
         level = levels.get(record.levelno, picard_log.LOG_DEBUG)
-        picard_log.main_logger.message(level, record.msg, *record.args)
-
-    def emit(self, record):
-        pass
+        message = '{} - {}'.format('Last.fm.ng', record.msg)
+        picard_log.main_logger.message(level, message, *record.args)
 
 
 def setup_logging():
     log = logging.getLogger()
+    log.setLevel(0)
     log.addHandler(PicardHandler())
