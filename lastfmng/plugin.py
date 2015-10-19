@@ -137,11 +137,6 @@ class LastFM(DebugMixin, QtCore.QObject):
             self.log.debug("request {0}".format(query))
             self.add_request(partial(self.handle_toptags, tagtype), query)
 
-    def _get_query(self, params):
-        """Build and return a query string from the given params dictionary."""
-        p = ["{0}={1}".format(k, qt_urlencode(v)) for (k, v) in params.items()]
-        return '&'.join(p)
-
     def request_artist_toptags(self):
         """request toptags of an artist (via artist or albumartist)"""
         params = dict(
