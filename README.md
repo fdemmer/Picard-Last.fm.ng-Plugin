@@ -57,7 +57,7 @@ the defaults overwriting the default values with your preferences.
 
 This plugin is supposed to be used with the following naming rules:
 
-    ``$rreplace(%subdirectory%/$if2(%albumgrouping%,Unknown)/$if2(%albumartist%,%artist%) - $if($if2(%originalyear%,%originaldate%,%date%),$left($if2(%originalyear%,%originaldate%,%date%),4),0000) - $replace(%album%,...,…)/$replace(%album%,...,…) - $if($ne(1,%totaldiscs%),%discnumber%,)$num(%tracknumber%,2) - %artist% - %title%,[*|:"<>?],~)``
+    $rreplace(%subdirectory%/$if2(%albumgrouping%,Unknown)/$if2(%albumartist%,%artist%) - $if($if2(%originalyear%,%originaldate%,%date%),$left($if2(%originalyear%,%originaldate%,%date%),4),0000) - $replace(%album%,...,…)/$replace(%album%,...,…) - $if($ne(1,%totaldiscs%),%discnumber%,)$num(%tracknumber%,2) - %artist% - %title%,[*|:"<>?],~)
 
 It builds a basic directory structure using the ``%subdirectory%`` and
 ``%albumgrouping%`` variables.
@@ -78,7 +78,7 @@ $if($in(%releasetype%,compilation),
 
 It puts all albums, that look like soundtracks or compilations in a different
 top-level directory, than "normal" albums. Also it adds a tag called 
-"Soundtrack" to all tracks that are soundtracks.
+"Soundtrack" to the "genre" metatag of all tracks that are soundtracks.
 
 
 ## How it works
