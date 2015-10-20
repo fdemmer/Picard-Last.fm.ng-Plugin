@@ -105,6 +105,10 @@ class Category(object):
         return self.category_config('limit', 'int', 4)
 
     @property
+    def prepend(self):
+        return self.category_config('prepend')
+
+    @property
     def overflow(self):
         return self.category_config('overflow')
 

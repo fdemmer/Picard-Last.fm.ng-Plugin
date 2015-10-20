@@ -335,6 +335,18 @@ class LastFM(DebugMixin, QtCore.QObject):
                 if overflow:
                     result[category.overflow] = overflow
 
+            # if a prepend-category is configured copy the tags from that
+            # category in front of this one
+            #TODO this works only "downstream" eg from grouping to genre, not the other way round
+            if category.prepend:
+                log.info('%s: prepending from %s: %s',
+                    category, category.prepend,
+                    ', '.join(['{} ({})'.format(t, s) for t, s in overflow])
+                        or 'None'
+                )
+                result[category.name] = result[category.prepend] + \
+                                        result[category.name]
+
             # category is done, assign tags to metadata
             metatag = category.get_metatag(scope)
             log.info('%s: metatag: %s', category, metatag)
