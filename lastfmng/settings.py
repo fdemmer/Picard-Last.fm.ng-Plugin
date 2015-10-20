@@ -57,6 +57,7 @@ log.info('key: %s', LASTFM_KEY)
 
 
 ENABLE_COLLECT_UNUSED = config.getboolean('global', 'collect_unused')
+ENABLE_IGNORE_FEAT_ARTISTS = config.getboolean('global', 'ignore_feat_artists')
 
 
 DEBUG_STATS = config.getboolean('global', 'print_tag_stats')
