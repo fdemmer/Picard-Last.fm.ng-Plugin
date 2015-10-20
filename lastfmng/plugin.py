@@ -325,13 +325,15 @@ class LastFM(DebugMixin, QtCore.QObject):
 
             # if an overflow is configured, put the toptags, that exceed the
             # limit in the category configured for overflow
-            if category.overflow:
+            if category.overflow and overflow:
                 # the overflowed toptags are not considered in the threshold
                 # calculation of that category, they are put directly into
                 # the result list.
-                log.info("%s: overflow to %s: %s", category, category.overflow,
+                log.info("%s: overflow to %s: %s",
+                    category, category.overflow,
                     ', '.join(['{} ({})'.format(t, s) for t, s in overflow])
-                              or 'None')
+                        or 'None'
+                )
                 if overflow:
                     result[category.overflow] = overflow
 
