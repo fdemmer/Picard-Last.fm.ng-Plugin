@@ -209,7 +209,7 @@ functionality or responsiveness on requests. Also since it is free software,
 maybe you can have a look at the code your self and send in improvements!
 
 
-Bitcoin: 1FbMXpwsLAjCkCaiLB1uhdm5mLv892UkEy
+Motivational bitcoin welcome: 1FbMXpwsLAjCkCaiLB1uhdm5mLv892UkEy
 
 
 [0]: https://github.com/fdemmer/Picard-Last.fm.ng-Plugin/releases
