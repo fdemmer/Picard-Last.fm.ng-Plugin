@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 import operator
+import re
 
 
 def uniq(iterable):
@@ -53,3 +54,10 @@ def apply_tag_weight(*args):
             rv[name] = score + rv.get(name, 0)
     tuples = sorted(rv.items(), key=operator.itemgetter(1), reverse=True)
     return tuples
+
+
+def strip_feat_artist(artist):
+    match = re.match(r"([\s\S]+) feat.([\s\S]+)", artist, re.IGNORECASE)
+    if match:
+        return match.group(1)
+    return artist
