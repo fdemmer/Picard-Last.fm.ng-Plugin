@@ -149,15 +149,6 @@ class LastFM(DebugMixin, QtCore.QObject):
             api_key=settings.LASTFM_KEY)
         self.cached_or_request("artist", urllib_encode(params))
 
-    def request_album_toptags(self):
-        """request toptags of an album (via album, albumartist)"""
-        params = dict(
-            method="album.gettoptags",
-            album=self.metadata["album"],
-            artist=self.metadata["albumartist"],
-            api_key=settings.LASTFM_KEY)
-        self.cached_or_request("album", urllib_encode(params))
-
     def request_track_toptags(self):
         """request toptags of a track (via title, artist)"""
         params = dict(
@@ -166,6 +157,15 @@ class LastFM(DebugMixin, QtCore.QObject):
             artist=self.metadata["artist"],
             api_key=settings.LASTFM_KEY)
         self.cached_or_request("track", urllib_encode(params))
+
+    def request_album_toptags(self):
+        """request toptags of an album (via album, albumartist)"""
+        params = dict(
+            method="album.gettoptags",
+            album=self.metadata["album"],
+            artist=self.metadata["albumartist"],
+            api_key=settings.LASTFM_KEY)
+        self.cached_or_request("album", urllib_encode(params))
 
     def request_all_track_toptags(self):
         """request toptags of all tracks in the album (via title, artist)"""
