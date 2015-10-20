@@ -90,20 +90,21 @@ class LastFM(DebugMixin, QtCore.QObject):
         """
         # add query to list of pending requests, no request should be sent twice
         PENDING.append(query)
-        # build scrobbler api 2.0 url
-        path = "/2.0/?" + query
+
         # count requests, so that the album is not finalized until
         # the handler has been executed
         self.album._requests += 1
         self.requests += 1
 
-        # wrap the handler in the finished decorator
-        handler = self.finished(handler)
         # queue http get request
         xmlws.get(
-            settings.LASTFM_HOST, settings.LASTFM_PORT,
-            path, handler,
-            priority=True, important=False
+            settings.LASTFM_HOST,
+            settings.LASTFM_PORT,
+            settings.LASTFM_PATH + query,
+             # wrap the handler in the finished decorator
+            self.finished(handler),
+            priority=True,
+            important=False,
         )
 
     def add_task(self, handler):
