@@ -321,8 +321,10 @@ class LastFM(DebugMixin, QtCore.QObject):
                 if overflow:
                     result[category.overflow] = overflow
 
-            # category is done, assign toptags to metadata
-            metatag = settings.CONFIG[scope]['tags'].get(category.name, None)
+            # category is done, assign tags to metadata
+            metatag = category.get_metatag(scope)
+            log.info('%s: metatag: %s', category, metatag)
+            # some categories aren't valid for all scopes (eg occasion in album)
             if metatag is not None:
                 self.metadata[metatag] = join_tags(
                     result[category.name],
@@ -331,7 +333,6 @@ class LastFM(DebugMixin, QtCore.QObject):
                     sort=category.sort,
                     titlecase=category.titlecase
                 ) or settings.DEFAULT_UNKNOWN
-
                 log.info("%s = %s", metatag, self.metadata[metatag])
 
     def process_album_tags(self):

@@ -73,29 +73,11 @@ CONFIG = {
     'album': {
         # multiplication factors for each type of toptag
         'weight': dict(album=15, all_artist=55, all_track=30),
-        'tags': {
-            # category  metatag
-            'grouping': 'albumgrouping',
-            'genre': 'albumgenre',
-            'mood': 'albummood',
-        }
     },
     # for each track set the following metadata
     'track': {
         # TODO *plus supports disabling toptag types per metatag... eg. country only via artist toptags.
         'weight': dict(artist=2, track=8),
-        'tags': {
-            # category  metatag
-            'grouping': 'grouping',
-            'genre': 'genre',
-            'mood': 'mood',
-            'year': 'year',
-            'occasion': 'comment:Songs-DB_Occasion',
-            'decade': 'comment:Songs-DB_Custom1',
-            'category': 'comment:Songs-DB_Custom2',
-            'city': 'comment:Songs-DB_Custom3',
-            'country': 'comment:Songs-DB_Custom4',
-        }
     }
 }
 
@@ -137,6 +119,13 @@ class Category(object):
         value = self.category_config('separator')
         return value.strip('"') if value else None
 
+    def get_metatag(self, scope):
+        """
+        Return the metatag to assign the category result to.
+        """
+        assert scope in ('album', 'track')
+        return self.category_config('metatag_{}'.format(scope))
+
     def category_config(self, key, type='', default=None):
         value = get_config('category-{}'.format(self.name), key, type)
         if value is None:
@@ -156,7 +145,7 @@ class Category(object):
 
     def _get_threshold(self, tags):
         threshold = max([score for tag, score in tags]) * self.threshold
-        log.info('%s: score threshold = %s (%.0f%%)',
+        log.info('%s: score threshold: %s (%.0f%%)',
             self, threshold, self.threshold * 100)
         return threshold
 
