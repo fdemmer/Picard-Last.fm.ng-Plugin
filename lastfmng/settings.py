@@ -189,32 +189,26 @@ class Category(object):
         ]
 
     def filter_tags(self, all_tags):
-        l = 5
-
         # exclude tags not relevant for this category
         tags = self._filter_by_searchlist(all_tags)
 
+        # exclude tags below the threshold
         if tags:
-            log.info('%s: %s tag(s) before threshold filter:',
-                self, len(tags))
-            log.info('%s: %s%s', self,
-                ', '.join(['{} ({})'.format(t, s) for t, s in tags][:l]),
-                ', ...' if len(tags) > l else '',
-            )
-
+            self._log_tags(tags, 'before threshold filter')
             tags = self._filter_by_threshold(tags)
-
-            log.info('%s: %s tag(s) filtered:', self, len(tags))
-            log.info('%s: %s%s', self,
-                ', '.join(['{} ({})'.format(t, s) for t, s in tags][:l]),
-                ', ...' if len(tags) > l else '',
-            )
+            self._log_tags(tags, 'filtered')
         else:
             log.info('%s: no tags', self)
 
         return tags
 
 
+    def _log_tags(self, tags, message, limit=5):
+        log.info('%s: %s tag(s) %s:', self, len(tags), message)
+        log.info('%s: %s%s', self,
+            ', '.join(['{} ({})'.format(t, s) for t, s in tags][:limit]),
+            ', ...' if len(tags) > limit else '',
+        )
 
 
 CATEGORIES = [
