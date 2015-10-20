@@ -12,9 +12,11 @@ plugins! They were invaluable as a starting point.
 ### Features
 
  - Last.fm API v2.0
- - "albumgrouping" and "albumgenre" metatags for per-album tagging/naming
+ - "albumgrouping" and "albumgenre" for per-album tagging/naming
+ - comprehensive, ini-file based configuration
  - save tags as multiple tags or combined to a string
- - optional: ignore featured artists when looking up tags
+ - ignore featured artists when looking up tags
+ - prepend or overflow tags from category to category
 
 
 ## Install
@@ -85,7 +87,9 @@ top-level directory, than "normal" albums. Also it adds a tag called
 
 ### Last.fm
 
-Please use your own Last.fm API key and set it using ``lastfm_key``.
+The plugin should work out of the box with the shipped API key.
+
+However, please use your own Last.fm API key and set it using ``lastfm_key``.
 You don't need to change ``lastfm_host`` or ``lastfm_port``, but by setting
 ``lastfm_port`` to ``443`` https will be used.
 
