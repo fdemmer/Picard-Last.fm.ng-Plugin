@@ -115,13 +115,14 @@ class LastFM(DebugMixin, QtCore.QObject):
         self.album._requests += 1
         self.requests += 1
 
-        # wrap the handler in the finished decorator
-        handler = self.finished(handler)
         # queue function call
         xmlws.add_task(
-            handler,
-            settings.LASTFM_HOST, settings.LASTFM_PORT,
-            priority=False, important=False
+            # wrap the handler in the finished decorator
+            self.finished(handler),
+            settings.LASTFM_HOST,
+            settings.LASTFM_PORT,
+            priority=False,
+            important=False,
         )
 
     def cached_or_request(self, tagtype, query):
