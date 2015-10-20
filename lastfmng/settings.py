@@ -240,7 +240,7 @@ CATEGORIES = [
     # the full year, eg. 1995, 2000, ...
     Category('year'),
 ]
-log.info('categories: %s', ', '.join([
+log.info('enabled categories: %s', ', '.join([
         '{} ({})'.format(c.name, c.limit)
         for c
         in CATEGORIES

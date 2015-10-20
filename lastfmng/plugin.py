@@ -314,7 +314,6 @@ class LastFM(DebugMixin, QtCore.QObject):
 
             # this category is disabled
             if not category.is_enabled:
-                log.warning('skipping category %s', category.name)
                 continue
 
             filtered_tags = category.filter_tags(all_tags)
