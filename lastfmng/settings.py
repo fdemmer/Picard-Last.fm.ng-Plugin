@@ -154,6 +154,12 @@ class Category(object):
             searchlist.remove('soundtrack')
         return searchlist
 
+    def _get_threshold(self, tags):
+        threshold = max([score for tag, score in tags]) * self.threshold
+        log.info('%s: score threshold = %s (%.0f%%)',
+            self, threshold, self.threshold * 100)
+        return threshold
+
     def _filter_by_searchlist(self, tags):
         return [
             (tag, score) for tag, score in tags
@@ -175,7 +181,7 @@ class Category(object):
         #   ... with a configured threshold of 0.5 any tag with score less
         #       than 450 would not be considered in this example.
         #
-        threshold = self.get_threshold(tags)
+        threshold = self._get_threshold(tags)
         return  [
             (tag, score) for tag, score in tags
             if score >= threshold
@@ -207,11 +213,7 @@ class Category(object):
 
         return tags
 
-    def get_threshold(self, tags):
-        threshold = max([score for tag, score in tags]) * self.threshold
-        log.info('%s: score threshold = %s (%.0f%%)',
-            self, threshold, self.threshold * 100)
-        return threshold
+
 
 
 CATEGORIES = [
