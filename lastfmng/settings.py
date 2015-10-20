@@ -154,15 +154,13 @@ class Category(object):
             searchlist.remove('soundtrack')
         return searchlist
 
-    def filter_tags(self, all_tags):
-        l = 5
-
-        # exclude tags not relevant for this category
-        tags = [
-            (tag, score) for tag, score in all_tags
+    def _filter_by_searchlist(self, tags):
+        return [
+            (tag, score) for tag, score in tags
             if tag in self.searchlist
         ]
 
+    def _filter_by_threshold(self, tags):
         # exclude tags below the threshold
         #
         # The threshold is meant to remove tags that are extremely rare
@@ -177,6 +175,18 @@ class Category(object):
         #   ... with a configured threshold of 0.5 any tag with score less
         #       than 450 would not be considered in this example.
         #
+        threshold = self.get_threshold(tags)
+        return  [
+            (tag, score) for tag, score in tags
+            if score >= threshold
+        ]
+
+    def filter_tags(self, all_tags):
+        l = 5
+
+        # exclude tags not relevant for this category
+        tags = self._filter_by_searchlist(all_tags)
+
         if tags:
             log.info('%s: %s tag(s) before threshold filter:',
                 self, len(tags))
@@ -185,12 +195,7 @@ class Category(object):
                 ', ...' if len(tags) > l else '',
             )
 
-            #TODO make sure they are sorted by score
-            threshold = self.get_threshold(tags[0])
-            tags = [
-                (tag, score) for tag, score in tags
-                if score >= threshold
-            ]
+            tags = self._filter_by_threshold(tags)
 
             log.info('%s: %s tag(s) filtered:', self, len(tags))
             log.info('%s: %s%s', self,
@@ -202,8 +207,8 @@ class Category(object):
 
         return tags
 
-    def get_threshold(self, tag):
-        threshold = int(float(tag[1]) * self.threshold)
+    def get_threshold(self, tags):
+        threshold = max([score for tag, score in tags]) * self.threshold
         log.info('%s: score threshold = %s (%.0f%%)',
             self, threshold, self.threshold * 100)
         return threshold
