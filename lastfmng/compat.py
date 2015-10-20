@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals, absolute_import
+
 try:
     from collections import OrderedDict
 except ImportError:
@@ -13,7 +15,9 @@ except ImportError:
 def urllib_encode(params):
     try:
         import urllib
-        return urllib.urlencode(params, True)
+        return urllib.urlencode(
+            {k: v.encode('utf8') for k, v in params.items()}, 0
+        )
     except ImportError:
         from PyQt4 import QtCore
         return '&'.join([
