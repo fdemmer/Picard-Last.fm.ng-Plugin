@@ -73,29 +73,11 @@ CONFIG = {
     'album': {
         # multiplication factors for each type of toptag
         'weight': dict(album=15, all_artist=55, all_track=30),
-        'tags': {
-            # category  metatag
-            'grouping': 'albumgrouping',
-            'genre': 'albumgenre',
-            'mood': 'albummood',
-        }
     },
     # for each track set the following metadata
     'track': {
         # TODO *plus supports disabling toptag types per metatag... eg. country only via artist toptags.
         'weight': dict(artist=2, track=8),
-        'tags': {
-            # category  metatag
-            'grouping': 'grouping',
-            'genre': 'genre',
-            'mood': 'mood',
-            'year': 'year',
-            'occasion': 'comment:Songs-DB_Occasion',
-            'decade': 'comment:Songs-DB_Custom1',
-            'category': 'comment:Songs-DB_Custom2',
-            'city': 'comment:Songs-DB_Custom3',
-            'country': 'comment:Songs-DB_Custom4',
-        }
     }
 }
 
@@ -110,63 +92,70 @@ class Category(object):
 
     @property
     def is_enabled(self):
-        value = self.tag_config('enabled', 'boolean')
-        return value if value is not None else True
+        return self.category_config('enabled', 'boolean', True)
 
     @property
     def threshold(self):
-        value = self.tag_config('threshold', 'float')
-        return value if value is not None else 0.5
+        return self.category_config('threshold', 'float', 0.5)
 
     @property
     def limit(self):
-        value = self.tag_config('limit', 'int')
-        return value if value is not None else 4
+        return self.category_config('limit', 'int', 4)
 
     @property
     def overflow(self):
-        value = self.tag_config('overflow')
-        return value if value is not None else None
+        return self.category_config('overflow')
 
     @property
     def sort(self):
-        value = self.tag_config('sort', 'boolean')
-        return value if value is not None else False
+        return self.category_config('sort', 'boolean', False)
 
     @property
     def titlecase(self):
-        value = self.tag_config('titlecase', 'boolean')
-        return value if value is not None else True
+        return self.category_config('titlecase', 'boolean', True)
 
     @property
     def separator(self):
-        value = self.tag_config('separator')
+        value = self.category_config('separator')
         return value.strip('"') if value else None
 
-    def tag_config(self, key, type=''):
+    def get_metatag(self, scope):
+        """
+        Return the metatag to assign the category result to.
+        """
+        assert scope in ('album', 'track')
+        return self.category_config('metatag_{}'.format(scope))
+
+    def category_config(self, key, type='', default=None):
         value = get_config('category-{}'.format(self.name), key, type)
         if value is None:
             value = get_config('category-{}'.format('defaults'), key, type)
+        if value is None:
+            value = default
         return value
 
     def load_searchlist(self, searchlist=None):
         # default to a string searchlist and load config by name
         if not searchlist:
             searchlist = StringSearchlist(config.get('searchlist', self.name))
-        # exclude 'soundtrack' as a tagname
+        # exclude 'soundtrack' as a tag
         if get_config('global', 'soundtrack_is_no_genre', 'boolean'):
             searchlist.remove('soundtrack')
         return searchlist
 
-    def filter_tags(self, all_tags):
-        l = 5
+    def _get_threshold(self, tags):
+        threshold = max([score for tag, score in tags]) * self.threshold
+        log.info('%s: score threshold: %s (%.0f%%)',
+            self, threshold, self.threshold * 100)
+        return threshold
 
-        # exclude tags not relevant for this category
-        tags = [
-            (tag, score) for tag, score in all_tags
+    def _filter_by_searchlist(self, tags):
+        return [
+            (tag, score) for tag, score in tags
             if tag in self.searchlist
         ]
 
+    def _filter_by_threshold(self, tags):
         # exclude tags below the threshold
         #
         # The threshold is meant to remove tags that are extremely rare
@@ -181,6 +170,18 @@ class Category(object):
         #   ... with a configured threshold of 0.5 any tag with score less
         #       than 450 would not be considered in this example.
         #
+        threshold = self._get_threshold(tags)
+        return  [
+            (tag, score) for tag, score in tags
+            if score >= threshold
+        ]
+
+    def filter_tags(self, all_tags):
+        l = 5
+
+        # exclude tags not relevant for this category
+        tags = self._filter_by_searchlist(all_tags)
+
         if tags:
             log.info('%s: %s tag(s) before threshold filter:',
                 self, len(tags))
@@ -189,12 +190,7 @@ class Category(object):
                 ', ...' if len(tags) > l else '',
             )
 
-            #TODO make sure they are sorted by score
-            threshold = self.get_threshold(tags[0])
-            tags = [
-                (tag, score) for tag, score in tags
-                if score >= threshold
-            ]
+            tags = self._filter_by_threshold(tags)
 
             log.info('%s: %s tag(s) filtered:', self, len(tags))
             log.info('%s: %s%s', self,
@@ -206,11 +202,7 @@ class Category(object):
 
         return tags
 
-    def get_threshold(self, tag):
-        threshold = int(float(tag[1]) * self.threshold)
-        log.info('%s: score threshold = %s (%.0f%%)',
-            self, threshold, self.threshold * 100)
-        return threshold
+
 
 
 CATEGORIES = [

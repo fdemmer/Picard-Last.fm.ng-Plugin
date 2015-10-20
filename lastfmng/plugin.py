@@ -286,13 +286,6 @@ class LastFM(DebugMixin, QtCore.QObject):
         determines and enforces score threshold, assigns result to metatags
         optionally logs toptag statistics
         """
-        # find valid tags, split into categories and limit results
-        if stats:
-            log.info(">>> name: {0}".format(
-                (self.metadata.get('title') or self.metadata.get('album')) \
-                    .encode('utf8').decode('utf8')
-            ))
-
         result = {}
         for category in settings.CATEGORIES:
             # initialize empty list, unless exists because of an overflow
@@ -321,8 +314,10 @@ class LastFM(DebugMixin, QtCore.QObject):
                 if overflow:
                     result[category.overflow] = overflow
 
-            # category is done, assign toptags to metadata
-            metatag = settings.CONFIG[scope]['tags'].get(category.name, None)
+            # category is done, assign tags to metadata
+            metatag = category.get_metatag(scope)
+            log.info('%s: metatag: %s', category, metatag)
+            # some categories aren't valid for all scopes (eg occasion in album)
             if metatag is not None:
                 self.metadata[metatag] = join_tags(
                     result[category.name],
@@ -331,7 +326,6 @@ class LastFM(DebugMixin, QtCore.QObject):
                     sort=category.sort,
                     titlecase=category.titlecase
                 ) or settings.DEFAULT_UNKNOWN
-
                 log.info("%s = %s", metatag, self.metadata[metatag])
 
     def process_album_tags(self):
