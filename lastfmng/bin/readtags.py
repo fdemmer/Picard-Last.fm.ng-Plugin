@@ -11,7 +11,7 @@ except:
 
 
 try:
-    conn = sqlite3.connect(os.path.expanduser('~/.config/MusicBrainz/toptags.db'))
+    conn = sqlite3.connect(os.path.expanduser('~/.config/MusicBrainz/Picard/plugins/lastfmng.db'))
     c = conn.cursor()
 
     c.execute('''select * from toptags order by score desc limit ?''', (count,))

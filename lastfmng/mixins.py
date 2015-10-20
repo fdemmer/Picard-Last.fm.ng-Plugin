@@ -4,7 +4,7 @@ from __future__ import unicode_literals, absolute_import
 import os
 import logging
 
-from picard.const import USER_DIR
+from picard.const import USER_PLUGIN_DIR
 
 from . import settings
 from .helpers.tags import apply_tag_weight
@@ -49,8 +49,11 @@ class CollectUnusedMixin(object):
             (self.toptags['all_artist'], 1)
         )
 
-        searchlists = [opt['searchlist'] for cat, opt in
-                       settings.CATEGORIES.items()]
+        searchlists = [
+            category.searchlist
+            for category in settings.CATEGORIES
+            if category.searchlist is not None
+        ]
         unknown_toptags = []
 
         for toptag in all_tags:
@@ -62,27 +65,26 @@ class CollectUnusedMixin(object):
             if toptag is not None:
                 unknown_toptags.append(toptag)
 
-        dbfile = os.path.join(USER_DIR, 'lastfmng', 'toptags.db')
+        dbfile = os.path.join(USER_PLUGIN_DIR, 'lastfmng.db')
         log.debug("opening database: %s", dbfile)
 
         import sqlite3
 
-        conn = sqlite3.connect(dbfile)
-        c = conn.cursor()
+        with sqlite3.connect(dbfile) as conn:
+            c = conn.cursor()
 
-        try:
-            c.execute("""
-                CREATE TABLE toptags (tag TEXT PRIMARY KEY, score INTEGER)
-                """)
-        except:
-            pass
+            try:
+                c.execute("""
+                    CREATE TABLE toptags (tag TEXT PRIMARY KEY, score INTEGER)
+                    """)
+            except:
+                pass
 
-        for tag, score in unknown_toptags:
-            c.execute("""
-                REPLACE INTO toptags (tag, score)
-                VALUES (?,
-                coalesce((SELECT score FROM toptags WHERE tag = ?),0)+?)
-                """, (tag, tag, score))
+            for tag, score in unknown_toptags:
+                c.execute("""
+                    REPLACE INTO toptags (tag, score)
+                    VALUES (?,
+                    coalesce((SELECT score FROM toptags WHERE tag = ?),0)+?)
+                    """, (tag, tag, score))
 
-        conn.commit()
-        c.close()
+            conn.commit()
