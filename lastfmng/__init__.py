@@ -6,7 +6,7 @@ Last.fm.ng plugin
 
 This plugin is supposed to be used with the following naming rules::
 
-    $rreplace(%subdirectory%/%albumgrouping%/$if2(%albumartist%,%artist%) - $if($if2(%originalyear%,%originaldate%,%date%),$left($if2(%originalyear%,%originaldate%,%date%),4),0000) - $replace(%album%,...,…)/$replace(%album%,...,…) - $if($ne(1,%totaldiscs%),%discnumber%,)$num(%tracknumber%,2) - %artist% - %title%,[*|:"<>?],~)
+    $rreplace(%subdirectory%/$if2(%albumgrouping%,Unknown)/$if2(%albumartist%,%artist%) - $if($if2(%originalyear%,%originaldate%,%date%),$left($if2(%originalyear%,%originaldate%,%date%),4),0000) - $replace(%album%,...,…)/$replace(%album%,...,…) - $if($ne(1,%totaldiscs%),%discnumber%,)$num(%tracknumber%,2) - %artist% - %title%,[*|:"<>?],~)
 
 It builds a basic directory structure using the `%subdirectory%` and
 `%albumgrouping%` variables.
@@ -14,11 +14,11 @@ It builds a basic directory structure using the `%subdirectory%` and
 Set this script, to get the proper `%subdirectory%`::
 
 $set(subdirectory,Archive Albums)
-$if($eq(%releasetype%,soundtrack),
+$if($in(%releasetype%,soundtrack),
     $set(subdirectory,Archive Soundtracks)
     $set(genre,Soundtrack)
 )
-$if($eq(%releasetype%,compilation),
+$if($in(%releasetype%,compilation),
     $if($eq(%albumartist%,Various Artists),
         $set(subdirectory,Archive Compilations))
 )
@@ -38,7 +38,9 @@ Unfortunately the album-plugin processor is not called for non-album tracks, so
 you won't have an `%albumgrouping%` set. Use the following script to put those
 in a separate directory without grouping-subdirectories::
 
-    $if($eq(%album%,[non-album tracks]),$set(subdirectory,Archive Non-Album))
+    $if($eq(%album%,[non-album tracks]),
+        $set(subdirectory,Archive Non-Album)
+    )
 
 In addition to creating the basic directory structure, the naming rules create
 the filename and album-directory with some character cleanup. The resulting

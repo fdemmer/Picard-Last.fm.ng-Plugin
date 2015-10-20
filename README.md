@@ -53,6 +53,36 @@ To customize settings is is recommended to create a new file called
 the defaults overwriting the default values with your preferences.
 
 
+## Quickstart
+
+This plugin is supposed to be used with the following naming rules:
+
+    ``$rreplace(%subdirectory%/$if2(%albumgrouping%,Unknown)/$if2(%albumartist%,%artist%) - $if($if2(%originalyear%,%originaldate%,%date%),$left($if2(%originalyear%,%originaldate%,%date%),4),0000) - $replace(%album%,...,…)/$replace(%album%,...,…) - $if($ne(1,%totaldiscs%),%discnumber%,)$num(%tracknumber%,2) - %artist% - %title%,[*|:"<>?],~)``
+
+It builds a basic directory structure using the ``%subdirectory%`` and
+``%albumgrouping%`` variables.
+
+Set this script, to generate the ``%subdirectory%``:
+
+```
+$set(subdirectory,Archive Albums)
+$if($in(%releasetype%,soundtrack),
+    $set(subdirectory,Archive Soundtracks)
+    $set(genre,Soundtrack)
+)
+$if($in(%releasetype%,compilation),
+    $if($eq(%albumartist%,Various Artists),
+        $set(subdirectory,Archive Compilations))
+)
+```
+
+It puts all albums, that look like soundtracks or compilations in a different
+top-level directory, than "normal" albums. Also it adds a tag called 
+"Soundtrack" to all tracks that are soundtracks.
+
+
+## How it works
+
 ### Last.fm
 
 Please use your own Last.fm API key and set it using ``lastfm_key``.
@@ -65,7 +95,12 @@ If you want you can put the Last.fm related settings in an extra file called
 
 ### Tags
 
-The basic concept of the plugin is this:
+This plugin works via two Picard plugin API triggers:
+
+- register_track_metadata_processor
+- register_album_metadata_processor
+
+The basic concept is this:
 
 1. Download "tags" for an album, artist and track. 
    A "tag" is just a word users have assigned it can be anything like 
@@ -120,14 +155,6 @@ Using ``titlecase`` you can switch fixing the case of toptags off and on. The
 ``separator`` is used to combine more than one toptag into a metatag string and in
 case not a single toptag was found for a category the value of 
 ``default_unknown`` is set.
-
-
-## How it works
-
-This plugin works via two Picard plugin API triggers:
-
-- register_track_metadata_processor
-- register_album_metadata_processor
 
 
 ### Album metadata processor
@@ -194,20 +221,12 @@ lists anyway.
 
 The "year" metatag is disabled for now.
 
-There may be others, so best try it out yourself and see if it does the right
-thing for you.
-
 
 ## Disclaimer
 
-Even though this piece of software has been in use by many people including
-myself for years, things could go wrong. I hope it does not cause you any 
-trouble. If it does, please open an issue and maybe we can fix it.
-
-However, since this is still a hobby/side project I cannot guarantee any 
-functionality or responsiveness on requests. Also since it is free software,
-maybe you can have a look at the code your self and send in improvements!
-
+Even though this piece of software has been in use by many people for years
+things can go wrong. If they do, please open an issue and maybe we can fix
+it.
 
 Motivational bitcoin welcome: 1FbMXpwsLAjCkCaiLB1uhdm5mLv892UkEy
 
