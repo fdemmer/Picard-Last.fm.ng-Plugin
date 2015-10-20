@@ -110,50 +110,46 @@ class Category(object):
 
     @property
     def is_enabled(self):
-        value = self.tag_config('enabled', 'boolean')
-        return value if value is not None else True
+        return self.category_config('enabled', 'boolean', True)
 
     @property
     def threshold(self):
-        value = self.tag_config('threshold', 'float')
-        return value if value is not None else 0.5
+        return self.category_config('threshold', 'float', 0.5)
 
     @property
     def limit(self):
-        value = self.tag_config('limit', 'int')
-        return value if value is not None else 4
+        return self.category_config('limit', 'int', 4)
 
     @property
     def overflow(self):
-        value = self.tag_config('overflow')
-        return value if value is not None else None
+        return self.category_config('overflow')
 
     @property
     def sort(self):
-        value = self.tag_config('sort', 'boolean')
-        return value if value is not None else False
+        return self.category_config('sort', 'boolean', False)
 
     @property
     def titlecase(self):
-        value = self.tag_config('titlecase', 'boolean')
-        return value if value is not None else True
+        return self.category_config('titlecase', 'boolean', True)
 
     @property
     def separator(self):
-        value = self.tag_config('separator')
+        value = self.category_config('separator')
         return value.strip('"') if value else None
 
-    def tag_config(self, key, type=''):
+    def category_config(self, key, type='', default=None):
         value = get_config('category-{}'.format(self.name), key, type)
         if value is None:
             value = get_config('category-{}'.format('defaults'), key, type)
+        if value is None:
+            value = default
         return value
 
     def load_searchlist(self, searchlist=None):
         # default to a string searchlist and load config by name
         if not searchlist:
             searchlist = StringSearchlist(config.get('searchlist', self.name))
-        # exclude 'soundtrack' as a tagname
+        # exclude 'soundtrack' as a tag
         if get_config('global', 'soundtrack_is_no_genre', 'boolean'):
             searchlist.remove('soundtrack')
         return searchlist
