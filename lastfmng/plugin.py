@@ -12,7 +12,7 @@ from picard.track import Track
 
 from . import settings
 from .compat import urllib_encode
-from .helpers.tags import apply_tag_weight, join_tags
+from .helpers.tags import apply_tag_weight, join_tags, strip_feat_artist
 from .helpers.webservice import PluginXmlWebService
 from .mixins import DebugMixin, CollectUnusedMixin
 from .settings import translate_tag
@@ -143,18 +143,29 @@ class LastFM(DebugMixin, QtCore.QObject):
 
     def request_artist_toptags(self):
         """request toptags of an artist (via artist or albumartist)"""
+        artist = self.metadata["artist"]
+        if artist:
+            if settings.ENABLE_IGNORE_FEAT_ARTISTS:
+                artist = strip_feat_artist(artist)
+        else:
+            artist = self.metadata["albumartist"]
+
         params = dict(
             method="artist.gettoptags",
-            artist=self.metadata["artist"] or self.metadata["albumartist"],
+            artist=artist,
             api_key=settings.LASTFM_KEY)
         self.cached_or_request("artist", urllib_encode(params))
 
     def request_track_toptags(self):
         """request toptags of a track (via title, artist)"""
+        artist = self.metadata["artist"]
+        if settings.ENABLE_IGNORE_FEAT_ARTISTS:
+            artist = strip_feat_artist(artist)
+
         params = dict(
             method="track.gettoptags",
             track=self.metadata["title"],
-            artist=self.metadata["artist"],
+            artist=artist,
             api_key=settings.LASTFM_KEY)
         self.cached_or_request("track", urllib_encode(params))
 
@@ -170,10 +181,14 @@ class LastFM(DebugMixin, QtCore.QObject):
     def request_all_track_toptags(self):
         """request toptags of all tracks in the album (via title, artist)"""
         for track in self.tracks:
+            artist = track.metadata["artist"]
+            if settings.ENABLE_IGNORE_FEAT_ARTISTS:
+                artist = strip_feat_artist(artist)
+
             params = dict(
                 method="track.gettoptags",
                 track=track.metadata["title"],
-                artist=track.metadata["artist"],
+                artist=artist,
                 api_key=settings.LASTFM_KEY)
             self.cached_or_request("all_track", urllib_encode(params))
 
@@ -182,9 +197,13 @@ class LastFM(DebugMixin, QtCore.QObject):
         request toptags of all artists in the album (via artist)
         """
         for track in self.tracks:
+            artist = track.metadata["artist"]
+            if settings.ENABLE_IGNORE_FEAT_ARTISTS:
+                artist = strip_feat_artist(artist)
+
             params = dict(
                 method="artist.gettoptags",
-                artist=track.metadata["artist"],
+                artist=artist,
                 api_key=settings.LASTFM_KEY)
             self.cached_or_request("all_artist", urllib_encode(params))
 
