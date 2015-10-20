@@ -158,26 +158,30 @@ class Category(object):
         return threshold
 
     def _filter_by_searchlist(self, tags):
+        """
+        Exclude tags not relevant for this category.
+        """
         return [
             (tag, score) for tag, score in tags
             if tag in self.searchlist
         ]
 
     def _filter_by_threshold(self, tags):
-        # exclude tags below the threshold
-        #
-        # The threshold is meant to remove tags that are extremely rare
-        # compared to the most popular one. When there are only very few tags
-        # in a category even a very seldom used tag would be considered
-        # otherwise.
-        #
-        # For example:
-        #   assume we allow 2 tags in the 'decade' category
-        #   found tags are: '90s' with score 900 and '70s' with score 200
-        #   ... so somebody probably tagged this '70s' by mistake
-        #   ... with a configured threshold of 0.5 any tag with score less
-        #       than 450 would not be considered in this example.
-        #
+        """
+        Exclude tags below the threshold.
+
+        The threshold is meant to remove tags that are extremely rare
+        compared to the most popular one. When there are only very few tags
+        in a category even a very seldom used tag would be considered
+        otherwise.
+
+        For example:
+          assume we allow 2 tags in the 'decade' category
+          found tags are: '90s' with score 900 and '70s' with score 200
+          ... so somebody probably tagged this '70s' by mistake
+          ... with a configured threshold of 0.5 any tag with score less
+              than 450 would not be considered
+        """
         threshold = self._get_threshold(tags)
         return  [
             (tag, score) for tag, score in tags
