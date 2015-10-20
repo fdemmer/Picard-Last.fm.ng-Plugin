@@ -143,9 +143,18 @@ class Category(object):
         return value
 
     def load_searchlist(self, searchlist=None):
-        # default to a string searchlist and load config by name
+        # none given: create searchlist according to config
         if not searchlist:
-            searchlist = StringSearchlist(config.get('searchlist', self.name))
+            regexp = self.category_config('regexp')
+            words = get_config('searchlist', self.name)
+
+            # load regexp from category config
+            if regexp:
+                searchlist = RegexpSearchlist(regexp)
+            # use words for string search list
+            elif words:
+                searchlist = StringSearchlist(words)
+
         # exclude 'soundtrack' as a tag
         if get_config('global', 'soundtrack_is_no_genre', 'boolean'):
             searchlist.add_exclude('soundtrack')
@@ -227,9 +236,9 @@ CATEGORIES = [
     # city names
     Category('city'),
     # musical era, eg. 80s, 90s, ...
-    Category('decade', RegexpSearchlist("^([1-9][0-9])*[0-9]0s$")),
+    Category('decade'),
     # the full year, eg. 1995, 2000, ...
-    Category('year', RegexpSearchlist("^[1-9][0-9]{3}$")),
+    Category('year'),
 ]
 log.info('categories: %s', ', '.join([
         '{} ({})'.format(c.name, c.limit)
