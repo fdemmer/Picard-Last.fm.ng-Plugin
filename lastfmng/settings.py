@@ -57,7 +57,11 @@ log.info('key: %s', LASTFM_KEY)
 
 
 ENABLE_COLLECT_UNUSED = config.getboolean('global', 'collect_unused')
+log.info('collect_unused: %s', ENABLE_COLLECT_UNUSED)
 ENABLE_IGNORE_FEAT_ARTISTS = config.getboolean('global', 'ignore_feat_artists')
+log.info('ignore_feat_artists: %s', ENABLE_IGNORE_FEAT_ARTISTS)
+DEFAULT_UNKNOWN = config.get('global', 'default_unknown').strip()
+log.info('default_unknown: %s', DEFAULT_UNKNOWN)
 
 
 DEBUG_STATS = config.getboolean('global', 'print_tag_stats')
@@ -65,8 +69,6 @@ DEBUG_STATS_TRACK = config.getboolean('global', 'print_tag_stats_track') \
     if DEBUG_STATS else False
 DEBUG_STATS_ALBUM = config.getboolean('global', 'print_tag_stats_album') \
     if DEBUG_STATS else False
-
-DEFAULT_UNKNOWN = config.get('global', 'default_unknown').strip()
 
 
 # toptag to metatag configuration
