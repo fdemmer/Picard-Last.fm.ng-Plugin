@@ -2,16 +2,19 @@
 
 ## About
 
-The original and the plus Last.fm plugins are great. I used them a lot.
-However I always felt the configuration was overly complicated and the code
-a bit of a mess and how the end result came to be sometimes a mystery.
+This is a rewrite of the Musicbrainz Picard Last.fm plugins.
+Initial motivation was cleaner configuration and more predictable outcomes.
+It also used the Last.fm API v2.0 from the start.
 
-Also I wanted a rocksolid way to only get exactly one genre tag at all times 
-for a complete album. Plus sometimes delivered two, when just one was 
-configured and there was no way to determine a single "albumgenre".
+Thanks go out to everybody contributing to the original and plus Last.fm
+plugins! They were invaluable as a starting point.
 
-Some of the code and especially the name lists are reused from plus. Thanks
-again for your work on this... RifRaf, Lukáš Lalinský, voiceinsideyou!
+### Features
+
+ - Last.fm API v2.0
+ - "albumgrouping" and "albumgenre" metatags for per-album tagging/naming
+ - save tags as multiple tags or combined to a string
+ - optional: ignore featured artists when looking up tags
 
 
 ## Install
