@@ -1,10 +1,16 @@
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals, absolute_import
+
 import os
+import logging
 
 from picard.const import USER_DIR
 
 from . import settings
 from .helpers.tags import apply_tag_weight
+
+
+log = logging.getLogger(__name__)
 
 
 class DebugMixin(object):
@@ -16,15 +22,14 @@ class DebugMixin(object):
             topscore = merged[0][1]
             toplist = ["{0}: {1} ({2}%)".format(n, s, p(s)) for n, s in
                        merged[:10]]
-            self.log.info("{0}".format(", ".join(toplist)))
+            log.info(", ".join(toplist))
         except:
-            self.log.info("None")
+            log.info("None")
 
     def print_toptag_stats(self, scope, name, correction=1):
         toptags = self.toptags[name]
         weight = settings.CONFIG[scope]['weight'][name]
-        self.log.info(
-            "got {0} {1} tags (x{2}):".format(len(toptags), name, weight))
+        log.info("got %s %s tags (x%s}):", len(toptags), name, weight)
         merged = apply_tag_weight((toptags, correction))[:10]
         self.print_toplist(merged)
 
@@ -35,7 +40,7 @@ class CollectUnusedMixin(object):
         This collects toptags not used to tag files.
         It is a way to find new genres/groupings in the tags used on last.fm.
         """
-        self.log.debug(u"collecting unused toptags...")
+        log.debug("collecting unused toptags...")
         all_tags = apply_tag_weight(
             (self.toptags['album'], 1),
             (self.toptags['track'], 1),
@@ -58,7 +63,7 @@ class CollectUnusedMixin(object):
                 unknown_toptags.append(toptag)
 
         dbfile = os.path.join(USER_DIR, 'lastfmng', 'toptags.db')
-        self.log.debug(u"opening database: %s", dbfile)
+        log.debug("opening database: %s", dbfile)
 
         import sqlite3
 

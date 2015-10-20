@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+from __future__ import unicode_literals, absolute_import
 
+import logging
 import traceback
 from functools import partial
 from PyQt4 import QtCore
@@ -23,6 +24,7 @@ CACHE = {}
 PENDING = []
 
 xmlws = PluginXmlWebService()
+log = logging.getLogger(__name__)
 
 
 # inherit from QObject to gain access to tagger, logger and config
@@ -124,23 +126,18 @@ class LastFM(DebugMixin, QtCore.QObject):
     def cached_or_request(self, tagtype, query):
         # if the query is already cached only queue task
         if query in CACHE:
-            self.log.debug("cached {0}".format(query))
+            log.debug("cached %s", query)
             self.add_task(partial(self.handle_cached_toptags, tagtype, query))
         # queries in the PENDING list are already queued, queue them like
         # cache tasks. by the time they will be processed, the actual query
         # will have stored data in the cache
         elif query in PENDING:
-            self.log.debug("pending {0}".format(query))
+            log.debug("pending %s", query)
             self.add_task(partial(self.handle_cached_toptags, tagtype, query))
         # new queries are queued as http-requests
         else:
-            self.log.debug("request {0}".format(query))
+            log.debug("request %s", query)
             self.add_request(partial(self.handle_toptags, tagtype), query)
-
-    def _get_query(self, params):
-        """Build and return a query string from the given params dictionary."""
-        p = ["{0}={1}".format(k, qt_urlencode(v)) for (k, v) in params.items()]
-        return '&'.join(p)
 
     def request_artist_toptags(self):
         """request toptags of an artist (via artist or albumartist)"""
@@ -203,7 +200,7 @@ class LastFM(DebugMixin, QtCore.QObject):
                 func()
         if self.album._requests == 0:
             # this was the last request in general, finalize metadata
-            self.log.info("FIN")
+            log.info("FIN")
             self.album._finalize_loading(None)
 
     def finished(self, func):
@@ -242,9 +239,9 @@ class LastFM(DebugMixin, QtCore.QObject):
 
             if lfm.attribs['status'] == 'failed':
                 error = lfm.error.pop()
-                self.log.warning("lfm api error: {0} - {1}".format(
+                log.warning("lfm api error: {0} - {1}".format(
                     error.attribs['code'], error.text))
-                self.log.warning(str(http.url()))
+                log.warning(str(http.url()))
                 return
 
             toptags = lfm.toptags.pop()
@@ -267,7 +264,7 @@ class LastFM(DebugMixin, QtCore.QObject):
             self.toptags[tagtype].extend(tmp)
 
         except AttributeError:
-            self.log.warning("no tags: {0}, {1}".format(tagtype, query))
+            log.warning("no tags: %s, %s", tagtype, query)
             pass
 
     def handle_cached_toptags(self, tagtype, query):
@@ -276,7 +273,7 @@ class LastFM(DebugMixin, QtCore.QObject):
         if toptags is not None:
             self.toptags[tagtype].extend(toptags)
         else:
-            self.log.warning("cache error: {0}, {1}".format(tagtype, query))
+            log.warning("cache error: %s, %s", tagtype, query)
             # TODO sometimes, the response from the http request is too slow,
             # so the queue is already processing "pending" cache requests,
             # while the response is not yet processed. the whole "pending"
@@ -289,45 +286,21 @@ class LastFM(DebugMixin, QtCore.QObject):
         determines and enforces score threshold, assigns result to metatags
         optionally logs toptag statistics
         """
-        # find valid tags, split into categories and limit results
-        if stats:
-            self.log.info(">>> name: {0}".format(
-                (self.metadata.get('title') or self.metadata.get('album')) \
-                    .encode('utf8').decode('utf8')
-            ))
-
         result = {}
         for category in settings.CATEGORIES:
             # initialize empty list, unless exists because of an overflow
             result[category.name] = result.get(category.name, [])
-            score_threshold = 0
 
             # this category is disabled
             if not category.is_enabled:
-                self.log.warning('skipping category %s', category.name)
+                log.warning('skipping category %s', category.name)
                 continue
 
-            for tag, score in all_tags:
-                # stop searching when tag score is below threshold
-                # (they are sorted!)
-                if score < score_threshold:
-                    break
-
-                # ignore tags not in this category
-                if tag not in category.searchlist:
-                    continue
-
-                # first toptag in this category, calculate threshold
-                if score_threshold == 0:
-                    score_threshold = int(float(score) * category.threshold)
-
-                # store the toptag
-                result[category.name].append((tag, score))
-
-            if stats:
-                self.log.info(
-                    "> category {0} ({1}):".format(category.name, category.limit))
-                self.print_toplist(result[category.name])
+            filtered_tags = category.filter_tags(all_tags)
+            # use extend, because of how overflow works,
+            # directly writing to results
+            result[category.name].extend(filtered_tags[:category.limit])
+            overflow = filtered_tags[category.limit:]
 
             # if an overflow is configured, put the toptags, that exceed the
             # limit in the category configured for overflow
@@ -335,13 +308,16 @@ class LastFM(DebugMixin, QtCore.QObject):
                 # the overflowed toptags are not considered in the threshold
                 # calculation of that category, they are put directly into
                 # the result list.
-                result[category.overflow] = result[category.name][category.limit:]
-                if stats:
-                    self.log.info("...overflow to {0}:".format(category.overflow))
-                    self.print_toplist(result[category.overflow])
+                log.info("%s: overflow to %s: %s", category, category.overflow,
+                    ', '.join(['{} ({})'.format(t, s) for t, s in overflow])
+                              or 'None')
+                if overflow:
+                    result[category.overflow] = overflow
 
-            # category is done, assign toptags to metadata
-            metatag = settings.CONFIG[scope]['tags'].get(category.name, None)
+            # category is done, assign tags to metadata
+            metatag = category.get_metatag(scope)
+            log.info('%s: metatag: %s', category, metatag)
+            # some categories aren't valid for all scopes (eg occasion in album)
             if metatag is not None:
                 self.metadata[metatag] = join_tags(
                     result[category.name],
@@ -350,15 +326,14 @@ class LastFM(DebugMixin, QtCore.QObject):
                     sort=category.sort,
                     titlecase=category.titlecase
                 ) or settings.DEFAULT_UNKNOWN
-
-                self.log.info("%s = %s" % (metatag, self.metadata[metatag]))
+                log.info("%s = %s", metatag, self.metadata[metatag])
 
     def process_album_tags(self):
         """
         this is called after all last.fm data is received to process the
         collected data for album tags.
         """
-        self.log.info(">>> process album tags")
+        log.info(">>> process album tags")
         if settings.DEBUG_STATS_ALBUM:
             self.print_toptag_stats('album', 'album', len(self.tracks))
             self.print_toptag_stats('album', 'all_artist')
@@ -387,7 +362,7 @@ class LastFM(DebugMixin, QtCore.QObject):
         this is called after all last.fm data is received to process the
         collected data for track tags.
         """
-        self.log.info(">>> process track tags")
+        log.info(">>> process track tags")
         if settings.DEBUG_STATS_TRACK:
             self.print_toptag_stats('track', 'track')
             self.print_toptag_stats('track', 'artist')

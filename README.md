@@ -28,22 +28,95 @@ Start or restart Picard to load the plugin and enable it in the options
 dialog for plugins.
 
 
+## Updating
+
+It is recommended to backup your ``config.ini`` and delete the existing
+"lastfmng" directory before extracting a new version to the plugins directory.
+
+Then copy the configuration file back in place.
+
+Sorry for the inconvenience.
+
+
 ## Configuration
 
 The plugin does not provide a configuration dialog, but is easy to configure
-by customizing the provided ``config.ini`` file.
+using ini-files.
+
+The provided ``defaults.ini`` contains all available settings.
+
+To customize settings is is recommended to create a new file called 
+``config.ini`` for your settings. If available it will be loaded after 
+the defaults overwriting the default values with your preferences.
+
+
+### Last.fm
 
 Please use your own Last.fm API key and set it using ``lastfm_key``.
 You don't need to change ``lastfm_host`` or ``lastfm_port``, but by setting
 ``lastfm_port`` to ``443`` https will be used.
 
-The plugin does not just use all the tags it finds on Last.fm.
-Only tags listed in the respective "search lists" will be used.
+If you want you can put the Last.fm related settings in an extra file called 
+``lastfm.ini``.
 
-Customize the lists in the ``[searchlist]`` section of the configu file.
+
+### Tags
+
+The basic concept of the plugin is this:
+
+1. Download "tags" for an album, artist and track. 
+   A "tag" is just a word users have assigned it can be anything like 
+   "my favourite", "heard last night", "sucks" or terms we are more interested 
+   in like "classic", "80s" or "death metal".
+2. Filter and separate all the "tags" into categories 
+   (like "genre", "mood", "country", ...)
+3. Sort the "tags" by popularity (the number of times used) in each category.
+4. Assign the the most popular of each category to an actual "metatag" 
+   (eg. the "genre" id3 tag)
+
+The plugin uses a fixed list of categories:
+
+ - grouping
+ - genre
+ - mood
+ - occasion
+ - category
+ - country
+ - city
+ - decade
+ - year
+
+
+#### Searchlists
+
+For the categories grouping, genre, mood, occasion, category, country and city
+so called searchlists are used to find valid terms in the downloaded "tags".
+
+Customize the lists in the ``[searchlist]`` section of the config file to add 
+or remove valid terms.
 
 Translations of common tag variations are set in the ``[translations]`` section.
 The first value is replaced with the second one.
+
+
+#### Category configuration
+
+For each category there is a section in the config file. 
+
+To disable using a specific category set ``enabled`` to False. 
+
+If you set the ``limit`` to 1 and two "tags" have exactly the same popularity 
+the result will be exactly one, which one however is not clearly defined! 
+There is room for improvement here.
+
+Setting ``sort`` to True will sort the "tags" alphabetically *after* the ones with the
+highest popularity have been determined. Set this to False to keep the one with the
+highest popularity in front (from left to right)!
+
+Using ``titlecase`` you can switch fixing the case of toptags off and on. The
+``separator`` is used to combine more than one toptag into a metatag string and in
+case not a single toptag was found for a category the value of 
+``default_unknown`` is set.
 
 
 ## How it works
@@ -101,23 +174,6 @@ If you used the Last.fm.Plus plugin the metatag names in the "tags" section will
 be familiar. Each metatag is set per track. Similar to before, the first column
 are the "categories" in which toptags are grouped using the search lists and the
 second column are the names of the metatags in your files.
-
-
-### Metatag formatting 
-
-If you set the ``limit`` to 1 and two toptags have exactly the same score the result
-will be exactly one toptag, which one however is not clearly defined! There is
-room for improvement here.
-
-To disable writing a specific category/metatag set ``enabled`` to False. Setting
-``sort`` to True will sort the toptags alphabetically after the ones with the
-highest score have been determined. Set this to False to keep the one with the
-highest score in front!
-
-Using ``titlecase`` you can switch fixing the case of toptags off and on. The
-``separator`` is used to combine more than one toptag into a metatag string and in
-case not a single toptag was found for a category the value of 
-``default_unknown`` is set.
 
 
 ### Differences to Last.fm.Plus
