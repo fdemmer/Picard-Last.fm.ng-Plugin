@@ -286,13 +286,6 @@ class LastFM(DebugMixin, QtCore.QObject):
         determines and enforces score threshold, assigns result to metatags
         optionally logs toptag statistics
         """
-        # find valid tags, split into categories and limit results
-        if stats:
-            log.info(">>> name: {0}".format(
-                (self.metadata.get('title') or self.metadata.get('album')) \
-                    .encode('utf8').decode('utf8')
-            ))
-
         result = {}
         for category in settings.CATEGORIES:
             # initialize empty list, unless exists because of an overflow
