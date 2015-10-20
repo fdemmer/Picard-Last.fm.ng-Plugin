@@ -22,7 +22,7 @@ Extract the "lastfmng" directory in the archive to you local user's plugin
 directory:
 
  - Windows: ``%APPDATA%\MusicBrainz\Picard\plugins``
- - Linux/MAxOS: ``~/.config/MusicBrainz/Picard/plugins``
+ - Linux/MacOS: ``~/.config/MusicBrainz/Picard/plugins``
 
 Start or restart Picard to load the plugin and enable it in the options 
 dialog for plugins.
