@@ -37,7 +37,7 @@ class ListSearchlist:
             ", ".join(self.include[:3])
         )
 
-    def remove(self, name):
+    def add_exclude(self, name):
         """
         add a single tag name to the exclude list
         """

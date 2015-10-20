@@ -148,7 +148,8 @@ class Category(object):
             searchlist = StringSearchlist(config.get('searchlist', self.name))
         # exclude 'soundtrack' as a tag
         if get_config('global', 'soundtrack_is_no_genre', 'boolean'):
-            searchlist.remove('soundtrack')
+            searchlist.add_exclude('soundtrack')
+
         return searchlist
 
     def _get_threshold(self, tags):
