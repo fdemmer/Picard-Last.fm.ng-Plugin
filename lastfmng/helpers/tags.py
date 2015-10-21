@@ -4,6 +4,9 @@ from __future__ import unicode_literals
 import operator
 import re
 
+from .. import settings
+from ..vendor.titlecase import titlecase
+
 
 def uniq(iterable):
     """
@@ -14,7 +17,12 @@ def uniq(iterable):
     return [set.setdefault(e, e) for e in iterable if e not in set]
 
 
-def join_tags(tuples, limit=None, separator=", ", sort=True, titlecase=True):
+def abbreviations(word, **kwargs):
+    if word.upper() in settings.ABBREVIATIONS:
+        return word.upper()
+
+
+def join_tags(tuples, limit=None, separator=", ", sort=True, apply_titlecase=True):
     """
     create a metatag string for a list of tag tuples
     tag names are title-cased (override using titlecase)
@@ -29,8 +37,11 @@ def join_tags(tuples, limit=None, separator=", ", sort=True, titlecase=True):
     if sort:
         tuples = sorted(tuples, key=operator.itemgetter(0), reverse=False)
     # fix case or not.
-    if titlecase:
-        rv = [tag.title() for (tag, score) in tuples]
+    if apply_titlecase:
+        rv = [
+            titlecase(tag, callback=abbreviations)
+            for (tag, score) in tuples
+        ]
     else:
         rv = [tag for (tag, score) in tuples]
     # remove duplicates, that we might have gotten from overflow

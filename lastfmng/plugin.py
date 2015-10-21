@@ -358,7 +358,7 @@ class LastFM(DebugMixin, QtCore.QObject):
                     limit=category.limit,
                     separator=category.separator,
                     sort=category.sort,
-                    titlecase=category.titlecase
+                    apply_titlecase=category.titlecase
                 ) or settings.DEFAULT_UNKNOWN
                 log.info("%s = %s", metatag, self.metadata[metatag])
 
