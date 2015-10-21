@@ -63,6 +63,9 @@ log.info('ignore_feat_artists: %s', ENABLE_IGNORE_FEAT_ARTISTS)
 DEFAULT_UNKNOWN = config.get('global', 'default_unknown').strip()
 log.info('default_unknown: %s', DEFAULT_UNKNOWN)
 
+# list of abbreviations for titlecase
+ABBREVIATIONS = config.get('searchlist', 'abbreviations')
+
 
 DEBUG_STATS = config.getboolean('global', 'print_tag_stats')
 DEBUG_STATS_TRACK = config.getboolean('global', 'print_tag_stats_track') \
