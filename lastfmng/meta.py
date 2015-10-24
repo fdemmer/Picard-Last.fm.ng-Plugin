@@ -13,5 +13,4 @@ PLUGIN_URL = "https://github.com/fdemmer/Picard-Last.fm.ng-Plugin"
 
 PLUGIN_DESCRIPTION = ("Re-imagination of the popular Last.fm.Plus plugin."
                       "<br/><br/>"
-                      "<b>Source:</b> {}<br/>"
-                      "<b>License:</b> {}").format(PLUGIN_URL, PLUGIN_LICENSE)
+                      "<b>Source:</b> {}<br/>").format(PLUGIN_URL)
