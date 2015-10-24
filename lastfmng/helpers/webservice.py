@@ -4,15 +4,7 @@ from __future__ import unicode_literals
 import sys
 import time
 
-from .. import settings
-
 from picard.webservice import XmlWebService, REQUEST_DELAY
-
-
-# From http://www.last.fm/api/tos, 2011-07-30
-# 4.4 (...) You will not make more than 5 requests per originating IP address
-# per second, averaged over a 5 minute period, without prior written consent.
-REQUEST_DELAY[(settings.LASTFM_HOST, settings.LASTFM_PORT)] = 200
 
 
 class PluginXmlWebService(XmlWebService):
