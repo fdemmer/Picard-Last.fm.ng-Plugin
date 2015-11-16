@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
 
+import codecs
 import logging
 import os
 
@@ -31,7 +32,7 @@ def load_config_file(name, config=None):
     if not config:
         config = ConfigParser()
     try:
-        with open(os.path.join(os.path.dirname(__file__), name)) as fp:
+        with codecs.open(os.path.join(os.path.dirname(__file__), name), 'r', 'utf8') as fp:
             config.readfp(fp)
     except IOError:
         pass
