@@ -315,7 +315,9 @@ class LastFmMixin(object):
         return decorate
 
     def request_artist_toptags(self):
-        """request toptags of an artist (via artist or albumartist)"""
+        """
+        request toptags of an artist (via artist or albumartist)
+        """
         artist = self.metadata["artist"]
         if artist:
             if settings.ENABLE_IGNORE_FEAT_ARTISTS:
@@ -330,7 +332,9 @@ class LastFmMixin(object):
         self.dispatch("artist", params)
 
     def request_track_toptags(self):
-        """request toptags of a track (via title, artist)"""
+        """
+        request toptags of a track (via title, artist)
+        """
         artist = self.metadata["artist"]
         if settings.ENABLE_IGNORE_FEAT_ARTISTS:
             artist = strip_feat_artist(artist)
@@ -343,7 +347,9 @@ class LastFmMixin(object):
         self.dispatch("track", params)
 
     def request_album_toptags(self):
-        """request toptags of an album (via album, albumartist)"""
+        """
+        request toptags of an album (via album, albumartist)
+        """
         params = dict(
             method="album.gettoptags",
             album=self.metadata["album"],
@@ -352,7 +358,9 @@ class LastFmMixin(object):
         self.dispatch("album", params)
 
     def request_all_track_toptags(self):
-        """request toptags of all tracks in the album (via title, artist)"""
+        """
+        request toptags of all tracks in the album (via title, artist)
+        """
         for track in self.tracks:
             artist = track.metadata["artist"]
             if settings.ENABLE_IGNORE_FEAT_ARTISTS:
@@ -382,12 +390,13 @@ class LastFmMixin(object):
 
     def handle_toptags(self, tagtype, data, http, error):
         """
-        request handler for the last.fm webservice
+        Response handler for the last.fm webservice
 
-        read toptags from xml response.
-        tag names are in lower case.
-        tags with score below score_threshold are ignored.
-        returns an unsorted list of tuples (name, score).
+        Performs the following steps:
+          - read toptags from xml response
+          - tag names are in lower case
+          - tags with score below score_threshold are ignored
+          - extends self.toptags with an unsorted list of (name, score) tuples
         """
         score_threshold = 1
         # cache key
@@ -429,7 +438,9 @@ class LastFmMixin(object):
             pass
 
     def handle_cached_toptags(self, tagtype, query):
-        """Copy toptags from module-global cache to local toptags list."""
+        """
+        Copy toptags from module-global cache to local toptags list.
+        """
         toptags = CACHE.get(query, None)
         if toptags is not None:
             self.toptags[tagtype].extend(toptags)
