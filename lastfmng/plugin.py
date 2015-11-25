@@ -12,7 +12,7 @@ from picard.track import Track
 from picard.webservice import XmlWebService
 
 from . import settings
-from .compat import urllib_encode
+from .compat import urlencode
 from .helpers.tags import apply_tag_weight, join_tags, strip_feat_artist
 from .mixins import DebugMixin, CollectUnusedMixin
 from .settings import translate_tag
@@ -210,7 +210,7 @@ class LastFmMixin(object):
         Implements the caching mechanism.
         Lookup from cache or dispatch a new api request.
         """
-        query = urllib_encode(params)
+        query = urlencode(params)
         # if the query is already cached only queue task
         if query in CACHE:
             log.debug("cached %s", query)

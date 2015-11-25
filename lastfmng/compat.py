@@ -12,7 +12,7 @@ except ImportError:
     from .vendor.ConfigParser import ConfigParser, NoOptionError
 
 
-def urllib_encode(params):
+def urlencode(params):
     from PyQt4 import QtCore
     return '&'.join([
         "{0}={1}".format(k, QtCore.QUrl.toPercentEncoding(v))
