@@ -13,15 +13,9 @@ except ImportError:
 
 
 def urllib_encode(params):
-    try:
-        import urllib
-        return urllib.urlencode(
-            {k: v.encode('utf8') for k, v in params.items()}, 0
-        )
-    except ImportError:
-        from PyQt4 import QtCore
-        return '&'.join([
-            "{0}={1}".format(k, QtCore.QUrl.toPercentEncoding(v))
-            for (k, v)
-            in params.items()
-        ])
+    from PyQt4 import QtCore
+    return '&'.join([
+        "{0}={1}".format(k, QtCore.QUrl.toPercentEncoding(v))
+        for (k, v)
+        in params.items()
+    ])
