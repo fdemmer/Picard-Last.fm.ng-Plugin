@@ -9,11 +9,11 @@ from PyQt4 import QtCore
 from picard.mbxml import medium_to_metadata, track_to_metadata
 from picard.metadata import Metadata
 from picard.track import Track
+from picard.webservice import XmlWebService
 
 from . import settings
 from .compat import urllib_encode
 from .helpers.tags import apply_tag_weight, join_tags, strip_feat_artist
-from .helpers.webservice import PluginXmlWebService
 from .mixins import DebugMixin, CollectUnusedMixin
 from .settings import translate_tag
 
@@ -23,7 +23,7 @@ CACHE = {}
 # list of pending queries
 PENDING = []
 
-xmlws = PluginXmlWebService()
+xmlws = XmlWebService()
 log = logging.getLogger(__name__)
 
 

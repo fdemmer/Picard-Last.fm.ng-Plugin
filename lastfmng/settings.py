@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
 
+import codecs
 import logging
 import os
 
@@ -31,7 +32,7 @@ def load_config_file(name, config=None):
     if not config:
         config = ConfigParser()
     try:
-        with open(os.path.join(os.path.dirname(__file__), name)) as fp:
+        with codecs.open(os.path.join(os.path.dirname(__file__), name), 'r', 'utf8') as fp:
             config.readfp(fp)
     except IOError:
         pass
@@ -249,6 +250,14 @@ log.info('enabled categories: %s', ', '.join([
         in CATEGORIES
         if c.is_enabled == True
     ]))
+
+
+# From http://www.last.fm/api/tos, 2011-07-30
+# 4.4 (...) You will not make more than 5 requests per originating IP address
+# per second, averaged over a 5 minute period, without prior written consent.
+from picard.webservice import REQUEST_DELAY
+
+REQUEST_DELAY[(LASTFM_HOST, LASTFM_PORT)] = 200
 
 
 def translate_tag(name):
