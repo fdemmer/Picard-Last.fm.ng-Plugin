@@ -205,11 +205,12 @@ class LastFmMixin(object):
         # list of functions, that are called before finalizing the album data
         self.before_finalize = []
 
-    def dispatch(self, tagtype, query):
+    def dispatch(self, tagtype, params):
         """
         Implements the caching mechanism.
         Lookup from cache or dispatch a new api request.
         """
+        query = urllib_encode(params)
         # if the query is already cached only queue task
         if query in CACHE:
             log.debug("cached %s", query)
@@ -325,7 +326,7 @@ class LastFmMixin(object):
             method="artist.gettoptags",
             artist=artist,
             api_key=settings.LASTFM_KEY)
-        self.dispatch("artist", urllib_encode(params))
+        self.dispatch("artist", params)
 
     def request_track_toptags(self):
         """request toptags of a track (via title, artist)"""
@@ -338,7 +339,7 @@ class LastFmMixin(object):
             track=self.metadata["title"],
             artist=artist,
             api_key=settings.LASTFM_KEY)
-        self.dispatch("track", urllib_encode(params))
+        self.dispatch("track", params)
 
     def request_album_toptags(self):
         """request toptags of an album (via album, albumartist)"""
@@ -347,7 +348,7 @@ class LastFmMixin(object):
             album=self.metadata["album"],
             artist=self.metadata["albumartist"],
             api_key=settings.LASTFM_KEY)
-        self.dispatch("album", urllib_encode(params))
+        self.dispatch("album", params)
 
     def request_all_track_toptags(self):
         """request toptags of all tracks in the album (via title, artist)"""
@@ -361,7 +362,7 @@ class LastFmMixin(object):
                 track=track.metadata["title"],
                 artist=artist,
                 api_key=settings.LASTFM_KEY)
-            self.dispatch("all_track", urllib_encode(params))
+            self.dispatch("all_track", params)
 
     def request_all_artist_toptags(self):
         """
@@ -376,7 +377,7 @@ class LastFmMixin(object):
                 method="artist.gettoptags",
                 artist=artist,
                 api_key=settings.LASTFM_KEY)
-            self.dispatch("all_artist", urllib_encode(params))
+            self.dispatch("all_artist", params)
 
     def handle_toptags(self, tagtype, data, http, error):
         """
