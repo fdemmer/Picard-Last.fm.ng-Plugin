@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
 
+from picard.webservice import XmlWebService
+
 try:
     from collections import OrderedDict
 except ImportError:
@@ -19,3 +21,9 @@ def urlencode(params):
         for (k, v)
         in params.items()
     ])
+
+
+class PluginXmlWebService(XmlWebService):
+    pass
+
+

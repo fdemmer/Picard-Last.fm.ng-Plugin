@@ -3,14 +3,13 @@ from __future__ import unicode_literals, absolute_import
 
 import logging
 import traceback
-from functools import partial
 from PyQt4 import QtCore
+from functools import partial
 
+from lastfmng.compat import PluginXmlWebService
 from picard.mbxml import medium_to_metadata, track_to_metadata
 from picard.metadata import Metadata
 from picard.track import Track
-from picard.webservice import XmlWebService
-
 from . import settings
 from .compat import urlencode
 from .helpers.tags import apply_tag_weight, join_tags, strip_feat_artist
@@ -23,7 +22,7 @@ CACHE = {}
 # list of pending queries
 PENDING = []
 
-xmlws = XmlWebService()
+xmlws = PluginXmlWebService()
 log = logging.getLogger(__name__)
 
 
