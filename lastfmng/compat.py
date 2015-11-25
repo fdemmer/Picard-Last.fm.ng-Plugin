@@ -24,6 +24,25 @@ def urlencode(params):
 
 
 class PluginXmlWebService(XmlWebService):
-    pass
+    """
+    Subclass for compatibility workarounds...
 
+    Picard 1.4 started urlencoding the path argument, breaking any already
+    encoded query parameter string.
+    """
+    def get(self, *args, **kwargs):
+        """
+        Signatures...
 
+        - Picard 1.3.x
+            host, port, path, handler,
+            xml=True, priority=False, important=False, mblogin=False,
+            cacheloadcontrol=None, refresh=False
+
+        - Picard 1.4.x
+            host, port, path, handler,
+            xml=True, priority=False, important=False, mblogin=False,
+            cacheloadcontrol=None, refresh=False,
+            queryargs=None
+        """
+        return super(PluginXmlWebService, self).get(*args, **kwargs)
