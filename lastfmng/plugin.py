@@ -257,7 +257,6 @@ class LastFmMixin(object):
             self.finished(handler),
             queryargs=params,
             priority=True,
-            important=False,
         )
 
     def add_task(self, handler):
@@ -275,7 +274,6 @@ class LastFmMixin(object):
             settings.LASTFM_HOST,
             settings.LASTFM_PORT,
             priority=False,
-            important=False,
         )
 
     def finish_request(self):
