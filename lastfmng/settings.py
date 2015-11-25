@@ -52,7 +52,7 @@ config = load_config(config_files)
 LASTFM_HOST = config.get('global', 'lastfm_host')
 LASTFM_PORT = config.getint('global', 'lastfm_port')
 LASTFM_KEY = config.get('global', 'lastfm_key')
-LASTFM_PATH = '/2.0/?'
+LASTFM_PATH = '/2.0/'
 log.info('host: %s:%s', LASTFM_HOST, LASTFM_PORT)
 log.info('key: %s', LASTFM_KEY)
 

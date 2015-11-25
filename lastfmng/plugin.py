@@ -223,9 +223,9 @@ class LastFmMixin(object):
         # new queries are queued as http-requests
         else:
             log.debug("request %s", query)
-            self.add_request(partial(self.handle_toptags, tagtype), query)
+            self.add_request(partial(self.handle_toptags, tagtype), params)
 
-    def add_request(self, handler, query):
+    def add_request(self, handler, params):
         """
         queue a data fetch request. this increases the requests counter.
         this method returns after queueing. the requests are then processed
@@ -240,6 +240,7 @@ class LastFmMixin(object):
         counter and finalize the album data.
         """
         # add query to list of pending requests, no request should be sent twice
+        query = urlencode(params)
         PENDING.append(query)
 
         # count requests, so that the album is not finalized until
@@ -251,9 +252,10 @@ class LastFmMixin(object):
         xmlws.get(
             settings.LASTFM_HOST,
             settings.LASTFM_PORT,
-            settings.LASTFM_PATH + query,
+            settings.LASTFM_PATH,
              # wrap the handler in the finished decorator
             self.finished(handler),
+            queryargs=params,
             priority=True,
             important=False,
         )

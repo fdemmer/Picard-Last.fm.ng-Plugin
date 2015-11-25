@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
 
+from PyQt4 import QtCore
+
+from picard import PICARD_VERSION
 from picard.webservice import XmlWebService
 
 try:
@@ -28,9 +31,10 @@ class PluginXmlWebService(XmlWebService):
     Subclass for compatibility workarounds...
 
     Picard 1.4 started urlencoding the path argument, breaking any already
-    encoded query parameter string.
+    encoded query parameter string. In addition the 'queryargs' parameter was
+    introduced.
     """
-    def get(self, *args, **kwargs):
+    def get(self, host, port, path, handler, **kwargs):
         """
         Signatures...
 
@@ -45,4 +49,24 @@ class PluginXmlWebService(XmlWebService):
             cacheloadcontrol=None, refresh=False,
             queryargs=None
         """
-        return super(PluginXmlWebService, self).get(*args, **kwargs)
+        queryargs = kwargs.get('queryargs')
+        if queryargs:
+            if PICARD_VERSION[1] >= 4:
+                # urlencode arguments.
+                # for some reason they are using addEncodedQueryItem()
+                # internally, instead of the one that would automatically
+                # encode everything.
+                kwargs.update({
+                    'queryargs': {
+                        k: QtCore.QUrl.toPercentEncoding(v)
+                        for k, v in queryargs.items()
+                    },
+                })
+            else:
+                # pre v1.4 Picard did not support the queryargs kwargs
+                del kwargs['queryargs']
+                path = path + '?' + urlencode(queryargs)
+
+        return super(PluginXmlWebService, self).get(
+            host, port, path, handler, **kwargs
+        )
