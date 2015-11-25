@@ -402,16 +402,19 @@ class LastFmMixin(object):
         # temp storage for toptags
         tmp = []
 
+        lfm = data.lfm.pop()
+        if not lfm:
+            log.warning("invalid response: 'lfm' tag missing", tagtype, query)
+            return
+
+        if lfm.attribs['status'] == 'failed':
+            error = lfm.error.pop()
+            log.warning("api returned error: {0} - {1}".format(
+                error.attribs['code'], error.text))
+            log.warning(str(http.url()))
+            return
+
         try:
-            lfm = data.lfm.pop()
-
-            if lfm.attribs['status'] == 'failed':
-                error = lfm.error.pop()
-                log.warning("lfm api error: {0} - {1}".format(
-                    error.attribs['code'], error.text))
-                log.warning(str(http.url()))
-                return
-
             toptags = lfm.toptags.pop()
             for tag in toptags.tag:
                 name = tag.name[0].text.strip().lower()
