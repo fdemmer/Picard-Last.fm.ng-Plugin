@@ -31,6 +31,14 @@ Please see the "How it works" section for a better understanding on what
 the plugin does.
 
 
+### FAQ
+
+It's ok to ask questions using github issues, but please check if your
+question was already answered before. They are usually labeled:
+
+https://github.com/fdemmer/Picard-Last.fm.ng-Plugin/issues?utf8=%E2%9C%93&q=is%3Aissue+label%3Afaq+
+
+
 ## Install
 
 Download the latest release from the github [releases][0] page.
@@ -45,7 +53,7 @@ Start or restart Picard to load the plugin and enable it in the options
 dialog for plugins.
 
 
-## Updating
+### Updating
 
 It is recommended to backup your ``config.ini`` and delete the existing
 "lastfmng" directory before extracting a new version to the plugins directory.
