@@ -119,8 +119,10 @@ class TaggerBase(DebugMixin, QtCore.QObject):
                 )
                 result[category.name] = [(t, s*category.prepend_scale) for t, s in result[category.prepend]] + \
                                         result[category.name]
-                log.info("here in prepend")
-                log.info(result[category.name])
+
+            #resort by score before providing to join_tags
+            #using apply_tag_weight with scaling of 1.0 as a sorting function
+            result[category.name] = apply_tag_weight((result[category.name], 1.0))
 
             # category is done, assign tags to metadata
             metatag = category.get_metatag(scope)
