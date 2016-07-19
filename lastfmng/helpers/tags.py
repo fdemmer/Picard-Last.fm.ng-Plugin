@@ -30,6 +30,10 @@ def join_tags(tuples, limit=None, separator=", ", sort=True, apply_titlecase=Tru
     tags are joined together using ", " (override using separator)
     if separator is None, tags are not joined, but a list is returned
     """
+
+    # first resort the list by score after our appending/prepending stuff
+    tuples = apply_tag_weight((tuples, 1.0))
+
     # first limit to only the top ones...
     if limit:
         tuples = tuples[:limit]
