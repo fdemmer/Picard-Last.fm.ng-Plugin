@@ -126,7 +126,8 @@ class TaggerBase(DebugMixin, QtCore.QObject):
 
             #show final tags
             log.info('Final tags before making choice:')
-            log.info(result[category.name])
+            log.info('%s', ','.join(['{} ({})'.format(t, s) for t, s in result[category.name]]) or 'None')
+            #log.info(result[category.name])
 
             # category is done, assign tags to metadata
             metatag = category.get_metatag(scope)
