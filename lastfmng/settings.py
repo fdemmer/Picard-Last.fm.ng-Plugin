@@ -115,8 +115,16 @@ class Category(object):
         return self.category_config('prepend')
 
     @property
+    def prepend_scale(self):
+        return self.category_config('prepend_scale', 'float', 1.0)
+
+    @property
     def overflow(self):
         return self.category_config('overflow')
+
+    @property
+    def overflow_scale(self):
+        return self.category_config('overflow_scale', 'float', 1.0)
 
     @property
     def sort(self):
