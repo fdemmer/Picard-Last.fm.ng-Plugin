@@ -117,18 +117,15 @@ class TaggerBase(DebugMixin, QtCore.QObject):
                     category, str(category.prepend_scale), category.prepend,
                     ', '.join(['{} ({})'.format(t, s*category.prepend_scale) for t, s in result[category.prepend]]) or 'None'
                 )
-                log.info([(t, s*category.prepend_scale) for t, s in result[category.prepend]])
-                log.info(result[category.name])
-                log.info('concat')
+                #actually do the prepend with scaling
                 result[category.name] = [(t, s*category.prepend_scale) for t, s in result[category.prepend]] + result[category.name]
-                log.info(result[category.name])
 
-            #resort by score before providing to join_tags
+            #re-sort by score before providing to join_tags
             #using apply_tag_weight with scaling of 1.0 as a sorting function
             result[category.name] = apply_tag_weight((result[category.name], 1.0))
 
             #show final tags
-            log.info('Tags before selection:')
+            log.info('Final tags before making choice:')
             log.info(result[category.name])
 
             # category is done, assign tags to metadata
