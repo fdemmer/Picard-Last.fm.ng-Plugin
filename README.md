@@ -43,11 +43,15 @@ https://github.com/fdemmer/Picard-Last.fm.ng-Plugin/issues?utf8=%E2%9C%93&q=is%3
 
 Download the latest release from the github [releases][0] page.
 
-Extract the "lastfmng" directory in the archive to you local user's plugin 
+Extract the "lastfmng" directory in the archive to your local user's plugin 
 directory:
 
  - Windows: ``%APPDATA%\MusicBrainz\Picard\plugins``
  - Linux/MacOS: ``~/.config/MusicBrainz/Picard/plugins``
+ 
+(Do not just put all the files contained inside the "lastfmng" directoy 
+there, put the whole directory there!
+eg. ``~/.config/MusicBrainz/Picard/plugins/lastfmng/...``)
 
 Start or restart Picard to load the plugin and enable it in the options 
 dialog for plugins.
