@@ -261,6 +261,6 @@ REQUEST_DELAY[(LASTFM_HOST, LASTFM_PORT)] = 200
 def translate_tag(name):
     try:
         name = config.get('translations', name.lower())
-    except:
+    except NoOptionError:
         pass
     return name
