@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
 
 PLUGIN_NAME = "Last.fm.ng"
 PLUGIN_AUTHOR = "Florian Demmer"
