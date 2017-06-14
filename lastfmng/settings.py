@@ -2,9 +2,9 @@
 import codecs
 import logging
 import os
+from configparser import ConfigParser, NoOptionError
 
 from .helpers.searchlists import RegexpSearchlist, StringSearchlist
-from .compat import ConfigParser, NoOptionError
 from .logging import setup_logging
 
 

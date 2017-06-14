@@ -4,10 +4,6 @@ from PyQt4 import QtCore
 from picard import PICARD_VERSION
 from picard.webservice import XmlWebService
 
-try:
-    from ConfigParser import ConfigParser, NoOptionError
-except ImportError:
-    from .vendor.ConfigParser import ConfigParser, NoOptionError
 
 
 def urlencode(params):
