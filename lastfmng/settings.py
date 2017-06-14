@@ -93,7 +93,7 @@ class Category(object):
         self.name = name
         self.searchlist = self.load_searchlist(searchlist)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
     @property
