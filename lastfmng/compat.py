@@ -1,15 +1,10 @@
 # -*- coding: utf-8 -*-
-from PyQt4 import QtCore
-
-from picard import PICARD_VERSION
-from picard.webservice import XmlWebService
-
+from PyQt5 import QtCore
 
 
 def urlencode(params):
-    from PyQt4 import QtCore
     return '&'.join([
-        "{0}={1}".format(k, QtCore.QUrl.toPercentEncoding(v))
+        "{0}={1}".format(k, QtCore.QUrl.toPercentEncoding(v, b'', b''))
         for (k, v)
         in params.items()
     ])

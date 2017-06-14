@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 import logging
 import traceback
-from PyQt4 import QtCore
 from functools import partial
 
+from PyQt5 import QtCore
 from picard.mbxml import medium_to_metadata, track_to_metadata
 from picard.metadata import Metadata
 from picard.track import Track
@@ -384,7 +384,7 @@ class LastFmMixin(object):
                 api_key=settings.LASTFM_KEY)
             self.dispatch("all_artist", params)
 
-    def handle_toptags(self, tagtype, data, http, error):
+    def handle_toptags(self, tagtype, data, response, error):
         """
         Response handler for the last.fm webservice
 
@@ -393,10 +393,16 @@ class LastFmMixin(object):
           - tag names are in lower case
           - tags with score below score_threshold are ignored
           - extends self.toptags with an unsorted list of (name, score) tuples
+
+        :param tagtype: tag type/name as string
+        :param data: picard.webservice.XmlNode with response data
+        :param response: QNetworkReply
+        :param error:
+        :return: None
         """
         score_threshold = 1
-        # cache key
-        query = str(http.url().encodedQuery())
+        # get url parameters for use as cache key
+        query = response.url().query()
         # temp storage for toptags
         tmp = []
 
@@ -409,7 +415,7 @@ class LastFmMixin(object):
             error = lfm.error.pop()
             log.warning("api returned error: {0} - {1}".format(
                 error.attribs['code'], error.text))
-            log.warning(str(http.url()))
+            log.warning(str(response.url()))
             return
 
         try:
