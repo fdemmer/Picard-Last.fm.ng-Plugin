@@ -1,14 +1,11 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals, absolute_import
-
-import os
 import logging
+import os
 
 from picard.const import USER_PLUGIN_DIR
 
 from . import settings
 from .helpers.tags import apply_tag_weight
-
 
 log = logging.getLogger(__name__)
 

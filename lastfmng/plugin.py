@@ -1,21 +1,19 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals, absolute_import
-
 import logging
 import traceback
-from PyQt4 import QtCore
 from functools import partial
+from urllib.parse import urlencode, quote
 
+from PyQt5 import QtCore, QtNetwork
 from picard.mbxml import medium_to_metadata, track_to_metadata
 from picard.metadata import Metadata
 from picard.track import Track
+from picard.webservice import XmlWebService as PluginXmlWebService
 
 from . import settings
-from .compat import urlencode, PluginXmlWebService
 from .helpers.tags import apply_tag_weight, join_tags, strip_feat_artist
 from .mixins import DebugMixin, CollectUnusedMixin
 from .settings import translate_tag
-
 
 # dictionary for query: toptag lists
 CACHE = {}
@@ -71,7 +69,6 @@ class TaggerBase(DebugMixin, QtCore.QObject):
         except TypeError:
             # noinspection PyArgumentList
             track_to_metadata(track_node, track, self.config)
-
 
     def filter_and_set_metadata(self, scope, all_tags, stats=False):
         """
@@ -209,7 +206,9 @@ class LastFmMixin(object):
         Implements the caching mechanism.
         Lookup from cache or dispatch a new api request.
         """
-        query = urlencode(params)
+        query = urlencode(params, quote_via=quote)
+        #log.info('dispatch cache key: %s', query)
+
         # if the query is already cached only queue task
         if query in CACHE:
             log.debug("cached %s", query)
@@ -240,7 +239,7 @@ class LastFmMixin(object):
         counter and finalize the album data.
         """
         # add query to list of pending requests, no request should be sent twice
-        query = urlencode(params)
+        query = urlencode(params, quote_via=quote)
         PENDING.append(query)
 
         # count requests, so that the album is not finalized until
@@ -253,9 +252,10 @@ class LastFmMixin(object):
             settings.LASTFM_HOST,
             settings.LASTFM_PORT,
             settings.LASTFM_PATH,
-             # wrap the handler in the finished decorator
+            # wrap the handler in the finished decorator
             self.finished(handler),
             queryargs=params,
+            cacheloadcontrol=QtNetwork.QNetworkRequest.PreferCache,
             priority=True,
         )
 
@@ -386,7 +386,7 @@ class LastFmMixin(object):
                 api_key=settings.LASTFM_KEY)
             self.dispatch("all_artist", params)
 
-    def handle_toptags(self, tagtype, data, http, error):
+    def handle_toptags(self, tagtype, data, response, error):
         """
         Response handler for the last.fm webservice
 
@@ -395,10 +395,16 @@ class LastFmMixin(object):
           - tag names are in lower case
           - tags with score below score_threshold are ignored
           - extends self.toptags with an unsorted list of (name, score) tuples
+
+        :param tagtype: tag type/name as string
+        :param data: picard.webservice.XmlNode with response data
+        :param response: QNetworkReply
+        :param error:
+        :return: None
         """
         score_threshold = 1
-        # cache key
-        query = str(http.url().encodedQuery())
+        # get url parameters for use as cache key
+        query = response.url().query(QtCore.QUrl.EncodeSpaces)
         # temp storage for toptags
         tmp = []
 
@@ -411,7 +417,7 @@ class LastFmMixin(object):
             error = lfm.error.pop()
             log.warning("api returned error: {0} - {1}".format(
                 error.attribs['code'], error.text))
-            log.warning(str(http.url()))
+            log.warning(str(response.url()))
             return
 
         try:
@@ -430,12 +436,13 @@ class LastFmMixin(object):
 
             # add the result of this run to the cache
             CACHE[query] = tmp
+            #log.info('handle_toptags cache key: %s', query)
 
             # extend local toptags list with the ones from this run
             self.toptags[tagtype].extend(tmp)
 
         except AttributeError:
-            log.warning("no tags: %s, %s", tagtype, query)
+            log.warning("AttributeError: %s, %s", tagtype, query)
             pass
 
     def handle_cached_toptags(self, tagtype, query):

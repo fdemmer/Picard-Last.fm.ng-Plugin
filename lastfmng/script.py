@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
 """
 Script functions
 ----------------
@@ -9,6 +8,7 @@ to be used with the plugin.
 
 Script functions need to be registered in __init__.py!
 """
+
 
 def func_set2(parser, name, value):
     """Adds ``value`` to the variable ``name``."""
