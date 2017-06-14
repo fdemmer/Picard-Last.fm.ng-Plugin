@@ -7,9 +7,9 @@ from functools import partial
 from picard.mbxml import medium_to_metadata, track_to_metadata
 from picard.metadata import Metadata
 from picard.track import Track
+from picard.webservice import XmlWebService as PluginXmlWebService
 
 from . import settings
-from .compat import urlencode, PluginXmlWebService
 from .helpers.tags import apply_tag_weight, join_tags, strip_feat_artist
 from .mixins import DebugMixin, CollectUnusedMixin
 from .settings import translate_tag
