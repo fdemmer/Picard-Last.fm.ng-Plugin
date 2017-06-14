@@ -2,7 +2,7 @@
 import logging
 import traceback
 from functools import partial
-from urllib.parse import urlencode
+from urllib.parse import urlencode, quote
 
 from PyQt5 import QtCore, QtNetwork
 from picard.mbxml import medium_to_metadata, track_to_metadata
@@ -206,7 +206,9 @@ class LastFmMixin(object):
         Implements the caching mechanism.
         Lookup from cache or dispatch a new api request.
         """
-        query = urlencode(params)
+        query = urlencode(params, quote_via=quote)
+        #log.info('dispatch cache key: %s', query)
+
         # if the query is already cached only queue task
         if query in CACHE:
             log.debug("cached %s", query)
@@ -237,7 +239,7 @@ class LastFmMixin(object):
         counter and finalize the album data.
         """
         # add query to list of pending requests, no request should be sent twice
-        query = urlencode(params)
+        query = urlencode(params, quote_via=quote)
         PENDING.append(query)
 
         # count requests, so that the album is not finalized until
@@ -402,7 +404,7 @@ class LastFmMixin(object):
         """
         score_threshold = 1
         # get url parameters for use as cache key
-        query = response.url().query()
+        query = response.url().query(QtCore.QUrl.EncodeSpaces)
         # temp storage for toptags
         tmp = []
 
@@ -434,6 +436,7 @@ class LastFmMixin(object):
 
             # add the result of this run to the cache
             CACHE[query] = tmp
+            #log.info('handle_toptags cache key: %s', query)
 
             # extend local toptags list with the ones from this run
             self.toptags[tagtype].extend(tmp)
