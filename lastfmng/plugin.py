@@ -439,7 +439,7 @@ class LastFmMixin(object):
             self.toptags[tagtype].extend(tmp)
 
         except AttributeError:
-            log.warning("no tags: %s, %s", tagtype, query)
+            log.warning("AttributeError: %s, %s", tagtype, query)
             pass
 
     def handle_cached_toptags(self, tagtype, query):
