@@ -4,7 +4,7 @@ import traceback
 from functools import partial
 from urllib.parse import urlencode
 
-from PyQt5 import QtCore
+from PyQt5 import QtCore, QtNetwork
 from picard.mbxml import medium_to_metadata, track_to_metadata
 from picard.metadata import Metadata
 from picard.track import Track
@@ -253,6 +253,7 @@ class LastFmMixin(object):
             # wrap the handler in the finished decorator
             self.finished(handler),
             queryargs=params,
+            cacheloadcontrol=QtNetwork.QNetworkRequest.PreferCache,
             priority=True,
         )
 
