@@ -2,6 +2,7 @@
 import logging
 import traceback
 from functools import partial
+from urllib.parse import urlencode
 
 from PyQt5 import QtCore
 from picard.mbxml import medium_to_metadata, track_to_metadata
