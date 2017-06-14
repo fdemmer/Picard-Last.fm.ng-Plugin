@@ -4,9 +4,10 @@ import logging
 import os
 from configparser import ConfigParser, NoOptionError
 
+from picard.webservice import REQUEST_DELAY
+
 from .helpers.searchlists import RegexpSearchlist, StringSearchlist
 from .logging import setup_logging
-
 
 setup_logging()
 log = logging.getLogger(__name__)
@@ -23,7 +24,7 @@ def load_config(config_files):
     config = None
     for config_file in config_files:
         config = load_config_file(config_file, config)
-    return  config
+    return config
 
 
 def load_config_file(name, config=None):
@@ -214,10 +215,11 @@ class Category(object):
 
         return tags
 
-
     def _log_tags(self, tags, message, limit=5):
         log.info('%s: %s tag(s) %s:', self, len(tags), message)
-        log.info('%s: %s%s', self,
+        log.info(
+            '%s: %s%s',
+            self,
             ', '.join(['{} ({})'.format(t, s) for t, s in tags][:limit]),
             ', ...' if len(tags) > limit else '',
         )
@@ -243,18 +245,16 @@ CATEGORIES = [
     Category('year'),
 ]
 log.info('enabled categories: %s', ', '.join([
-        '{} ({})'.format(c.name, c.limit)
-        for c
-        in CATEGORIES
-        if c.is_enabled == True
-    ]))
+    '{} ({})'.format(c.name, c.limit)
+    for c
+    in CATEGORIES
+    if c.is_enabled == True
+]))
 
 
 # From http://www.last.fm/api/tos, 2011-07-30
 # 4.4 (...) You will not make more than 5 requests per originating IP address
 # per second, averaged over a 5 minute period, without prior written consent.
-from picard.webservice import REQUEST_DELAY
-
 REQUEST_DELAY[(LASTFM_HOST, LASTFM_PORT)] = 200
 
 

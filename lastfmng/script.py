@@ -9,6 +9,7 @@ to be used with the plugin.
 Script functions need to be registered in __init__.py!
 """
 
+
 def func_set2(parser, name, value):
     """Adds ``value`` to the variable ``name``."""
     if value:

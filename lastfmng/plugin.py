@@ -14,7 +14,6 @@ from .helpers.tags import apply_tag_weight, join_tags, strip_feat_artist
 from .mixins import DebugMixin, CollectUnusedMixin
 from .settings import translate_tag
 
-
 # dictionary for query: toptag lists
 CACHE = {}
 # list of pending queries
@@ -69,7 +68,6 @@ class TaggerBase(DebugMixin, QtCore.QObject):
         except TypeError:
             # noinspection PyArgumentList
             track_to_metadata(track_node, track, self.config)
-
 
     def filter_and_set_metadata(self, scope, all_tags, stats=False):
         """
@@ -251,7 +249,7 @@ class LastFmMixin(object):
             settings.LASTFM_HOST,
             settings.LASTFM_PORT,
             settings.LASTFM_PATH,
-             # wrap the handler in the finished decorator
+            # wrap the handler in the finished decorator
             self.finished(handler),
             queryargs=params,
             priority=True,
