@@ -8,7 +8,7 @@ from PyQt5 import QtCore, QtNetwork
 from picard.mbxml import medium_to_metadata, track_to_metadata
 from picard.metadata import Metadata
 from picard.track import Track
-from picard.webservice import XmlWebService as PluginXmlWebService
+from picard.webservice import WebService
 
 from . import settings
 from .helpers.tags import apply_tag_weight, join_tags, strip_feat_artist
@@ -20,7 +20,7 @@ CACHE = {}
 # list of pending queries
 PENDING = []
 
-xmlws = PluginXmlWebService()
+ws = WebService()
 log = logging.getLogger(__name__)
 
 
@@ -248,7 +248,7 @@ class LastFmMixin(object):
         self.requests += 1
 
         # queue http get request
-        xmlws.get(
+        ws.get(
             settings.LASTFM_HOST,
             settings.LASTFM_PORT,
             settings.LASTFM_PATH,
@@ -268,7 +268,7 @@ class LastFmMixin(object):
         self.requests += 1
 
         # queue function call
-        xmlws.add_task(
+        ws.add_task(
             # wrap the handler in the finished decorator
             self.finished(handler),
             settings.LASTFM_HOST,
