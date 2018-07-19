@@ -248,6 +248,7 @@ class LastFmMixin(object):
             priority=True,
             # wrap the handler in the finished decorator
             handler=self.finished(handler),
+            parse_response_type='xml',
         )
 
     def add_task(self, handler):
