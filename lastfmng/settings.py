@@ -7,9 +7,7 @@ from configparser import ConfigParser, NoOptionError
 from picard.webservice import REQUEST_DELAY
 
 from .helpers.searchlists import RegexpSearchlist, StringSearchlist
-from .logging import setup_logging
 
-setup_logging()
 log = logging.getLogger(__name__)
 
 
