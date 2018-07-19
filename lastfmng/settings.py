@@ -1,14 +1,11 @@
 # -*- coding: utf-8 -*-
 import codecs
-import logging
 import os
 from configparser import ConfigParser, NoOptionError
 
+from picard import log
 from picard.webservice import ratecontrol
 from .helpers.searchlists import RegexpSearchlist, StringSearchlist
-
-log = logging.getLogger(__name__)
-
 
 config_files = [
     'defaults.ini',

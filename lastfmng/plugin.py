@@ -1,18 +1,19 @@
 # -*- coding: utf-8 -*-
-import logging
 import traceback
 from functools import partial
-from urllib.parse import urlencode, quote
+from urllib.parse import quote, urlencode
 
 from PyQt5 import QtCore, QtNetwork
+
+from picard import log
 from picard.mbjson import medium_to_metadata, track_to_metadata
 from picard.metadata import Metadata
 from picard.track import Track
-from picard.webservice import WebService, WSRequest
+from picard.webservice import WSRequest, WebService
 
 from . import settings
 from .helpers.tags import apply_tag_weight, join_tags, strip_feat_artist
-from .mixins import DebugMixin, CollectUnusedMixin
+from .mixins import CollectUnusedMixin, DebugMixin
 from .settings import translate_tag
 
 # dictionary for query: toptag lists
@@ -21,7 +22,6 @@ CACHE = {}
 PENDING = []
 
 ws = WebService()
-log = logging.getLogger(__name__)
 
 
 # inherit from QObject to gain access to tagger, logger and config
