@@ -5,7 +5,7 @@ from functools import partial
 from urllib.parse import urlencode, quote
 
 from PyQt5 import QtCore, QtNetwork
-from picard.mbxml import medium_to_metadata, track_to_metadata
+from picard.mbjson import medium_to_metadata, track_to_metadata
 from picard.metadata import Metadata
 from picard.track import Track
 from picard.webservice import WebService
@@ -48,27 +48,18 @@ class TaggerBase(DebugMixin, QtCore.QObject):
     def _load_tracks(self, release_node, album):
         # this happens after the album metadata processor in picard
         self.tracks = []
-        for medium_node in release_node.medium_list[0].medium:
+        for medium_node in release_node['media']:
             mm = Metadata()
             mm.copy(album._new_metadata)
             medium_to_metadata(medium_node, mm)
-            for track_node in medium_node.track_list[0].track:
-                track = Track(track_node.recording[0].id, album)
+            for track_node in medium_node['tracks']:
+                track = Track(track_node['recording']['id'], album)
                 self.tracks.append(track)
                 # Get track metadata
                 tm = track.metadata
                 tm.copy(mm)
-                self._track_to_metadata(track_node, track)
+                track_to_metadata(track_node, track)
                 track._customize_metadata()
-
-    def _track_to_metadata(self, track_node, track):
-        # that's pretty ugly, but v1.2 requires the config argument
-        # as it seems it was removed in v1.3
-        try:
-            track_to_metadata(track_node, track)
-        except TypeError:
-            # noinspection PyArgumentList
-            track_to_metadata(track_node, track, self.config)
 
     def filter_and_set_metadata(self, scope, all_tags, stats=False):
         """
