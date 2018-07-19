@@ -4,8 +4,7 @@ import logging
 import os
 from configparser import ConfigParser, NoOptionError
 
-from picard.webservice import REQUEST_DELAY
-
+from picard.webservice import ratecontrol
 from .helpers.searchlists import RegexpSearchlist, StringSearchlist
 
 log = logging.getLogger(__name__)
@@ -253,7 +252,7 @@ log.info('enabled categories: %s', ', '.join([
 # From http://www.last.fm/api/tos, 2011-07-30
 # 4.4 (...) You will not make more than 5 requests per originating IP address
 # per second, averaged over a 5 minute period, without prior written consent.
-REQUEST_DELAY[(LASTFM_HOST, LASTFM_PORT)] = 200
+ratecontrol.set_minimum_delay((LASTFM_HOST, LASTFM_PORT), 200)
 
 
 def translate_tag(name):
