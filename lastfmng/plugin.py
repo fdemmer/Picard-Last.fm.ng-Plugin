@@ -1,18 +1,19 @@
 # -*- coding: utf-8 -*-
-import logging
 import traceback
 from functools import partial
-from urllib.parse import urlencode, quote
+from urllib.parse import quote, urlencode
 
 from PyQt5 import QtCore, QtNetwork
-from picard.mbxml import medium_to_metadata, track_to_metadata
+
+from picard import log
+from picard.mbjson import medium_to_metadata, track_to_metadata
 from picard.metadata import Metadata
 from picard.track import Track
-from picard.webservice import XmlWebService as PluginXmlWebService
+from picard.webservice import WSRequest, WebService
 
 from . import settings
 from .helpers.tags import apply_tag_weight, join_tags, strip_feat_artist
-from .mixins import DebugMixin, CollectUnusedMixin
+from .mixins import CollectUnusedMixin, DebugMixin
 from .settings import translate_tag
 
 # dictionary for query: toptag lists
@@ -20,8 +21,7 @@ CACHE = {}
 # list of pending queries
 PENDING = []
 
-xmlws = PluginXmlWebService()
-log = logging.getLogger(__name__)
+ws = WebService()
 
 
 # inherit from QObject to gain access to tagger, logger and config
@@ -48,27 +48,18 @@ class TaggerBase(DebugMixin, QtCore.QObject):
     def _load_tracks(self, release_node, album):
         # this happens after the album metadata processor in picard
         self.tracks = []
-        for medium_node in release_node.medium_list[0].medium:
+        for medium_node in release_node['media']:
             mm = Metadata()
             mm.copy(album._new_metadata)
             medium_to_metadata(medium_node, mm)
-            for track_node in medium_node.track_list[0].track:
-                track = Track(track_node.recording[0].id, album)
+            for track_node in medium_node['tracks']:
+                track = Track(track_node['recording']['id'], album)
                 self.tracks.append(track)
                 # Get track metadata
                 tm = track.metadata
                 tm.copy(mm)
-                self._track_to_metadata(track_node, track)
+                track_to_metadata(track_node, track)
                 track._customize_metadata()
-
-    def _track_to_metadata(self, track_node, track):
-        # that's pretty ugly, but v1.2 requires the config argument
-        # as it seems it was removed in v1.3
-        try:
-            track_to_metadata(track_node, track)
-        except TypeError:
-            # noinspection PyArgumentList
-            track_to_metadata(track_node, track, self.config)
 
     def filter_and_set_metadata(self, scope, all_tags, stats=False):
         """
@@ -248,15 +239,16 @@ class LastFmMixin(object):
         self.requests += 1
 
         # queue http get request
-        xmlws.get(
-            settings.LASTFM_HOST,
-            settings.LASTFM_PORT,
-            settings.LASTFM_PATH,
-            # wrap the handler in the finished decorator
-            self.finished(handler),
+        return ws.get(
+            host=settings.LASTFM_HOST,
+            port=settings.LASTFM_PORT,
+            path=settings.LASTFM_PATH,
             queryargs=params,
             cacheloadcontrol=QtNetwork.QNetworkRequest.PreferCache,
             priority=True,
+            # wrap the handler in the finished decorator
+            handler=self.finished(handler),
+            parse_response_type='xml',
         )
 
     def add_task(self, handler):
@@ -268,12 +260,16 @@ class LastFmMixin(object):
         self.requests += 1
 
         # queue function call
-        xmlws.add_task(
+        return ws.add_task(
             # wrap the handler in the finished decorator
-            self.finished(handler),
-            settings.LASTFM_HOST,
-            settings.LASTFM_PORT,
-            priority=False,
+            func=self.finished(handler),
+            request=WSRequest(
+                method='GET',
+                host=settings.LASTFM_HOST,
+                port=settings.LASTFM_PORT,
+                path=settings.LASTFM_PATH,
+                handler=self.finished(handler),
+            ),
         )
 
     def finish_request(self):

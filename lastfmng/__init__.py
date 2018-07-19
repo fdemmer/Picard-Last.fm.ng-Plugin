@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, unicode_literals
 """
 Last.fm.ng plugin
 -----------------
@@ -24,7 +23,7 @@ $if($in(%releasetype%,compilation),
 )
 
 It puts all albums, that look like soundtracks or compilations in a different
-top-level directory, than "normal" albums. Also it adds a tag called 
+top-level directory, than "normal" albums. Also it adds a tag called
 "Soundtrack" to all tracks that are soundtracks. Remove the `set2()` line
 if you do not want that.
 
@@ -60,13 +59,15 @@ The filenames will be::
 In addition the special characters `*|:"<>?` are replaced by `~` in the whole
 string.
 """
-from .meta import *
-from .plugin import LastFMTagger
-from .script import func_set2
+from __future__ import absolute_import, unicode_literals
 
+from picard import log
 from picard.metadata import register_album_metadata_processor
 from picard.metadata import register_track_metadata_processor
 from picard.script import register_script_function
+from .meta import *
+from .plugin import LastFMTagger
+from .script import func_set2
 
 
 @register_track_metadata_processor
@@ -74,6 +75,7 @@ def track_metadata_processor(album, metadata, track_node, release_node):
     """
     Determine track metadata using track and artist last.fm tags
     """
+    log.info('received track metadata trigger')
     lfmws = LastFMTagger(album, metadata, release_node)
     lfmws.before_finalize.append(lfmws.process_track_tags)
 
@@ -84,9 +86,10 @@ def track_metadata_processor(album, metadata, track_node, release_node):
 @register_album_metadata_processor
 def album_metadata_processor(album, metadata, release_node):
     """
-    Determine album metadata using album and all artist and all track last.fm 
-    tags in the album.    
+    Determine album metadata using album and all artist and all track last.fm
+    tags in the album.
     """
+    log.info('received album metadata trigger')
     lfmws = LastFMTagger(album, metadata, release_node)
     lfmws.before_finalize.append(lfmws.process_album_tags)
 

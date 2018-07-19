@@ -1,13 +1,10 @@
 # -*- coding: utf-8 -*-
-import logging
 import os
 
+from picard import log
 from picard.const import USER_PLUGIN_DIR
-
 from . import settings
 from .helpers.tags import apply_tag_weight
-
-log = logging.getLogger(__name__)
 
 
 class DebugMixin(object):
