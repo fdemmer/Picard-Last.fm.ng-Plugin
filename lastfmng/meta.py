@@ -4,7 +4,7 @@ PLUGIN_NAME = "Last.fm.ng"
 PLUGIN_AUTHOR = "Florian Demmer"
 PLUGIN_LICENSE = "GPL-3.0"
 PLUGIN_LICENSE_URL = "http://opensource.org/licenses/GPL-3.0"
-PLUGIN_VERSION = "2.0.0rc1"
+PLUGIN_VERSION = "2.0.0rc2"
 PLUGIN_API_VERSIONS = ["2.0"]
 
 # unofficial field
