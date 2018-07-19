@@ -8,7 +8,7 @@ from PyQt5 import QtCore, QtNetwork
 from picard.mbjson import medium_to_metadata, track_to_metadata
 from picard.metadata import Metadata
 from picard.track import Track
-from picard.webservice import WebService
+from picard.webservice import WebService, WSRequest
 
 from . import settings
 from .helpers.tags import apply_tag_weight, join_tags, strip_feat_artist
@@ -239,15 +239,15 @@ class LastFmMixin(object):
         self.requests += 1
 
         # queue http get request
-        ws.get(
-            settings.LASTFM_HOST,
-            settings.LASTFM_PORT,
-            settings.LASTFM_PATH,
-            # wrap the handler in the finished decorator
-            self.finished(handler),
+        return ws.get(
+            host=settings.LASTFM_HOST,
+            port=settings.LASTFM_PORT,
+            path=settings.LASTFM_PATH,
             queryargs=params,
             cacheloadcontrol=QtNetwork.QNetworkRequest.PreferCache,
             priority=True,
+            # wrap the handler in the finished decorator
+            handler=self.finished(handler),
         )
 
     def add_task(self, handler):
@@ -259,12 +259,16 @@ class LastFmMixin(object):
         self.requests += 1
 
         # queue function call
-        ws.add_task(
+        return ws.add_task(
             # wrap the handler in the finished decorator
-            self.finished(handler),
-            settings.LASTFM_HOST,
-            settings.LASTFM_PORT,
-            priority=False,
+            func=self.finished(handler),
+            request=WSRequest(
+                method='GET',
+                host=settings.LASTFM_HOST,
+                port=settings.LASTFM_PORT,
+                path=settings.LASTFM_PATH,
+                handler=self.finished(handler),
+            ),
         )
 
     def finish_request(self):
