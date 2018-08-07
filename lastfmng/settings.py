@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import codecs
 import os
-from configparser import ConfigParser, NoOptionError
+from .configparser import ConfigParser, NoOptionError
 
 from picard import log
 from picard.webservice import ratecontrol
