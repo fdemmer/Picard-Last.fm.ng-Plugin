@@ -398,15 +398,17 @@ class LastFmMixin(object):
         :param error:
         :return: None
         """
-        score_threshold = 1
         # get url parameters for use as cache key
         query = response.url().query(QtCore.QUrl.EncodeSpaces)
-        # temp storage for toptags
-        tmp = []
+
+        if error:
+            log.warning("error: %s", error)
+            log.warning("error data: %s", data.data())
+            return
 
         lfm = data.lfm.pop()
         if not lfm:
-            log.warning("invalid response: 'lfm' tag missing", tagtype, query)
+            log.warning("invalid response: 'lfm' tag missing (%s, %s)", tagtype, query)
             return
 
         if lfm.attribs['status'] == 'failed':
@@ -415,6 +417,10 @@ class LastFmMixin(object):
                 error.attribs['code'], error.text))
             log.warning(str(response.url()))
             return
+
+        # temp storage for toptags
+        tmp = []
+        score_threshold = 1
 
         try:
             toptags = lfm.toptags.pop()
