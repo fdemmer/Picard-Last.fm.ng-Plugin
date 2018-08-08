@@ -14,27 +14,28 @@ config_files = [
 ]
 
 
-def load_config(config_files):
-    config = None
-    for config_file in config_files:
-        config = load_config_file(config_file, config)
-    return config
+def load_config(filenames):
+    cfg = None
+    for filename in filenames:
+        cfg = load_config_file(filename, cfg)
+    return cfg
 
 
-def load_config_file(name, config=None):
-    if not config:
-        config = ConfigParser()
+def load_config_file(filename, cfg=None):
+    if not cfg:
+        cfg = ConfigParser()
     try:
-        with codecs.open(os.path.join(os.path.dirname(__file__), name), 'r', 'utf8') as fp:
-            config.readfp(fp)
+        full_path = os.path.join(os.path.dirname(__file__), filename)
+        with codecs.open(full_path, 'r', 'utf8') as fh:
+            cfg.read_file(fh)
     except IOError:
         pass
-    return config
+    return cfg
 
 
-def get_config(section, name, type=''):
+def get_config(section, name, dtype=''):
     try:
-        return getattr(config, 'get{}'.format(type))(section, name)
+        return getattr(config, 'get{}'.format(dtype))(section, name)
     except NoOptionError:
         pass
 
@@ -131,10 +132,10 @@ class Category(object):
         assert scope in ('album', 'track')
         return self.category_config('metatag_{}'.format(scope))
 
-    def category_config(self, key, type='', default=None):
-        value = get_config('category-{}'.format(self.name), key, type)
+    def category_config(self, key, dtype='', default=None):
+        value = get_config('category-{}'.format(self.name), key, dtype)
         if value is None:
-            value = get_config('category-{}'.format('defaults'), key, type)
+            value = get_config('category-{}'.format('defaults'), key, dtype)
         if value is None:
             value = default
         return value
@@ -160,8 +161,10 @@ class Category(object):
 
     def _get_threshold(self, tags):
         threshold = max([score for tag, score in tags]) * self.threshold
-        log.info('%s: score threshold: %s (%.0f%%)',
-            self, threshold, self.threshold * 100)
+        log.info(
+            '%s: score threshold: %s (%.0f%%)',
+            self, threshold, self.threshold * 100
+        )
         return threshold
 
     def _filter_by_searchlist(self, tags):
@@ -169,7 +172,8 @@ class Category(object):
         Exclude tags not relevant for this category.
         """
         return [
-            (tag, score) for tag, score in tags
+            (tag, score)
+            for tag, score in tags
             if tag in self.searchlist
         ]
 
@@ -190,7 +194,7 @@ class Category(object):
               than 450 would not be considered
         """
         threshold = self._get_threshold(tags)
-        return  [
+        return [
             (tag, score) for tag, score in tags
             if score >= threshold
         ]
@@ -242,7 +246,7 @@ log.info('enabled categories: %s', ', '.join([
     '{} ({})'.format(c.name, c.limit)
     for c
     in CATEGORIES
-    if c.is_enabled == True
+    if c.is_enabled is True
 ]))
 
 

@@ -8,14 +8,18 @@ from .helpers.tags import apply_tag_weight
 
 
 class DebugMixin(object):
-    def print_toplist(self, merged):
+    @staticmethod
+    def print_toplist(merged):
         def p(score):
             return int(float(score) / float(topscore) * 100.0)
 
         try:
             topscore = merged[0][1]
-            toplist = ["{0}: {1} ({2}%)".format(n, s, p(s)) for n, s in
-                       merged[:10]]
+            toplist = [
+                "{0}: {1} ({2}%)".format(n, s, p(s))
+                for n, s in
+                merged[:10]
+            ]
             log.info(", ".join(toplist))
         except:
             log.info("None")
@@ -78,7 +82,7 @@ class CollectUnusedMixin(object):
                 c.execute("""
                     REPLACE INTO toptags (tag, score)
                     VALUES (?,
-                    coalesce((SELECT score FROM toptags WHERE tag = ?),0)+?)
+                    coalesce((SELECT score FROM toptags WHERE tag = ?), 0) + ?)
                     """, (tag, tag, score))
 
             conn.commit()

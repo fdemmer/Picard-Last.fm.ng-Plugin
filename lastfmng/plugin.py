@@ -10,7 +10,6 @@ from picard.mbjson import medium_to_metadata, track_to_metadata
 from picard.metadata import Metadata
 from picard.track import Track
 from picard.webservice import WSRequest, WebService
-
 from . import settings
 from .helpers.tags import apply_tag_weight, join_tags, strip_feat_artist
 from .mixins import CollectUnusedMixin, DebugMixin
@@ -198,7 +197,7 @@ class LastFmMixin(object):
         Lookup from cache or dispatch a new api request.
         """
         query = urlencode(params, quote_via=quote)
-        #log.info('dispatch cache key: %s', query)
+        # log.info('dispatch cache key: %s', query)
 
         # if the query is already cached only queue task
         if query in CACHE:
@@ -301,7 +300,8 @@ class LastFmMixin(object):
                 func(*args, **kwargs)
             except:
                 self.album.tagger.log.error(
-                    "Problem in handler:\n%s", traceback.format_exc())
+                    "Problem in handler:\n%s", traceback.format_exc()
+                )
                 raise
             finally:
                 self.finish_request()
@@ -432,7 +432,7 @@ class LastFmMixin(object):
 
             # add the result of this run to the cache
             CACHE[query] = tmp
-            #log.info('handle_toptags cache key: %s', query)
+            # log.info('handle_toptags cache key: %s', query)
 
             # extend local toptags list with the ones from this run
             self.toptags[tagtype].extend(tmp)
