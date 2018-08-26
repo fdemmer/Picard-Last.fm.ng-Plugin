@@ -88,25 +88,33 @@ class TaggerBase(DebugMixin, QtCore.QObject):
                 # the overflowed toptags are not considered in the threshold
                 # calculation of that category, they are put directly into
                 # the result list.
-                log.info("%s: overflow to %s: %s",
-                    category, category.overflow,
-                    ', '.join(['{} ({})'.format(t, s) for t, s in overflow])
+                log.info("%s: overflow (and scale by %s) to %s: %s",
+                    category, str(category.overflow_scale), category.overflow,
+                    ', '.join(['{} ({})'.format(t, s*category.overflow_scale) for t, s in overflow])
                         or 'None'
                 )
                 if overflow:
-                    result[category.overflow] = overflow
+                    result[category.overflow] = [(t, s*category.overflow_scale) for t, s in overflow]
 
             # if a prepend-category is configured copy the tags from that
             # category in front of this one
             #TODO this works only "downstream" eg from grouping to genre, not the other way round
             if category.prepend:
-                log.info('%s: prepending from %s: %s',
-                    category, category.prepend,
-                    ', '.join(['{} ({})'.format(t, s) for t, s in overflow])
-                        or 'None'
+                log.info('%s: prepending (and scale by %s) from %s: %s',
+                    category, str(category.prepend_scale), category.prepend,
+                    ', '.join(['{} ({})'.format(t, s*category.prepend_scale) for t, s in result[category.prepend]]) or 'None'
                 )
-                result[category.name] = result[category.prepend] + \
-                                        result[category.name]
+                #actually do the prepend with scaling
+                result[category.name] = [(t, s*category.prepend_scale) for t, s in result[category.prepend]] + result[category.name]
+
+            #re-sort by score before providing to join_tags
+            #using apply_tag_weight with scaling of 1.0 as a sorting function
+            result[category.name] = apply_tag_weight((result[category.name], 1.0))
+
+            #show final tags
+            log.info('Final tags before making choice:')
+            log.info('%s', ','.join(['{} ({})'.format(t, s) for t, s in result[category.name]]) or 'None')
+            #log.info(result[category.name])
 
             # category is done, assign tags to metadata
             metatag = category.get_metatag(scope)
