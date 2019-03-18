@@ -3,7 +3,7 @@
 ## About
 
 Picard Last.fm.ng is not exactly a rewrite of the other popular last.fm
-plugins for MusicBraqinz Picard. It was developed as an alternative and with
+plugins for MusicBrainz Picard. It was developed as an alternative and with
 slightly different design goals.
 
 Initial motivation was more flexible configuration and more predictable
@@ -34,7 +34,7 @@ the plugin does.
 ### FAQ
 
 It's ok to ask questions using github issues, but please check if your
-question was already answered before. They are usually labeled:
+question was already answered before. They are usually labeled with "faq":
 
 https://github.com/fdemmer/Picard-Last.fm.ng-Plugin/issues?utf8=%E2%9C%93&q=is%3Aissue+label%3Afaq+
 
@@ -49,7 +49,7 @@ directory:
  - Windows: ``%APPDATA%\MusicBrainz\Picard\plugins``
  - Linux/MacOS: ``~/.config/MusicBrainz/Picard/plugins``
  
-(Do not just put all the files contained inside the "lastfmng" directoy 
+(Do not just put all the files contained inside the "lastfmng" directory
 there, put the whole directory there!
 eg. ``~/.config/MusicBrainz/Picard/plugins/lastfmng/...``)
 
@@ -74,9 +74,10 @@ using ini-files.
 
 The provided ``defaults.ini`` contains all available settings.
 
-To customize settings is is recommended to create a new file called 
-``config.ini`` for your settings. If available it will be loaded after 
-the defaults overwriting the default values with your preferences.
+To customize settings create a new empty file called ``config.ini`` with only
+the settings you want to change. There is no need to copy the defaults!
+If a ``config.ini`` file is found, it will be loaded after ``defaults.ini``
+overwriting the default settings with yours.
 
 
 ### Naming rules
@@ -263,7 +264,7 @@ Weight parameters are the multipliers applied to the last.fm-tag's score.
     guy and ony 1 for the other before going into the weighing process.
 
     For example:
-    Just because "Disorder" on Slayer's "Sountrack of the Apocalypse" is 
+    Just because "Disorder" on Slayer's "Soundtrack of the Apocalypse" is
     featuring Ice-T, you won't get any "hip-hop" in the albumgenre.
 
     If you know a better example for an "album with unusual guest star" let
@@ -315,7 +316,7 @@ Last.fm.Plus only uses the per-track trigger.
 Even though this code has been in use by many people for years things can go
 wrong. If they do, please open an issue and maybe we can fix it.
 
-Motivational bitcoin welcome: 1FbMXpwsLAjCkCaiLB1uhdm5mLv892UkEy
+Motivational bitcoin welcome: bc1qe0hs8h7wv200la0tdymlj3rgh0yqe040p2v4c6
 
 
 [0]: https://github.com/fdemmer/Picard-Last.fm.ng-Plugin/releases
