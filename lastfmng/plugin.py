@@ -386,17 +386,16 @@ class LastFmMixin(object):
 
         :param tagtype: tag type/name as string
         :param data: picard.webservice.XmlNode with response data
-        :param response: QNetworkReply
-        :param error:
+        :param response: QNetworkReply instance
+        :param error: enum QNetworkReply::NetworkError (=response.error())
         :return: None
         """
+        if error:
+            log.warning("error response: %s", data.data())
+            return
+
         # get url parameters for use as cache key
         query = response.url().query(QtCore.QUrl.EncodeSpaces)
-
-        if error:
-            log.warning("error: %s", error)
-            log.warning("error data: %s", data.data())
-            return
 
         lfm = data.lfm.pop()
         if not lfm:
