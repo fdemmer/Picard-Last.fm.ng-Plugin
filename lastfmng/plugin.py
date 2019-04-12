@@ -49,7 +49,7 @@ class TaggerBase(DebugMixin, QtCore.QObject):
         self.tracks = []
         for medium_node in release_node['media']:
             mm = Metadata()
-            mm.copy(album._new_metadata)
+            mm.copy(album._new_metadata)  # noqa
             medium_to_metadata(medium_node, mm)
             for track_node in medium_node['tracks']:
                 track = Track(track_node['recording']['id'], album)
@@ -58,7 +58,7 @@ class TaggerBase(DebugMixin, QtCore.QObject):
                 tm = track.metadata
                 tm.copy(mm)
                 track_to_metadata(track_node, track)
-                track._customize_metadata()
+                track._customize_metadata()  # noqa
 
     def filter_and_set_metadata(self, scope, all_tags, stats=False):
         """
@@ -234,7 +234,7 @@ class LastFmMixin(object):
 
         # count requests, so that the album is not finalized until
         # the handler has been executed
-        self.album._requests += 1
+        self.album._requests += 1  # noqa
         self.requests += 1
 
         # queue http get request
@@ -255,7 +255,7 @@ class LastFmMixin(object):
         Use the webservice queue to add a task -- a simple function.
         """
         # count requests
-        self.album._requests += 1
+        self.album._requests += 1  # noqa
         self.requests += 1
 
         # queue function call
@@ -277,7 +277,7 @@ class LastFmMixin(object):
         pending requests counter and calls the finalize function if there is
         no open request left.
         """
-        self.album._requests -= 1
+        self.album._requests -= 1  # noqa
         self.requests -= 1
 
         if self.requests == 0:
@@ -285,10 +285,10 @@ class LastFmMixin(object):
             for func in self.before_finalize:
                 func()
 
-        if self.album._requests == 0:
+        if self.album._requests == 0:  # noqa
             # this was the last request in general, finalize metadata
             log.info("FIN")
-            self.album._finalize_loading(None)
+            self.album._finalize_loading(None)  # noqa
 
     def finished(self, func):
         """
@@ -312,12 +312,12 @@ class LastFmMixin(object):
         """
         request toptags of an artist (via artist or albumartist)
         """
-        artist = self.metadata["artist"]
+        artist = self.metadata["artist"]  # noqa
         if artist:
             if settings.ENABLE_IGNORE_FEAT_ARTISTS:
                 artist = strip_feat_artist(artist)
         else:
-            artist = self.metadata["albumartist"]
+            artist = self.metadata["albumartist"]  # noqa
 
         params = dict(
             method="artist.gettoptags",
@@ -329,13 +329,13 @@ class LastFmMixin(object):
         """
         request toptags of a track (via title, artist)
         """
-        artist = self.metadata["artist"]
+        artist = self.metadata["artist"]  # noqa
         if settings.ENABLE_IGNORE_FEAT_ARTISTS:
             artist = strip_feat_artist(artist)
 
         params = dict(
             method="track.gettoptags",
-            track=self.metadata["title"],
+            track=self.metadata["title"],  # noqa
             artist=artist,
             api_key=settings.LASTFM_KEY)
         self.dispatch("track", params)
@@ -346,8 +346,8 @@ class LastFmMixin(object):
         """
         params = dict(
             method="album.gettoptags",
-            album=self.metadata["album"],
-            artist=self.metadata["albumartist"],
+            album=self.metadata["album"],  # noqa
+            artist=self.metadata["albumartist"],  # noqa
             api_key=settings.LASTFM_KEY)
         self.dispatch("album", params)
 
@@ -355,7 +355,7 @@ class LastFmMixin(object):
         """
         request toptags of all tracks in the album (via title, artist)
         """
-        for track in self.tracks:
+        for track in self.tracks:  # noqa
             artist = track.metadata["artist"]
             if settings.ENABLE_IGNORE_FEAT_ARTISTS:
                 artist = strip_feat_artist(artist)
@@ -371,7 +371,7 @@ class LastFmMixin(object):
         """
         request toptags of all artists in the album (via artist)
         """
-        for track in self.tracks:
+        for track in self.tracks:  # noqa
             artist = track.metadata["artist"]
             if settings.ENABLE_IGNORE_FEAT_ARTISTS:
                 artist = strip_feat_artist(artist)
@@ -441,7 +441,7 @@ class LastFmMixin(object):
             # log.info('handle_toptags cache key: %s', query)
 
             # extend local toptags list with the ones from this run
-            self.toptags[tagtype].extend(tmp)
+            self.toptags[tagtype].extend(tmp)  # noqa
 
         except AttributeError:
             log.warning("AttributeError: %s, %s", tagtype, query)
@@ -453,7 +453,7 @@ class LastFmMixin(object):
         """
         toptags = CACHE.get(query, None)
         if toptags is not None:
-            self.toptags[tagtype].extend(toptags)
+            self.toptags[tagtype].extend(toptags)  # noqa
         else:
             log.warning("cache error: %s, %s", tagtype, query)
             # TODO sometimes, the response from the http request is too slow,
