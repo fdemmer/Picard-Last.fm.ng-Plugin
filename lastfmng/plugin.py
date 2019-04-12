@@ -424,7 +424,7 @@ class LastFmMixin(object):
 
         try:
             toptags = lfm.toptags.pop()
-            for tag in toptags.tag:
+            for tag in getattr(toptags, 'tag', []):
                 name = tag.name[0].text.strip().lower()
                 # replace toptag name with a translation
                 name = translate_tag(name)
@@ -444,7 +444,7 @@ class LastFmMixin(object):
             self.toptags[tagtype].extend(tmp)  # noqa
 
         except AttributeError:
-            log.warning("AttributeError: %s, %s", tagtype, query)
+            log.warning("AttributeError: %s, %s", tagtype, query, exc_info=True)
             pass
 
     def handle_cached_toptags(self, tagtype, query):
