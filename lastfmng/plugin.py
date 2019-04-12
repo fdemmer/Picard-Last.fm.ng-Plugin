@@ -60,7 +60,7 @@ class TaggerBase(DebugMixin, QtCore.QObject):
                 track_to_metadata(track_node, track)
                 track._customize_metadata()  # noqa
 
-    def filter_and_set_metadata(self, scope, all_tags, stats=False):
+    def filter_and_set_metadata(self, scope, all_tags):
         """
         processing of a merged toptag list:
         handles disabled categories, sorting into categories,
@@ -145,11 +145,7 @@ class TaggerBase(DebugMixin, QtCore.QObject):
              settings.CONFIG['album']['weight']['all_artist'])
         )
 
-        self.filter_and_set_metadata(
-            'album',
-            all_tags,
-            stats=settings.DEBUG_STATS_ALBUM
-        )
+        self.filter_and_set_metadata('album', all_tags)
 
     def process_track_tags(self):
         """
@@ -168,11 +164,7 @@ class TaggerBase(DebugMixin, QtCore.QObject):
             (self.toptags['track'], settings.CONFIG['track']['weight']['track'])
         )
 
-        self.filter_and_set_metadata(
-            'track',
-            all_tags,
-            stats=settings.DEBUG_STATS_TRACK
-        )
+        self.filter_and_set_metadata('track', all_tags)
 
 
 class LastFmMixin(object):
