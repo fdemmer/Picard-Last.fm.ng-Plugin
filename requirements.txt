@@ -1,1 +1,1 @@
-bumpversion
+bump2version
