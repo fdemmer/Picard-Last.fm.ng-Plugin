@@ -21,7 +21,7 @@ They were invaluable as a starting point.
 
  - Last.fm API v2.0 support
  - uses both Picard API calls for per-album and per-track last.fm-tags
- - special "albumgrouping" and "albumgenre" variables for consistent 
+ - special "albumgrouping" and "albumgenre" variables for consistent
    per-album tagging and naming
  - comprehensive, ini-file based configuration
  - save tags as multiple tags or combined to a string
@@ -43,17 +43,17 @@ https://github.com/fdemmer/Picard-Last.fm.ng-Plugin/issues?utf8=%E2%9C%93&q=is%3
 
 Download the latest release from the github [releases][0] page.
 
-Extract the "lastfmng" directory in the archive to your local user's plugin 
+Extract the "lastfmng" directory in the archive to your local user's plugin
 directory:
 
  - Windows: ``%APPDATA%\MusicBrainz\Picard\plugins``
  - Linux/MacOS: ``~/.config/MusicBrainz/Picard/plugins``
- 
+
 (Do not just put all the files contained inside the "lastfmng" directory
 there, put the whole directory there!
 eg. ``~/.config/MusicBrainz/Picard/plugins/lastfmng/...``)
 
-Start or restart Picard to load the plugin and enable it in the options 
+Start or restart Picard to load the plugin and enable it in the options
 dialog for plugins.
 
 
@@ -78,6 +78,8 @@ To customize settings create a new empty file called ``config.ini`` with only
 the settings you want to change. There is no need to copy the defaults!
 If a ``config.ini`` file is found, it will be loaded after ``defaults.ini``
 overwriting the default settings with yours.
+
+**Make sure you save the files in UTF-8 encoding!**
 
 
 ### Naming rules
@@ -105,7 +107,7 @@ $if($in(%releasetype%,compilation),
 ```
 
 It puts all albums, that look like soundtracks or compilations in a different
-top-level directory, than "normal" albums. Also it adds a tag called 
+top-level directory, than "normal" albums. Also it adds a tag called
 "Soundtrack" to the "genre" metatag of all tracks that are soundtracks.
 
 
@@ -117,7 +119,7 @@ However, please use your own Last.fm API key and set it using ``lastfm_key``.
 You don't need to change ``lastfm_host`` or ``lastfm_port``, but by setting
 ``lastfm_port`` to ``443`` https will be used.
 
-If you want you can put the Last.fm related settings in an extra file called 
+If you want you can put the Last.fm related settings in an extra file called
 ``lastfm.ini``.
 
 
@@ -127,10 +129,10 @@ The basic concept is this:
 
 1. Download _last.fm-tags_ for the album, the artist of the album (if there
    is one) or each artist of each track and each track.
-   A "last.fm-tag" is just words users have assigned; it can be anything like 
-   "my favourite", "heard last night", "sucks" or terms we are more interested 
+   A "last.fm-tag" is just words users have assigned; it can be anything like
+   "my favourite", "heard last night", "sucks" or terms we are more interested
    in like "classic", "80s" or "death metal".
-2. This step filters and separate all the last.fm-tags into categories 
+2. This step filters and separate all the last.fm-tags into categories
    (like "grouping", genre", "mood", "country", ...)
 3. Then sort the last.fm-tag by popularity in each category.
    Last.fm provides a numeric popularity _score_ for each tag.
@@ -184,21 +186,24 @@ last.fm-tags are put into by "topic":
 For the categories grouping, genre, mood, occasion, category, country and city
 so called searchlists are used to find valid terms in the downloaded "tags".
 
-Customize the lists in the ``[searchlist]`` section of the config file to add 
+Customize the lists in the ``[searchlist]`` section of the config file to add
 or remove valid terms.
 
 Translations of common tag variations are set in the ``[translations]``
 section. The first value is replaced with the second one.
 
+**Make sure you add your translation to the searchlist or it will not be used!**
+
+
 #### Category configuration
 
-For each category there is a section in the config file. 
+For each category there is a section in the config file.
 
 To disable using a specific category set ``enabled`` to False. You will not
 get any data for that category/metatag then.
 
-If you set the ``limit`` to 1 and two "tags" have exactly the same popularity 
-the result will be exactly one, which one however is not clearly defined! 
+If you set the ``limit`` to 1 and two "tags" have exactly the same popularity
+the result will be exactly one, which one however is not clearly defined!
 There is room for improvement here.
 
 Setting ``sort`` to True will sort the "tags" alphabetically *after* the ones
@@ -230,7 +235,7 @@ Nevertheless the plugin works with what it gets.
 Weight parameters are the multipliers applied to the last.fm-tag's score.
 
 - For per-track tagging the plugin puts an emphasis on variation and detail.
-  The assumption is, that the last.fm-tags put by users on the track are 
+  The assumption is, that the last.fm-tags put by users on the track are
   describing the song better, than the tags put on the artist of the track.
 
   - last.fm-tags of the track itself 80%
@@ -240,7 +245,7 @@ Weight parameters are the multipliers applied to the last.fm-tag's score.
   body of work.
 
   - last.fm-tags from all artists on the album are 55%
-  - last.fm-tags from all tracks on the album are 30% 
+  - last.fm-tags from all tracks on the album are 30%
   - last.fm-tags of the album itself are weighed only 15%
 
   Main reason for the low album weight is to get consistency, to be able to
@@ -276,7 +281,7 @@ If you _really_ want to play with those, see settings.py.
 
 ### Step 4
 
-Finally the sorted and weighed last.fm-tags are ranked by resulting score in 
+Finally the sorted and weighed last.fm-tags are ranked by resulting score in
 their category-buckets and limited to only the top results(s)
 (see ``limit`` parameter in ``config.ini``).
 
@@ -289,13 +294,13 @@ that Picard maps certain variable names to metatags it writes to files:
   https://picard.musicbrainz.org/docs/tags/
 
 The ``metatag_album`` parameter in ``config.ini`` is only available for the
-categories grouping, genre and mood and is used for the result of the 
+categories grouping, genre and mood and is used for the result of the
 per-album tagging.
 
 
 ### Differences to Last.fm.Plus
 
-When using translations, the score of both last.fm-tags are summarized, rather 
+When using translations, the score of both last.fm-tags are summarized, rather
 "the greater wins, the lesser is dropped".
 
 Years and decades use a regular expression to find valid values. With decades,
