@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 PLUGIN_NAME = "Last.fm.ng"
 PLUGIN_AUTHOR = "Florian Demmer"
 PLUGIN_LICENSE = "GPL-3.0"
