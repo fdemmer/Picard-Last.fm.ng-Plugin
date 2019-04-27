@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import traceback
 from functools import partial
 from urllib.parse import quote, urlencode
@@ -99,7 +98,8 @@ class TaggerBase(DebugMixin, QtCore.QObject):
 
             # if a prepend-category is configured copy the tags from that
             # category in front of this one
-            # TODO this works only "downstream" eg from grouping to genre, not the other way round
+            # TODO this works only "downstream" eg from grouping to genre,
+            #  not the other way round
             if category.prepend:
                 log.info(
                     '%s: prepending from %s: %s',
@@ -110,19 +110,22 @@ class TaggerBase(DebugMixin, QtCore.QObject):
                 prepend_ = result[category.prepend]
                 result[category.name] = prepend_ + result[category.name]
 
-            # category is done, assign tags to metadata
+            # category is done; get metatag name for the category
             metatag = category.get_metatag(scope)
-            log.info('%s: metatag: %s', category, metatag)
+            log.debug('%s: metatag: %s', category, metatag)
             # some categories aren't valid for all scopes (eg occasion in album)
-            if metatag is not None:
-                self.metadata[metatag] = join_tags(
+            if metatag is None:
+                log.debug("%s: no tag for scope %s", category, scope)
+            else:
+                value = join_tags(
                     result[category.name],
                     limit=category.limit,
                     separator=category.separator,
                     sort=category.sort,
                     apply_titlecase=category.titlecase
-                ) or settings.DEFAULT_UNKNOWN
-                log.info("%s = %s", metatag, self.metadata[metatag])
+                )
+                self.metadata[metatag] = value or settings.DEFAULT_UNKNOWN
+                log.info("%s: saving: %s = %s", category, metatag, self.metadata[metatag])
 
     def process_album_tags(self):
         """
@@ -292,7 +295,7 @@ class LastFmMixin(object):
         def decorate(*args, **kwargs):
             try:
                 func(*args, **kwargs)
-            except:
+            except Exception:
                 self.album.tagger.log.error(
                     "Problem in handler:\n%s",
                     traceback.format_exc()
