@@ -1,0 +1,19 @@
+repos:
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v2.2.1
+  hooks:
+  - id: check-merge-conflict
+  - id: check-builtin-literals
+  - id: debug-statements
+  - id: end-of-file-fixer
+    exclude: 'setup.cfg'
+  - id: fix-encoding-pragma
+    args: ['--remove']
+  - id: trailing-whitespace
+    args: ['--markdown-linebreak-ext=md']
+  - id: flake8
+    args: [
+      '--select=C90,E,F,W,W504',
+      '--ignore=E127,E128,E265,W503',
+      '--max-line-length=90',
+    ]
