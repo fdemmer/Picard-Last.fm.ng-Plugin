@@ -2,13 +2,15 @@ repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks
   rev: v2.2.1
   hooks:
-  - id: check-merge-conflict
   - id: check-builtin-literals
+  - id: check-merge-conflict
   - id: debug-statements
+  - id: double-quote-string-fixer
   - id: end-of-file-fixer
     exclude: 'setup.cfg'
   - id: fix-encoding-pragma
     args: ['--remove']
+  - id: mixed-line-ending
   - id: trailing-whitespace
     args: ['--markdown-linebreak-ext=md']
   - id: flake8
