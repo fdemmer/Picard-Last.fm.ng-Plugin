@@ -418,7 +418,8 @@ class LastFmMixin(object):
             return
 
         # get url parameters for use as cache key
-        query = response.url().query(QtCore.QUrl.EncodeSpaces)
+        query = response.url() \
+            .query(QtCore.QUrl.EncodeUnicode | QtCore.QUrl.EncodeSpaces)
 
         lfm = data.lfm.pop()
         if not lfm:
