@@ -21,15 +21,17 @@ class DebugMixin(object):
                 merged[:10]
             ]
             log.info(", ".join(toplist))
-        except:
+        except Exception:
             log.info("None")
 
     def print_toptag_stats(self, scope, name, correction=1):
         toptags = self.toptags[name]
         weight = settings.CONFIG[scope]['weight'][name]
-        log.info("got %s %s tags (x%s}):", len(toptags), name, weight)
-        merged = apply_tag_weight((toptags, correction))[:10]
-        self.print_toplist(merged)
+        log.info("got %s %s tags", len(toptags), name)
+        if toptags:
+            log.info("applying weight x%s:", weight)
+            merged = apply_tag_weight((toptags, correction))[:10]
+            self.print_toplist(merged)
 
 
 class CollectUnusedMixin(object):
@@ -75,7 +77,7 @@ class CollectUnusedMixin(object):
                 c.execute("""
                     CREATE TABLE toptags (tag TEXT PRIMARY KEY, score INTEGER)
                     """)
-            except:
+            except Exception:
                 pass
 
             for tag, score in unknown_toptags:

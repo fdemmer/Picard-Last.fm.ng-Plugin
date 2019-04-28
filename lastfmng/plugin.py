@@ -132,7 +132,10 @@ class TaggerBase(DebugMixin, QtCore.QObject):
         this is called after all last.fm data is received to process the
         collected data for album tags.
         """
-        log.info(">>> process album tags")
+        log.info(
+            ">>> process album tags: %s - %s",
+            self.metadata['albumartist'], self.metadata['album'],
+        )
         if settings.DEBUG_STATS_ALBUM:
             self.print_toptag_stats('album', 'album', len(self.tracks))
             self.print_toptag_stats('album', 'all_artist')
@@ -157,7 +160,10 @@ class TaggerBase(DebugMixin, QtCore.QObject):
         this is called after all last.fm data is received to process the
         collected data for track tags.
         """
-        log.info(">>> process track tags")
+        log.info(
+            ">>> process track tags: %s - %s",
+            self.metadata['tracknumber'], self.metadata['title'],
+        )
         if settings.DEBUG_STATS_TRACK:
             self.print_toptag_stats('track', 'track')
             self.print_toptag_stats('track', 'artist')

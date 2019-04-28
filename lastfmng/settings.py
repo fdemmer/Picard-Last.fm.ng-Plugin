@@ -78,7 +78,6 @@ CONFIG = {
     },
     # for each track set the following metadata
     'track': {
-        # TODO *plus supports disabling toptag types per metatag... eg. country only via artist toptags.
         'weight': dict(artist=2, track=8),
     }
 }
@@ -213,7 +212,7 @@ class Category(object):
 
         return tags
 
-    def _log_tags(self, tags, message, limit=5):
+    def _log_tags(self, tags, message, limit=8):
         log.info('%s: %s tag(s) %s:', self, len(tags), message)
         log.info(
             '%s: %s%s',
