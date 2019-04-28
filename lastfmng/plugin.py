@@ -88,7 +88,7 @@ class TaggerBase(DebugMixin, QtCore.QObject):
                 # calculation of that category, they are put directly into
                 # the result list.
                 log.info(
-                    "%s: overflow to %s: %s",
+                    '%s: overflow to %s: %s',
                     category,
                     category.overflow,
                     ', '.join(['{} ({})'.format(t, s) for t, s in overflow]) or 'None'
@@ -115,7 +115,7 @@ class TaggerBase(DebugMixin, QtCore.QObject):
             log.debug('%s: metatag: %s', category, metatag)
             # some categories aren't valid for all scopes (eg occasion in album)
             if metatag is None:
-                log.debug("%s: no tag for scope %s", category, scope)
+                log.debug('%s: no tag for scope %s', category, scope)
             else:
                 value = join_tags(
                     result[category.name],
@@ -125,7 +125,7 @@ class TaggerBase(DebugMixin, QtCore.QObject):
                     apply_titlecase=category.titlecase
                 )
                 self.metadata[metatag] = value or settings.DEFAULT_UNKNOWN
-                log.info("%s: saving: %s = %s", category, metatag, self.metadata[metatag])
+                log.info('%s: saving: %s = %s', category, metatag, self.metadata[metatag])
 
     def process_album_tags(self):
         """
@@ -133,7 +133,7 @@ class TaggerBase(DebugMixin, QtCore.QObject):
         collected data for album tags.
         """
         log.info(
-            ">>> process album tags: %s - %s",
+            '>>> process album tags: %s - %s',
             self.metadata['albumartist'], self.metadata['album'],
         )
         if settings.DEBUG_STATS_ALBUM:
@@ -161,7 +161,7 @@ class TaggerBase(DebugMixin, QtCore.QObject):
         collected data for track tags.
         """
         log.info(
-            ">>> process track tags: %s - %s",
+            '>>> process track tags: %s - %s',
             self.metadata['tracknumber'], self.metadata['title'],
         )
         if settings.DEBUG_STATS_TRACK:
@@ -199,21 +199,21 @@ class LastFmMixin(object):
         Lookup from cache or dispatch a new api request.
         """
         query = urlencode(params, quote_via=quote)
-        # log.info('dispatch cache key: %s', query)
+        log.info('dispatch cache key: %s', query)
 
         # if the query is already cached only queue task
         if query in CACHE:
-            log.debug("cached %s", query)
+            log.debug('cached %s', query)
             self.add_task(partial(self.handle_cached_toptags, tagtype, query))
         # queries in the PENDING list are already queued, queue them like
         # cache tasks. by the time they will be processed, the actual query
         # will have stored data in the cache
         elif query in PENDING:
-            log.debug("pending %s", query)
+            log.debug('pending %s', query)
             self.add_task(partial(self.handle_cached_toptags, tagtype, query))
         # new queries are queued as http-requests
         else:
-            log.debug("request %s", query)
+            log.debug('request %s', query)
             self.add_request(partial(self.handle_toptags, tagtype), params)
 
     def add_request(self, handler, params):
@@ -289,7 +289,7 @@ class LastFmMixin(object):
 
         if self.album._requests == 0:  # noqa
             # this was the last request in general, finalize metadata
-            log.info("FIN")
+            log.info('FIN')
             self.album._finalize_loading(None)  # noqa
 
     def finished(self, func):
@@ -302,7 +302,7 @@ class LastFmMixin(object):
                 func(*args, **kwargs)
             except Exception:
                 self.album.tagger.log.error(
-                    "Problem in handler:\n%s",
+                    'Problem in handler:\n%s',
                     traceback.format_exc()
                 )
                 raise
@@ -315,87 +315,87 @@ class LastFmMixin(object):
         """
         request toptags of an artist (via artist or albumartist)
         """
-        artist = self.metadata["artist"]  # noqa
+        artist = self.metadata['artist']  # noqa
         if artist:
             if settings.ENABLE_IGNORE_FEAT_ARTISTS:
                 artist = strip_feat_artist(artist)
         else:
-            artist = self.metadata["albumartist"]  # noqa
+            artist = self.metadata['albumartist']  # noqa
 
         params = dict(
-            method="artist.gettoptags",
+            method='artist.gettoptags',
             artist=artist,
             api_key=settings.LASTFM_KEY,
         )
-        self.dispatch("artist", params)
+        self.dispatch('artist', params)
 
     def request_track_toptags(self):
         """
         request toptags of a track (via title, artist)
         """
-        artist = self.metadata["artist"]  # noqa
-        title = self.metadata["title"]  # noqa
+        artist = self.metadata['artist']  # noqa
+        title = self.metadata['title']  # noqa
 
         if settings.ENABLE_IGNORE_FEAT_ARTISTS:
             artist = strip_feat_artist(artist)
 
         params = dict(
-            method="track.gettoptags",
+            method='track.gettoptags',
             track=title,
             artist=artist,
             api_key=settings.LASTFM_KEY,
         )
-        self.dispatch("track", params)
+        self.dispatch('track', params)
 
     def request_album_toptags(self):
         """
         request toptags of an album (via album, albumartist)
         """
-        album = self.metadata["album"]  # noqa
-        artist = self.metadata["albumartist"]  # noqa
+        album = self.metadata['album']  # noqa
+        artist = self.metadata['albumartist']  # noqa
 
         params = dict(
-            method="album.gettoptags",
+            method='album.gettoptags',
             album=album,
             artist=artist,
             api_key=settings.LASTFM_KEY,
         )
-        self.dispatch("album", params)
+        self.dispatch('album', params)
 
     def request_all_track_toptags(self):
         """
         request toptags of all tracks in the album (via title, artist)
         """
         for track in self.tracks:  # noqa
-            artist = track.metadata["artist"]
-            title = track.metadata["title"]
+            artist = track.metadata['artist']
+            title = track.metadata['title']
 
             if settings.ENABLE_IGNORE_FEAT_ARTISTS:
                 artist = strip_feat_artist(artist)
 
             params = dict(
-                method="track.gettoptags",
+                method='track.gettoptags',
                 track=title,
                 artist=artist,
                 api_key=settings.LASTFM_KEY,
             )
-            self.dispatch("all_track", params)
+            self.dispatch('all_track', params)
 
     def request_all_artist_toptags(self):
         """
         request toptags of all artists in the album (via artist)
         """
         for track in self.tracks:  # noqa
-            artist = track.metadata["artist"]
+            artist = track.metadata['artist']
             if settings.ENABLE_IGNORE_FEAT_ARTISTS:
                 artist = strip_feat_artist(artist)
 
             params = dict(
-                method="artist.gettoptags",
+                method='artist.gettoptags',
                 artist=artist,
                 api_key=settings.LASTFM_KEY,
             )
-            self.dispatch("all_artist", params)
+            self.dispatch('all_artist', params)
 
     def handle_toptags(self, tagtype, data, response, error):
         """
@@ -414,7 +414,7 @@ class LastFmMixin(object):
         :return: None
         """
         if error:
-            log.warning("error response: %s", data.data())
+            log.warning('error response: %s', data.data())
             return
 
         # get url parameters for use as cache key
@@ -427,7 +427,7 @@ class LastFmMixin(object):
 
         if lfm.attribs['status'] == 'failed':
             error = lfm.error.pop()
-            log.warning("api returned error: {0} - {1}".format(
+            log.warning('api returned error: {0} - {1}'.format(
                 error.attribs['code'], error.text))
             log.warning(str(response.url()))
             return
@@ -458,7 +458,7 @@ class LastFmMixin(object):
             self.toptags[tagtype].extend(tmp)  # noqa
 
         except AttributeError:
-            log.warning("AttributeError: %s, %s", tagtype, query, exc_info=True)
+            log.warning('AttributeError: %s, %s', tagtype, query, exc_info=True)
             pass
 
     def handle_cached_toptags(self, tagtype, query):
@@ -469,7 +469,7 @@ class LastFmMixin(object):
         if toptags is not None:
             self.toptags[tagtype].extend(toptags)  # noqa
         else:
-            log.warning("cache error: %s, %s", tagtype, query)
+            log.warning('cache error: %s, %s', tagtype, query)
             # TODO sometimes, the response from the http request is too slow,
             # so the queue is already processing "pending" cache requests,
             # while the response is not yet processed. the whole "pending"
