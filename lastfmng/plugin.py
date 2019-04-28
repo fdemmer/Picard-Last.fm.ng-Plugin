@@ -141,16 +141,16 @@ class TaggerBase(DebugMixin, QtCore.QObject):
             self.print_toptag_stats('album', 'all_artist')
             self.print_toptag_stats('album', 'all_track')
 
-        # get complete, balanced, sorted list (high first) of tags
+        # get complete, balanced, sorted list (high first) of tags:
+        album_weight = settings.CONFIG['album']['weight']['album'] * len(self.tracks)
+        all_track_weight = settings.CONFIG['album']['weight']['all_track']
+        all_artist_weight = settings.CONFIG['album']['weight']['all_artist']
+        # album tag score gets multiplied by the total number of tracks
+        # in the release to even out weight of all_* tags before merging
         all_tags = apply_tag_weight(
-            # album tag score gets multiplied by the total number of tracks
-            # in the release to even out weight of all_* tags before merger
-            (self.toptags['album'],
-             settings.CONFIG['album']['weight']['album'] * len(self.tracks)),
-            (self.toptags['all_track'],
-             settings.CONFIG['album']['weight']['all_track']),
-            (self.toptags['all_artist'],
-             settings.CONFIG['album']['weight']['all_artist'])
+            (self.toptags['album'], album_weight),
+            (self.toptags['all_track'], all_track_weight),
+            (self.toptags['all_artist'], all_artist_weight)
         )
 
         self.filter_and_set_metadata('album', all_tags)
@@ -170,8 +170,7 @@ class TaggerBase(DebugMixin, QtCore.QObject):
 
         # get complete, balanced, sorted list (high first) of tags
         all_tags = apply_tag_weight(
-            (self.toptags['artist'],
-             settings.CONFIG['track']['weight']['artist']),
+            (self.toptags['artist'], settings.CONFIG['track']['weight']['artist']),
             (self.toptags['track'], settings.CONFIG['track']['weight']['track'])
         )
 
@@ -326,7 +325,8 @@ class LastFmMixin(object):
         params = dict(
             method="artist.gettoptags",
             artist=artist,
-            api_key=settings.LASTFM_KEY)
+            api_key=settings.LASTFM_KEY,
+        )
         self.dispatch("artist", params)
 
     def request_track_toptags(self):
@@ -334,25 +334,32 @@ class LastFmMixin(object):
         request toptags of a track (via title, artist)
         """
         artist = self.metadata["artist"]  # noqa
+        title = self.metadata["title"]  # noqa
+
         if settings.ENABLE_IGNORE_FEAT_ARTISTS:
             artist = strip_feat_artist(artist)
 
         params = dict(
             method="track.gettoptags",
-            track=self.metadata["title"],  # noqa
+            track=title,
             artist=artist,
-            api_key=settings.LASTFM_KEY)
+            api_key=settings.LASTFM_KEY,
+        )
         self.dispatch("track", params)
 
     def request_album_toptags(self):
         """
         request toptags of an album (via album, albumartist)
         """
+        album = self.metadata["album"]  # noqa
+        artist = self.metadata["albumartist"]  # noqa
+
         params = dict(
             method="album.gettoptags",
-            album=self.metadata["album"],  # noqa
-            artist=self.metadata["albumartist"],  # noqa
-            api_key=settings.LASTFM_KEY)
+            album=album,
+            artist=artist,
+            api_key=settings.LASTFM_KEY,
+        )
         self.dispatch("album", params)
 
     def request_all_track_toptags(self):
@@ -361,14 +368,17 @@ class LastFmMixin(object):
         """
         for track in self.tracks:  # noqa
             artist = track.metadata["artist"]
+            title = track.metadata["title"]
+
             if settings.ENABLE_IGNORE_FEAT_ARTISTS:
                 artist = strip_feat_artist(artist)
 
             params = dict(
                 method="track.gettoptags",
-                track=track.metadata["title"],
+                track=title,
                 artist=artist,
-                api_key=settings.LASTFM_KEY)
+                api_key=settings.LASTFM_KEY,
+            )
             self.dispatch("all_track", params)
 
     def request_all_artist_toptags(self):
@@ -383,7 +393,8 @@ class LastFmMixin(object):
             params = dict(
                 method="artist.gettoptags",
                 artist=artist,
-                api_key=settings.LASTFM_KEY)
+                api_key=settings.LASTFM_KEY,
+            )
             self.dispatch("all_artist", params)
 
     def handle_toptags(self, tagtype, data, response, error):
