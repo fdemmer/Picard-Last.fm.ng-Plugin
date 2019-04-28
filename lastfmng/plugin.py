@@ -428,8 +428,7 @@ class LastFmMixin(object):
 
         if lfm.attribs['status'] == 'failed':
             error = lfm.error.pop()
-            log.warning('api returned error: {0} - {1}'.format(
-                error.attribs['code'], error.text))
+            log.warning('api returned error: %s - %s', error.attribs['code'], error.text)
             log.warning(str(response.url()))
             return
 
