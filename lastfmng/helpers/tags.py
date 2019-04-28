@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import operator
 import re
 
@@ -11,8 +10,8 @@ def uniq(iterable):
     Make an iterable unique, preserving the order, returns a list
     http://code.activestate.com/recipes/52560/
     """
-    set = {}
-    return [set.setdefault(e, e) for e in iterable if e not in set]
+    data = {}
+    return [data.setdefault(e, e) for e in iterable if e not in data]
 
 
 def abbreviations(word, **kwargs):
@@ -20,7 +19,7 @@ def abbreviations(word, **kwargs):
         return word.upper()
 
 
-def join_tags(tuples, limit=None, separator=", ", sort=True, apply_titlecase=True):
+def join_tags(tuples, limit=None, separator=', ', sort=True, apply_titlecase=True):
     """
     create a metatag string for a list of tag tuples
     tag names are title-cased (override using titlecase)
@@ -66,7 +65,7 @@ def apply_tag_weight(*args):
 
 
 def strip_feat_artist(artist):
-    match = re.match(r"([\s\S]+) feat.([\s\S]+)", artist, re.IGNORECASE)
+    match = re.match(r'([\s\S]+) feat.([\s\S]+)', artist, re.IGNORECASE)
     if match:
         return match.group(1)
     return artist
