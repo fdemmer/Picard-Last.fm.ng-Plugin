@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import codecs
 import os
 
@@ -22,14 +21,20 @@ def load_config(filenames):
 
 
 def load_config_file(filename, cfg=None):
+    full_path = os.path.join(os.path.dirname(__file__), filename)
     if not cfg:
         cfg = ConfigParser()
+
     try:
-        full_path = os.path.join(os.path.dirname(__file__), filename)
         with codecs.open(full_path, 'r', 'utf8') as fh:
+            cfg.read_file(fh)
+    except UnicodeDecodeError:
+        log.warning('Configuration is not UTF-8 encoded, trying ISO-8859!')
+        with codecs.open(full_path, 'r', 'latin_1') as fh:
             cfg.read_file(fh)
     except IOError:
         pass
+
     return cfg
 
 
