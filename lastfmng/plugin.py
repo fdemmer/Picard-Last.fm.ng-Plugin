@@ -198,8 +198,8 @@ class LastFmMixin(object):
         Implements the caching mechanism.
         Lookup from cache or dispatch a new api request.
         """
-        query = urlencode(params, quote_via=quote)
-        log.info('dispatch cache key: %s', query)
+        query = urlencode(params, quote_via=quote, safe="/',!@:$")
+        log.info('cache key for reading: %s', query)
 
         # if the query is already cached only queue task
         if query in CACHE:
@@ -418,8 +418,7 @@ class LastFmMixin(object):
             return
 
         # get url parameters for use as cache key
-        query = response.url() \
-            .query(QtCore.QUrl.EncodeUnicode | QtCore.QUrl.EncodeSpaces)
+        query = response.url().query(QtCore.QUrl.FullyEncoded)
 
         lfm = data.lfm.pop()
         if not lfm:
@@ -452,7 +451,7 @@ class LastFmMixin(object):
 
             # add the result of this run to the cache
             CACHE[query] = tmp
-            # log.info('handle_toptags cache key: %s', query)
+            log.info('cache key for writing: %s', query)
 
             # extend local toptags list with the ones from this run
             self.toptags[tagtype].extend(tmp)  # noqa
