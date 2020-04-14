@@ -1,6 +1,6 @@
 repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v2.2.1
+  rev: v2.5.0
   hooks:
   - id: check-builtin-literals
   - id: check-merge-conflict
@@ -16,6 +16,19 @@ repos:
   - id: flake8
     args: [
       '--select=C90,E,F,W,W504',
-      '--ignore=E127,E128,E265,W503',
+      '--ignore=E127,E128,E131,E265,F403,F405,W503',
       '--max-line-length=90',
     ]
+- repo: https://github.com/asottile/seed-isort-config
+  rev: v2.1.0
+  hooks:
+  - id: seed-isort-config
+- repo: https://github.com/timothycrosley/isort
+  rev: 4.3.21
+  hooks:
+  - id: isort
+- repo: https://github.com/asottile/pyupgrade
+  rev: v2.1.0
+  hooks:
+  - id: pyupgrade
+    args: ['--py36-plus']
