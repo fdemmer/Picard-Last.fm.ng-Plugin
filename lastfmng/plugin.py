@@ -31,7 +31,7 @@ log.debug('set ratecontrol for %s to 0', FAKE_TASK_HOST)
 # inherit from QObject to gain access to tagger, logger and config
 class TaggerBase(DebugMixin, QtCore.QObject):
     def __init__(self, album, metadata, release_node):
-        super(TaggerBase, self).__init__()
+        super().__init__()
 
         # use this to write metatags
         self.metadata = metadata
@@ -97,7 +97,7 @@ class TaggerBase(DebugMixin, QtCore.QObject):
                     '%s: overflow to %s: %s',
                     category,
                     category.overflow,
-                    ', '.join(['{} ({})'.format(t, s) for t, s in overflow]) or 'None'
+                    ', '.join([f'{t} ({s})' for t, s in overflow]) or 'None'
                 )
                 if overflow:
                     result[category.overflow] = overflow
@@ -111,7 +111,7 @@ class TaggerBase(DebugMixin, QtCore.QObject):
                     '%s: prepending from %s: %s',
                     category,
                     category.prepend,
-                    ', '.join(['{} ({})'.format(t, s) for t, s in overflow]) or 'None'
+                    ', '.join([f'{t} ({s})' for t, s in overflow]) or 'None'
                 )
                 prepend_ = result[category.prepend]
                 result[category.name] = prepend_ + result[category.name]
@@ -183,9 +183,9 @@ class TaggerBase(DebugMixin, QtCore.QObject):
         self.filter_and_set_metadata('track', all_tags)
 
 
-class LastFmMixin(object):
+class LastFmMixin:
     def __init__(self, album, metadata, release_node):
-        super(LastFmMixin, self).__init__(album, metadata, release_node)
+        super().__init__(album, metadata, release_node)
 
         # plugin internal requests counter, similar to the one in album
         # this is necessary to perform tasks before finalizing.
@@ -483,11 +483,11 @@ class LastFmMixin(object):
 
 class LastFMTagger(CollectUnusedMixin, LastFmMixin, TaggerBase):
     def process_album_tags(self):
-        super(LastFMTagger, self).process_album_tags()
+        super().process_album_tags()
         if settings.ENABLE_COLLECT_UNUSED:
             self.collect_unused()
 
     def process_track_tags(self):
-        super(LastFMTagger, self).process_track_tags()
+        super().process_track_tags()
         if settings.ENABLE_COLLECT_UNUSED:
             self.collect_unused()
