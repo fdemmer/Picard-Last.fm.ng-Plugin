@@ -41,26 +41,36 @@ https://github.com/fdemmer/Picard-Last.fm.ng-Plugin/issues?utf8=%E2%9C%93&q=is%3
 
 ## Install
 
-Download the latest release from the github [releases][0] page.
+1. Download the latest release from the github [releases][0] page.
 
-Extract the "lastfmng" directory in the archive to your local user's plugin
-directory:
+2. Extract the "lastfmng" directory in the archive to your user's plugin
+   directory.
 
- - Windows: ``%APPDATA%\MusicBrainz\Picard\plugins``
- - Linux/MacOS: ``~/.config/MusicBrainz/Picard/plugins``
+   To find it use the "Open plugin folder" button in the "Plugins"
+   section of Picard's "Options" dialog:
+   ![Open plugin folder](img/options_plugin_folder.png)
 
-(Do not just put all the files contained inside the "lastfmng" directory
-there, put the whole directory there!
-eg. ``~/.config/MusicBrainz/Picard/plugins/lastfmng/...``)
+   Depending on your setup it could be:
 
-Start or restart Picard to load the plugin and enable it in the options
-dialog for plugins.
+   - Windows: ``%APPDATA%\MusicBrainz\Picard\plugins``
+   - Linux/MacOS: ``~/.config/MusicBrainz/Picard/plugins``
 
+3. Start or restart Picard to load the plugin and enable it in the "Plugins"
+   section of Picard's "Options" dialog.
+
+***
+**NOTE**
+
+Do not just put all the files contained inside the "lastfmng" directory
+there, *put the whole directory there*!
+
+e.g.: ``~/.config/MusicBrainz/Picard/plugins/lastfmng/...``
+***
 
 ### Updating
 
-It is recommended to backup your ``config.ini`` and delete the existing
-"lastfmng" directory before extracting a new version to the plugins directory.
+It is recommended to back up your ``config.ini`` and delete the existing
+"lastfmng" directory before extracting a new version to the "plugins" directory.
 
 Then copy the configuration file back in place.
 
@@ -107,7 +117,7 @@ $if($in(%releasetype%,compilation),
 ```
 
 It puts all albums, that look like soundtracks or compilations in a different
-top-level directory, than "normal" albums. Also it adds a tag called
+top-level directory, than "normal" albums. Also, it adds a tag called
 "Soundtrack" to the "genre" metatag of all tracks that are soundtracks.
 
 
@@ -133,12 +143,12 @@ The basic concept is this:
    "my favourite", "heard last night", "sucks" or terms we are more interested
    in like "classic", "80s" or "death metal".
 2. This step filters and separate all the last.fm-tags into categories
-   (like "grouping", genre", "mood", "country", ...)
+   (like "grouping", "genre", "mood", "country", ...)
 3. Then sort the last.fm-tag by popularity in each category.
    Last.fm provides a numeric popularity _score_ for each tag.
-4. Assign the the most popular last.fm-tag in each category to a variable,
+4. Assign the most popular last.fm-tag in each category to a variable,
    that can be used in a script, naming rule or by Picard directly to
-   assign to a a metatag of a file (eg. the "genre" id3 tag).
+   assign to a metatag of a file (e.g. the "genre" id3 tag).
 
 
 ### Step 1
@@ -158,8 +168,9 @@ album and for each track.
 
 - In the per-album call the last.fm-tags for album title is fetched.
   To cover both compilations and single artist albums, all artists appearing
-  on any track of the the album are looked up. In addition also all
-  last.fm-tags of the tracks are considered again.
+  on any track of the album are looked up. In addition, all last.fm-tags of the
+  tracks are considered again.
+
   In other words: the tags of each track count towards the tagging of the
   album.
 
@@ -257,7 +268,7 @@ Weight parameters are the multipliers applied to the last.fm-tag's score.
     New releases are often tagged very little and more "wrong", than later when
     more people have tagged the album and the opinions are "evened out". By
     reducing the weight of the album tag scores, that "wrongfulness" is reduced
-    and covered up by the usually more estabilished, reliable artist tags.
+    and covered up by the usually more established, reliable artist tags.
 
   Note about "all artists on the album":
 
@@ -281,7 +292,7 @@ If you _really_ want to play with those, see settings.py.
 
 ### Step 4
 
-Finally the sorted and weighed last.fm-tags are ranked by resulting score in
+Finally, the sorted and weighed last.fm-tags are ranked by resulting score in
 their category-buckets and limited to only the top results(s)
 (see ``limit`` parameter in ``config.ini``).
 
