@@ -8,7 +8,8 @@ from picard import log
 from picard.mbjson import medium_to_metadata, track_to_metadata
 from picard.metadata import Metadata
 from picard.track import Track
-from picard.webservice import WebService, WSRequest, ratecontrol
+from picard.util import build_qurl
+from picard.webservice import WebService, WSRequest
 
 from . import settings
 from .helpers.tags import apply_tag_weight, join_tags, strip_feat_artist
@@ -21,11 +22,6 @@ CACHE = {}
 PENDING = []
 
 ws = WebService()
-
-# disable rate control for "tasks" that just run functions w/o web requests
-FAKE_TASK_HOST = ('localhost', 80)
-ratecontrol.REQUEST_DELAY[FAKE_TASK_HOST] = 0
-log.debug('set ratecontrol for %s to 0', FAKE_TASK_HOST)
 
 
 # inherit from QObject to gain access to tagger, logger and config
@@ -246,11 +242,13 @@ class LastFmMixin:
         self.requests += 1
 
         # queue http get request
-        return ws.get(
-            host=settings.LASTFM_HOST,
-            port=settings.LASTFM_PORT,
-            path=settings.LASTFM_PATH,
-            queryargs=params,
+        return ws.get_url(
+            url=build_qurl(
+                host=settings.LASTFM_HOST,
+                port=settings.LASTFM_PORT,
+                path=settings.LASTFM_PATH,
+                queryargs=params,
+            ),
             cacheloadcontrol=QtNetwork.QNetworkRequest.PreferCache,
             priority=True,
             # wrap the handler in the finished decorator
@@ -272,9 +270,11 @@ class LastFmMixin:
             func=self.finished(handler),
             request=WSRequest(
                 method='GET',
-                host=FAKE_TASK_HOST[0],
-                port=FAKE_TASK_HOST[1],
-                path='',
+                url=build_qurl(
+                    host=settings.LASTFM_HOST,
+                    port=settings.LASTFM_PORT,
+                    path=settings.LASTFM_PATH,
+                ),
                 handler=self.finished(handler),
             ),
         )
